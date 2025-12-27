@@ -1,3 +1,5 @@
+import Plant from "./components/Plant";
+
 export default function Home() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100">
@@ -9,12 +11,31 @@ export default function Home() {
           <p className="text-xl text-gray-700 mb-8">
             Welcome to your Next.js website deployed on GitHub Pages
           </p>
+
+          {/* Plant Component Demo */}
+          <div className="bg-white rounded-lg shadow-lg p-8 mt-12 mb-12">
+            <h2 className="text-3xl font-semibold text-gray-800 mb-4">
+              Plant Component
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Click on the plants below to select them
+            </p>
+            <div className="flex flex-wrap justify-center gap-6">
+              <Plant color="#4ade80" />
+              <Plant color="#60a5fa" />
+              <Plant color="#f472b6" />
+              <Plant color="#fbbf24" />
+              <Plant color="#a78bfa" />
+            </div>
+          </div>
+
           <div className="bg-white rounded-lg shadow-lg p-8 mt-12">
             <h2 className="text-3xl font-semibold text-gray-800 mb-4">
               Getting Started
             </h2>
             <p className="text-gray-600 mb-6">
-              This is a simple Next.js website configured for GitHub Pages deployment.
+              This is a simple Next.js website configured for GitHub Pages
+              deployment.
             </p>
             <div className="grid md:grid-cols-2 gap-6 mt-8">
               <div className="p-6 bg-green-50 rounded-lg">
@@ -38,6 +59,5 @@ export default function Home() {
         </div>
       </div>
     </main>
-  )
+  );
 }
-
