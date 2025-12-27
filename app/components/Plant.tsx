@@ -5,19 +5,25 @@ import { useState } from "react";
 interface PlantProps {
   color?: string;
   size?: number;
+  isSelected?: boolean;
   onSelect?: (selected: boolean) => void;
 }
 
 export default function Plant({
   color = "#4ade80",
   size = 100,
+  isSelected: controlledSelected,
   onSelect,
 }: PlantProps) {
-  const [isSelected, setIsSelected] = useState(false);
+  const [internalSelected, setInternalSelected] = useState(false);
+  const isSelected =
+    controlledSelected !== undefined ? controlledSelected : internalSelected;
 
   const handleClick = () => {
     const newSelected = !isSelected;
-    setIsSelected(newSelected);
+    if (controlledSelected === undefined) {
+      setInternalSelected(newSelected);
+    }
     onSelect?.(newSelected);
   };
 

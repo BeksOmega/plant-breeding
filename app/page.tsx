@@ -1,6 +1,19 @@
 import Plant from "./components/Plant";
+import PlantCollection from "./components/PlantCollection";
 
 export default function Home() {
+  const samplePlants = [
+    { id: "1", color: "#4ade80" },
+    { id: "2", color: "#60a5fa" },
+    { id: "3", color: "#f472b6" },
+    { id: "4", color: "#fbbf24" },
+    { id: "5", color: "#a78bfa" },
+    { id: "6", color: "#34d399" },
+    { id: "7", color: "#f87171" },
+    { id: "8", color: "#fb923c" },
+    { id: "9", color: "#c084fc" },
+    { id: "10", color: "#22d3ee" },
+  ];
   return (
     <main className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100">
       <div className="container mx-auto px-4 py-16">
@@ -8,53 +21,17 @@ export default function Home() {
           <h1 className="text-6xl font-bold text-gray-900 mb-6">
             Plant Breeding
           </h1>
-          <p className="text-xl text-gray-700 mb-8">
-            Welcome to your Next.js website deployed on GitHub Pages
-          </p>
 
-          {/* Plant Component Demo */}
+          {/* Plant Collection Demo */}
           <div className="bg-white rounded-lg shadow-lg p-8 mt-12 mb-12">
             <h2 className="text-3xl font-semibold text-gray-800 mb-4">
-              Plant Component
+              Plant Collection
             </h2>
             <p className="text-gray-600 mb-6">
-              Click on the plants below to select them
+              Select up to 3 plants. When you select more, the first selected
+              will be deselected.
             </p>
-            <div className="flex flex-wrap justify-center gap-6">
-              <Plant color="#4ade80" />
-              <Plant color="#60a5fa" />
-              <Plant color="#f472b6" />
-              <Plant color="#fbbf24" />
-              <Plant color="#a78bfa" />
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-lg p-8 mt-12">
-            <h2 className="text-3xl font-semibold text-gray-800 mb-4">
-              Getting Started
-            </h2>
-            <p className="text-gray-600 mb-6">
-              This is a simple Next.js website configured for GitHub Pages
-              deployment.
-            </p>
-            <div className="grid md:grid-cols-2 gap-6 mt-8">
-              <div className="p-6 bg-green-50 rounded-lg">
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                  🚀 Fast
-                </h3>
-                <p className="text-gray-600">
-                  Built with Next.js for optimal performance
-                </p>
-              </div>
-              <div className="p-6 bg-emerald-50 rounded-lg">
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                  📦 Static
-                </h3>
-                <p className="text-gray-600">
-                  Fully static export for GitHub Pages
-                </p>
-              </div>
-            </div>
+            <PlantCollection plants={samplePlants} maxSelected={3} />
           </div>
         </div>
       </div>
