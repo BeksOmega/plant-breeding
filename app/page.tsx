@@ -26,15 +26,11 @@ interface PotData {
 const TARGET_PURPLE_COUNT = 3;
 
 export default function Home() {
-  // Start with one RR cabbage and one rr cabbage
-  const [cabbages, setCabbages] = useState<CabbageData[]>([
-    { id: "c1", genetics: { allele1: false, allele2: false } }, // RR
-    { id: "c2", genetics: { allele1: true, allele2: true } }, // rr
-  ]);
+  // Start with no cabbages - only seeds
+  const [cabbages, setCabbages] = useState<CabbageData[]>([]);
 
-  const [selectedCabbageIds, setSelectedCabbageIds] = useState<string[]>([]);
   const [fullyGrownCabbageIds, setFullyGrownCabbageIds] = useState<Set<string>>(
-    new Set(["c1", "c2"]) // Initial cabbages start fully grown
+    new Set()
   );
 
   // Seed stacks state
@@ -43,24 +39,13 @@ export default function Home() {
       id: "s1",
       genetics: [
         { allele1: false, allele2: false }, // RR
-        { allele1: false, allele2: false }, // RR
-        { allele1: false, allele2: true }, // Rr
-        { allele1: true, allele2: false }, // Rr
-        { allele1: true, allele2: true }, // rr
-      ],
-    },
-    {
-      id: "s2",
-      genetics: [
-        { allele1: false, allele2: true }, // Rr
-        { allele1: true, allele2: false }, // Rr
         { allele1: true, allele2: true }, // rr
       ],
     },
   ]);
   const [selectedSeedIds, setSelectedSeedIds] = useState<string[]>([]);
 
-  // Pots state - start with a few empty pots
+  // Pots state - start with all empty pots
   const [pots, setPots] = useState<PotData[]>([
     { id: "p1" },
     { id: "p2" },
@@ -68,100 +53,167 @@ export default function Home() {
     { id: "p4" },
   ]);
   const [selectedPotIds, setSelectedPotIds] = useState<string[]>([]);
-
-  // Count purple cabbages (only count fully grown ones)
-  const fullyGrownCabbages = useMemo(
-    () => cabbages.filter((c) => fullyGrownCabbageIds.has(c.id)),
-    [cabbages, fullyGrownCabbageIds]
+  const [potSelectionMode, setPotSelectionMode] = useState<"plant" | "breed">(
+    "plant"
   );
+
+  // Count purple cabbages (only count fully grown ones in pots)
+  const fullyGrownCabbagesInPots = useMemo(() => {
+    return pots
+      .filter((pot) => pot.plantId && fullyGrownCabbageIds.has(pot.plantId))
+      .map((pot) => cabbages.find((c) => c.id === pot.plantId)!)
+      .filter(Boolean);
+  }, [pots, cabbages, fullyGrownCabbageIds]);
+
   const purpleCount = useMemo(
-    () => countPurpleCabbages(fullyGrownCabbages),
-    [fullyGrownCabbages]
+    () => countPurpleCabbages(fullyGrownCabbagesInPots),
+    [fullyGrownCabbagesInPots]
   );
 
   const hasWon = purpleCount >= TARGET_PURPLE_COUNT;
 
   const handleBreed = () => {
-    if (selectedCabbageIds.length !== 2) return;
+    if (selectedPotIds.length !== 2) return;
 
-    const parent1 = cabbages.find((c) => c.id === selectedCabbageIds[0]);
-    const parent2 = cabbages.find((c) => c.id === selectedCabbageIds[1]);
+    const pot1 = pots.find((p) => p.id === selectedPotIds[0]);
+    const pot2 = pots.find((p) => p.id === selectedPotIds[1]);
+
+    if (!pot1?.plantId || !pot2?.plantId) return;
+
+    const parent1 = cabbages.find((c) => c.id === pot1.plantId);
+    const parent2 = cabbages.find((c) => c.id === pot2.plantId);
 
     if (!parent1 || !parent2) return;
 
-    const childGenetics = breed(parent1.genetics, parent2.genetics);
-    const now = Date.now();
-    const newCabbage: CabbageData = {
-      id: `c${now}`,
-      genetics: childGenetics,
-      startGrowingAt: now,
-    };
+    // Both plants must be fully grown to breed
+    if (
+      !fullyGrownCabbageIds.has(parent1.id) ||
+      !fullyGrownCabbageIds.has(parent2.id)
+    ) {
+      return;
+    }
 
-    setCabbages((prev) => [...prev, newCabbage]);
-    setSelectedCabbageIds([]);
+    // Generate 2 seeds from breeding
+    const seed1Genetics = breed(parent1.genetics, parent2.genetics);
+    const seed2Genetics = breed(parent1.genetics, parent2.genetics);
+
+    // Add seeds to the first seed stack (or create a new one if none exist)
+    setSeedStacks((prev) => {
+      if (prev.length === 0) {
+        return [
+          {
+            id: `s${Date.now()}`,
+            genetics: [seed1Genetics, seed2Genetics],
+          },
+        ];
+      }
+      // Add to the first seed stack
+      return prev.map((stack, index) =>
+        index === 0
+          ? {
+              ...stack,
+              genetics: [...stack.genetics, seed1Genetics, seed2Genetics],
+            }
+          : stack
+      );
+    });
+
+    // Remove plants from pots
+    setPots((prev) =>
+      prev.map((p) =>
+        p.id === pot1.id || p.id === pot2.id ? { ...p, plantId: undefined } : p
+      )
+    );
+
+    // Remove plants from cabbages list (optional cleanup)
+    setCabbages((prev) =>
+      prev.filter((c) => c.id !== parent1.id && c.id !== parent2.id)
+    );
+
+    // Clear selection
+    setSelectedPotIds([]);
   };
 
   const handleCabbageFullyGrown = (cabbageId: string) => {
     setFullyGrownCabbageIds((prev) => new Set(prev).add(cabbageId));
   };
 
-  // Handle pot selection - if seeds are selected, plant them
+  // Handle pot selection - either for planting or breeding
   const handlePotSelection = (potIds: string[]) => {
-    setSelectedPotIds(potIds);
+    if (potSelectionMode === "plant") {
+      // Planting mode: if seeds are selected, plant them
+      setSelectedPotIds(potIds);
 
-    // If a pot is selected and seeds are already selected, plant them
-    if (potIds.length > 0 && selectedSeedIds.length > 0) {
-      const potId = potIds[0];
-      const seedId = selectedSeedIds[0];
+      if (potIds.length > 0 && selectedSeedIds.length > 0) {
+        const potId = potIds[0];
+        const seedId = selectedSeedIds[0];
 
-      const pot = pots.find((p) => p.id === potId);
+        const pot = pots.find((p) => p.id === potId);
 
-      // Can only plant in empty pots
-      if (pot && !pot.plantId) {
-        const seedStack = seedStacks.find((s) => s.id === seedId);
+        // Can only plant in empty pots
+        if (pot && !pot.plantId) {
+          const seedStack = seedStacks.find((s) => s.id === seedId);
 
-        // Need a seed stack with at least one seed
-        if (!seedStack || seedStack.genetics.length === 0) return;
+          // Need a seed stack with at least one seed
+          if (!seedStack || seedStack.genetics.length === 0) return;
 
-        // Use the first genetics from the seed stack
-        const newGenetics = seedStack.genetics[0];
+          // Use the first genetics from the seed stack
+          const newGenetics = seedStack.genetics[0];
 
-        const now = Date.now();
-        const newCabbageId = `c${now}`;
-        const newCabbage: CabbageData = {
-          id: newCabbageId,
-          genetics: newGenetics,
-          startGrowingAt: now,
-        };
+          const now = Date.now();
+          const newCabbageId = `c${now}`;
+          const newCabbage: CabbageData = {
+            id: newCabbageId,
+            genetics: newGenetics,
+            startGrowingAt: now,
+          };
 
-        // Add the new plant
-        setCabbages((prev) => [...prev, newCabbage]);
+          // Add the new plant
+          setCabbages((prev) => [...prev, newCabbage]);
 
-        // Assign plant to pot
-        setPots((prev) =>
-          prev.map((p) =>
-            p.id === potId ? { ...p, plantId: newCabbageId } : p
-          )
-        );
-
-        // Remove the first seed from the stack
-        setSeedStacks((prev) => {
-          const updated = prev.map((s) =>
-            s.id === seedId ? { ...s, genetics: s.genetics.slice(1) } : s
+          // Assign plant to pot
+          setPots((prev) =>
+            prev.map((p) =>
+              p.id === potId ? { ...p, plantId: newCabbageId } : p
+            )
           );
-          // Remove seed stacks with 0 seeds
-          return updated.filter((s) => s.genetics.length > 0);
-        });
 
-        // Clear selections
-        setSelectedSeedIds([]);
-        setSelectedPotIds([]);
+          // Remove the first seed from the stack
+          setSeedStacks((prev) => {
+            const updated = prev.map((s) =>
+              s.id === seedId ? { ...s, genetics: s.genetics.slice(1) } : s
+            );
+            // Remove seed stacks with 0 seeds
+            return updated.filter((s) => s.genetics.length > 0);
+          });
+
+          // Clear selections
+          setSelectedSeedIds([]);
+          setSelectedPotIds([]);
+        }
       }
+    } else {
+      // Breeding mode: select pots with fully grown plants
+      setSelectedPotIds(potIds);
     }
   };
 
-  const canBreed = selectedCabbageIds.length === 2;
-  const canPlant = selectedSeedIds.length > 0 && selectedPotIds.length > 0;
+  // Check if we can breed (need 2 pots with fully grown plants selected)
+  const canBreed = useMemo(() => {
+    if (selectedPotIds.length !== 2) return false;
+    const pot1 = pots.find((p) => p.id === selectedPotIds[0]);
+    const pot2 = pots.find((p) => p.id === selectedPotIds[1]);
+    if (!pot1?.plantId || !pot2?.plantId) return false;
+    return (
+      fullyGrownCabbageIds.has(pot1.plantId) &&
+      fullyGrownCabbageIds.has(pot2.plantId)
+    );
+  }, [selectedPotIds, pots, fullyGrownCabbageIds]);
+
+  const canPlant =
+    selectedSeedIds.length > 0 &&
+    selectedPotIds.length > 0 &&
+    potSelectionMode === "plant";
   return (
     <main className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100">
       <div className="container mx-auto px-4 py-16">
@@ -176,8 +228,8 @@ export default function Home() {
               Goal: Breed {TARGET_PURPLE_COUNT} purple cabbages.
             </p>
             <p className="text-gray-600 mb-6">
-              Select 2 cabbages and click Breed to create a new cabbage with
-              randomly combined traits from the parents.
+              Plant seeds in pots, wait for them to grow, then select 2 fully
+              grown plants in pots and click Breed to get 2 seeds.
             </p>
 
             {hasWon && (
@@ -195,6 +247,41 @@ export default function Home() {
             </div>
 
             <div className="mb-6">
+              <div className="flex gap-4 justify-center mb-4">
+                <button
+                  onClick={() => {
+                    setPotSelectionMode("plant");
+                    setSelectedPotIds([]);
+                  }}
+                  className={`
+                    px-4 py-2 rounded-lg font-semibold transition-all
+                    ${
+                      potSelectionMode === "plant"
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    }
+                  `}
+                >
+                  Plant Mode
+                </button>
+                <button
+                  onClick={() => {
+                    setPotSelectionMode("breed");
+                    setSelectedSeedIds([]);
+                    setSelectedPotIds([]);
+                  }}
+                  className={`
+                    px-4 py-2 rounded-lg font-semibold transition-all
+                    ${
+                      potSelectionMode === "breed"
+                        ? "bg-purple-600 text-white"
+                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                    }
+                  `}
+                >
+                  Breed Mode
+                </button>
+              </div>
               <button
                 onClick={handleBreed}
                 disabled={!canBreed}
@@ -207,55 +294,35 @@ export default function Home() {
                   }
                 `}
               >
-                Breed Selected Cabbages
+                Breed Selected Plants
               </button>
-              {selectedCabbageIds.length > 0 && (
+              {selectedPotIds.length > 0 && potSelectionMode === "breed" && (
                 <p className="mt-2 text-sm text-gray-600">
-                  {selectedCabbageIds.length} cabbage(s) selected
+                  {selectedPotIds.length} pot(s) selected
                 </p>
               )}
             </div>
-
-            <PlantCollection
-              items={cabbages}
-              maxSelected={2}
-              selectedIds={selectedCabbageIds}
-              onSelectionChange={setSelectedCabbageIds}
-              renderItem={(cabbage, isSelected, onSelect) => (
-                <Cabbage
-                  genetics={cabbage.genetics}
-                  size={100}
-                  isSelected={isSelected}
-                  onSelect={onSelect}
-                  startGrowingAt={cabbage.startGrowingAt}
-                  onFullyGrown={() => handleCabbageFullyGrown(cabbage.id)}
-                  showGenotype={true}
-                />
-              )}
-            />
           </div>
 
           {/* Seed Stacks Section */}
           <div className="bg-white rounded-lg shadow-lg p-8 mt-12 mb-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              Seed Stacks
-            </h2>
-            <p className="text-gray-600 mb-6">
-              Select a seed stack and then select an empty pot to plant the
-              first seed.
-            </p>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Seeds</h2>
+            <p className="text-gray-600 mb-6">Select a seed</p>
             <PlantCollection
               items={seedStacks}
               maxSelected={1}
               selectedIds={selectedSeedIds}
               onSelectionChange={setSelectedSeedIds}
               renderItem={(seedStack, isSelected, onSelect) => (
-                <SeedStack
-                  genetics={seedStack.genetics}
-                  size={100}
-                  isSelected={isSelected}
-                  onSelect={onSelect}
-                />
+                <div className="flex flex-col items-center">
+                  <SeedStack
+                    genetics={seedStack.genetics}
+                    size={100}
+                    isSelected={isSelected}
+                    onSelect={onSelect}
+                  />
+                  <p className="text-gray-600 mb-6">Cabbages</p>
+                </div>
               )}
             />
           </div>
@@ -264,13 +331,15 @@ export default function Home() {
           <div className="bg-white rounded-lg shadow-lg p-8 mt-12 mb-12">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Pots</h2>
             <p className="text-gray-600 mb-6">
-              {selectedSeedIds.length > 0
-                ? "Select an empty pot to plant your seeds."
-                : "Select seeds first, then select a pot to plant them."}
+              {potSelectionMode === "plant"
+                ? selectedSeedIds.length > 0
+                  ? "Select an empty pot to plant your seeds."
+                  : "Select seeds first, then select a pot to plant them."
+                : "Select 2 fully grown plants in pots to breed them."}
             </p>
             <PlantCollection
               items={pots}
-              maxSelected={1}
+              maxSelected={potSelectionMode === "breed" ? 2 : 1}
               selectedIds={selectedPotIds}
               onSelectionChange={handlePotSelection}
               renderItem={(pot, isSelected, onSelect) => {
@@ -278,13 +347,21 @@ export default function Home() {
                 const plant = pot.plantId
                   ? cabbages.find((c) => c.id === pot.plantId)
                   : null;
+                const isFullyGrown = plant
+                  ? fullyGrownCabbageIds.has(plant.id)
+                  : false;
+                const canSelect =
+                  potSelectionMode === "plant"
+                    ? isEmpty
+                    : !isEmpty && isFullyGrown;
 
                 return (
                   <Pot
                     size={100}
                     isSelected={isSelected}
-                    onSelect={isEmpty ? onSelect : undefined}
+                    onSelect={canSelect ? onSelect : undefined}
                     isEmpty={isEmpty}
+                    canSelect={canSelect}
                   >
                     {plant && (
                       <Cabbage

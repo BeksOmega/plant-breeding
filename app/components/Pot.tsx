@@ -7,6 +7,7 @@ interface PotProps {
   isSelected?: boolean;
   onSelect?: (selected: boolean) => void;
   isEmpty?: boolean;
+  canSelect?: boolean; // Whether the pot can be selected (for breeding mode with fully grown plants)
   children?: ReactNode; // Plant growing in the pot
 }
 
@@ -15,14 +16,18 @@ export default function Pot({
   isSelected: controlledSelected,
   onSelect,
   isEmpty = true,
+  canSelect: canSelectProp,
   children,
 }: PotProps) {
   const [internalSelected, setInternalSelected] = useState(false);
   const isSelected =
     controlledSelected !== undefined ? controlledSelected : internalSelected;
 
+  // Can select if explicitly allowed (for breeding mode) or if empty (for planting mode)
+  const canSelect = canSelectProp !== undefined ? canSelectProp : isEmpty;
+
   const handleClick = () => {
-    if (!isEmpty) return; // Don't allow selection of pots with plants
+    if (!canSelect) return;
     const newSelected = !isSelected;
     if (controlledSelected === undefined) {
       setInternalSelected(newSelected);
@@ -50,7 +55,7 @@ export default function Pot({
         borderRadius: "8px",
       }}
       aria-label={isEmpty ? "Empty pot" : "Pot with plant"}
-      disabled={!isEmpty}
+      disabled={!canSelect}
     >
       {isEmpty ? (
         <div className="w-full h-full flex items-center justify-center">
@@ -69,4 +74,3 @@ export default function Pot({
     </button>
   );
 }
-
