@@ -1175,7 +1175,7 @@ export default function Home() {
                 items={pots}
                 selectedIds={selectedPotIds}
                 onSelectionChange={handlePotSelection}
-                draggable={true}
+                draggable={false}
                 onReorder={(reorderedPots) => setPots(reorderedPots)}
                 renderItem={(pot, isSelected, onSelect) => {
                   const isEmpty = !pot.plantId;
