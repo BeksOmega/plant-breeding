@@ -5,6 +5,8 @@ import Pot from "./Pot";
 import Cabbage from "./Cabbage";
 import { PlantGenetics, getGenotype, breed } from "../types/genetics";
 
+const BREEDING_INTERVAL_MS = 10000; // 10 seconds
+
 interface PotData {
   id: string;
   plantId?: string;
@@ -59,22 +61,53 @@ export default function AutoBreeder({
 }: AutoBreederProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [seeds, setSeeds] = useState<PlantGenetics[]>([]);
+  const [breedingProgress, setBreedingProgress] = useState(0);
+  const [lastBreedTime, setLastBreedTime] = useState<number | null>(null);
   const pot1IsEmpty = !pot1.plantId;
   const pot2IsEmpty = !pot2.plantId;
 
+  const canBreed =
+    pot1IsFullyGrown && pot2IsFullyGrown && pot1Plant && pot2Plant;
+
   // Auto-breeding logic: check every 10 seconds if both pots are fully grown
   useEffect(() => {
+    if (!canBreed) {
+      setBreedingProgress(0);
+      setLastBreedTime(null);
+      return;
+    }
+
+    // Start breeding timer if not already started
+    if (lastBreedTime === null) {
+      setLastBreedTime(Date.now());
+    }
+
     const interval = setInterval(() => {
-      // Both plants must be fully grown to breed
-      if (pot1IsFullyGrown && pot2IsFullyGrown && pot1Plant && pot2Plant) {
+      const now = Date.now();
+      const elapsed = lastBreedTime ? now - lastBreedTime : 0;
+      const progress = Math.min((elapsed / BREEDING_INTERVAL_MS) * 100, 100);
+      setBreedingProgress(progress);
+
+      // Breed when the interval has passed
+      if (elapsed >= BREEDING_INTERVAL_MS && lastBreedTime) {
         // Generate exactly 1 seed from breeding
-        const newSeed = breed(pot1Plant.genetics, pot2Plant.genetics);
+        const newSeed = breed(pot1Plant!.genetics, pot2Plant!.genetics);
         setSeeds((prev) => [...prev, newSeed]);
+        // Reset timer
+        setLastBreedTime(Date.now());
+        setBreedingProgress(0);
       }
-    }, 10000); // Every 10 seconds
+    }, 100); // Update every 100ms for smooth animation
 
     return () => clearInterval(interval);
-  }, [pot1IsFullyGrown, pot2IsFullyGrown, pot1Plant, pot2Plant]);
+  }, [
+    canBreed,
+    pot1IsFullyGrown,
+    pot2IsFullyGrown,
+    pot1Plant,
+    pot2Plant,
+    lastBreedTime,
+  ]);
 
   const handleRemove = () => {
     if (onRemove) {
@@ -127,9 +160,38 @@ export default function AutoBreeder({
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Seed count display at the top */}
-      {seeds.length > 0 && (
-        <div className="absolute top-1 left-1 bg-white border-2 border-gray-400 rounded px-2 py-1 text-xs font-semibold text-gray-700 z-10">
-          {seeds.length} seed{seeds.length !== 1 ? "s" : ""}
+      {(seeds.length > 0 || canBreed) && (
+        <div className="absolute top-1 left-1 bg-white border-2 border-gray-400 rounded px-2 py-1 text-xs font-semibold text-gray-700 z-10 flex items-center gap-1">
+          {canBreed && (
+            <div className="relative w-3 h-3">
+              <svg className="w-3 h-3 transform -rotate-90" viewBox="0 0 12 12">
+                <circle
+                  cx="6"
+                  cy="6"
+                  r="5"
+                  fill="none"
+                  stroke="#e5e7eb"
+                  strokeWidth="2"
+                />
+                <circle
+                  cx="6"
+                  cy="6"
+                  r="5"
+                  fill="none"
+                  stroke="#4b5563"
+                  strokeWidth="2"
+                  strokeDasharray={`${2 * Math.PI * 5}`}
+                  strokeDashoffset={`${
+                    2 * Math.PI * 5 * (1 - breedingProgress / 100)
+                  }`}
+                  strokeLinecap="round"
+                />
+              </svg>
+            </div>
+          )}
+          <span>
+            {seeds.length} seed{seeds.length !== 1 ? "s" : ""}
+          </span>
         </div>
       )}
       {onRemove && isHovered && (
