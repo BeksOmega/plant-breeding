@@ -909,71 +909,101 @@ export default function Home() {
               Select a seed, mutagen, or auto breeder
             </p>
 
-            <div className="flex flex-row gap-4 justify-center">
+            <div className="flex flex-row gap-8 justify-center flex-wrap">
               {/* Seeds */}
-              <PlantCollection
-                items={seedStacks}
-                maxSelected={1}
-                selectedIds={selectedSeedIds}
-                onSelectionChange={handleSeedSelection}
-                renderItem={(seedStack, isSelected, onSelect) => (
-                  <div className="flex flex-col items-center">
-                    <SeedStack
-                      genetics={seedStack.genetics}
-                      size={100}
-                      isSelected={isSelected}
-                      onSelect={onSelect}
-                    />
-                    <p className="text-gray-600 mb-6">Cabbages</p>
-                  </div>
-                )}
-              />
+              <div className="flex flex-col gap-4 items-center">
+                <div className="flex flex-row gap-4 flex-wrap justify-center">
+                  {seedStacks.map((seedStack) => {
+                    const isSelected = selectedSeedIds.includes(seedStack.id);
+                    return (
+                      <div
+                        key={seedStack.id}
+                        className="flex flex-col items-center"
+                      >
+                        <SeedStack
+                          genetics={seedStack.genetics}
+                          size={100}
+                          isSelected={isSelected}
+                          onSelect={(selected) => {
+                            if (selected) {
+                              handleSeedSelection([seedStack.id]);
+                            } else {
+                              handleSeedSelection([]);
+                            }
+                          }}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="text-gray-600">Cabbages</p>
+              </div>
 
               {/* Mutagens */}
-              <PlantCollection
-                items={mutagenStacks}
-                maxSelected={1}
-                selectedIds={selectedMutagenIds}
-                onSelectionChange={handleMutagenSelection}
-                renderItem={(mutagenStack, isSelected, onSelect) => (
-                  <div className="flex flex-col items-center">
-                    <Mutagen
-                      count={mutagenStack.count}
-                      size={100}
-                      isSelected={isSelected}
-                      onSelect={onSelect}
-                    />
-                    <p className="text-gray-600 mb-6">Mutagens</p>
-                  </div>
-                )}
-              />
+              <div className="flex flex-col gap-4 items-center">
+                <div className="flex flex-row gap-4 flex-wrap justify-center">
+                  {mutagenStacks.map((mutagenStack) => {
+                    const isSelected = selectedMutagenIds.includes(
+                      mutagenStack.id
+                    );
+                    return (
+                      <div
+                        key={mutagenStack.id}
+                        className="flex flex-col items-center"
+                      >
+                        <Mutagen
+                          count={mutagenStack.count}
+                          size={100}
+                          isSelected={isSelected}
+                          onSelect={(selected) => {
+                            if (selected) {
+                              handleMutagenSelection([mutagenStack.id]);
+                            } else {
+                              handleMutagenSelection([]);
+                            }
+                          }}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="text-gray-600">Mutagens</p>
+              </div>
 
               {/* Auto Breeders */}
-              <PlantCollection
-                items={autoBreederStacks}
-                maxSelected={1}
-                selectedIds={selectedAutoBreederIds}
-                onSelectionChange={(ids) => {
-                  setSelectedAutoBreederIds(ids);
-                  // Clear other selections when selecting auto breeder
-                  if (ids.length > 0) {
-                    setSelectedPotIds([]);
-                    setSelectedSeedIds([]);
-                    setSelectedMutagenIds([]);
-                  }
-                }}
-                renderItem={(autoBreederStack, isSelected, onSelect) => (
-                  <div className="flex flex-col items-center">
-                    <AutoBreederItem
-                      count={autoBreederStack.count}
-                      size={100}
-                      isSelected={isSelected}
-                      onSelect={onSelect}
-                    />
-                    <p className="text-gray-600 mb-6">Auto Breeders</p>
-                  </div>
-                )}
-              />
+              <div className="flex flex-col gap-4 items-center">
+                <div className="flex flex-row gap-4 flex-wrap justify-center">
+                  {autoBreederStacks.map((autoBreederStack) => {
+                    const isSelected = selectedAutoBreederIds.includes(
+                      autoBreederStack.id
+                    );
+                    return (
+                      <div
+                        key={autoBreederStack.id}
+                        className="flex flex-col items-center"
+                      >
+                        <AutoBreederItem
+                          count={autoBreederStack.count}
+                          size={100}
+                          isSelected={isSelected}
+                          onSelect={(selected: boolean) => {
+                            if (selected) {
+                              setSelectedAutoBreederIds([autoBreederStack.id]);
+                              // Clear other selections when selecting auto breeder
+                              setSelectedPotIds([]);
+                              setSelectedSeedIds([]);
+                              setSelectedMutagenIds([]);
+                            } else {
+                              setSelectedAutoBreederIds([]);
+                            }
+                          }}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="text-gray-600">Auto Breeders</p>
+              </div>
             </div>
           </div>
 
