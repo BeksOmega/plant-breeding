@@ -93,3 +93,30 @@ export function mutate(genetics: PlantGenetics): PlantGenetics {
 
   return mutated;
 }
+
+// Get readable color description (Green or Purple)
+export function getColorDescription(genetics: PlantGenetics): string {
+  // If both are true (homozygous recessive), it's purple
+  if (genetics.chromosome1[0] && genetics.chromosome2[0]) {
+    return "Purple";
+  }
+  // Otherwise, it's green (dominant trait)
+  return "Green";
+}
+
+// Get readable speed description (Fast or Slow)
+export function getSpeedDescription(genetics: PlantGenetics): string {
+  // If both are true (homozygous recessive), it's fast
+  if (genetics.chromosome1[1] && genetics.chromosome2[1]) {
+    return "Fast";
+  }
+  // Otherwise, it's slow (dominant trait)
+  return "Slow";
+}
+
+// Get tooltip text combining color and speed descriptions
+export function getPlantTooltip(genetics: PlantGenetics): string {
+  const color = getColorDescription(genetics);
+  const speed = getSpeedDescription(genetics);
+  return `${color}, ${speed}`;
+}

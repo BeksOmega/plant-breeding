@@ -7,6 +7,7 @@ import {
   getPhenotypeColor,
   getGenotype,
   getGrowingSpeed,
+  getPlantTooltip,
 } from "../types/genetics";
 
 interface CabbageProps {
@@ -63,9 +64,11 @@ export default function Cabbage({
   const isFastGrowing = genetics.chromosome1[1] && genetics.chromosome2[1];
   const displaySize = isFullyGrown && isFastGrowing ? size * 0.9 : size;
 
+  const tooltipText = getPlantTooltip(genetics);
+
   return (
     <div className="flex flex-col items-center">
-      <div className="relative">
+      <div className="relative" title={tooltipText}>
         <Plant
           color={color}
           size={displaySize}
