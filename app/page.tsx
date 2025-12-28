@@ -53,6 +53,11 @@ export default function Home() {
     { id: "p3" },
     { id: "p4" },
     { id: "p5" },
+    { id: "p6" },
+    { id: "p7" },
+    { id: "p8" },
+    { id: "p9" },
+    { id: "p10" },
   ]);
   const [selectedPotIds, setSelectedPotIds] = useState<string[]>([]);
 
@@ -93,7 +98,7 @@ export default function Home() {
     }
 
     // Generate 2 seeds from breeding
-    const seeds = Array.from({ length: randomInRange(2, 3) }, () =>
+    const seeds = Array.from({ length: randomInRange(3, 3) }, () =>
       breed(parent1.genetics, parent2.genetics)
     );
 
