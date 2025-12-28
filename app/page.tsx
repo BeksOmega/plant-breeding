@@ -5,7 +5,14 @@ import PlantCollection from "./components/PlantCollection";
 import Cabbage from "./components/Cabbage";
 import SeedStack from "./components/SeedStack";
 import Pot from "./components/Pot";
-import { PlantGenetics, breed, countPurpleCabbages } from "./types/genetics";
+import Shop, { ShopItemData } from "./components/Shop";
+import Catalog, { CatalogItemData } from "./components/Catalog";
+import {
+  PlantGenetics,
+  breed,
+  countPurpleCabbages,
+  getPhenotypeColor,
+} from "./types/genetics";
 
 interface CabbageData {
   id: string;
@@ -54,6 +61,9 @@ export default function Home() {
     { id: "p5" },
   ]);
   const [selectedPotIds, setSelectedPotIds] = useState<string[]>([]);
+
+  // Money state - earned from selling cabbages
+  const [money, setMoney] = useState<number>(0);
 
   // Count purple cabbages (only count fully grown ones in pots)
   const fullyGrownCabbagesInPots = useMemo(() => {
@@ -239,6 +249,124 @@ export default function Home() {
     });
   }, [selectedPotIds, pots]);
 
+  // Check if we can sell (need at least 1 pot with a fully grown plant selected)
+  const canSell = useMemo(() => {
+    if (selectedPotIds.length === 0) return false;
+    return selectedPotIds.some((potId) => {
+      const pot = pots.find((p) => p.id === potId);
+      if (!pot?.plantId) return false;
+      const plant = cabbages.find((c) => c.id === pot.plantId);
+      return plant && fullyGrownCabbageIds.has(plant.id);
+    });
+  }, [selectedPotIds, pots, cabbages, fullyGrownCabbageIds]);
+
+  // Shop items data - each item handles its own purchase logic
+  const shopItems: ShopItemData[] = [
+    {
+      id: "item4",
+      color: "#60a5fa",
+      label: "Extra Pot",
+      price: 10,
+      onPurchase: () => {
+        if (money < 10) return;
+        setMoney((prev) => prev - 10);
+        setPots((prev) => [...prev, { id: `p${Date.now()}` }]);
+      },
+    },
+  ];
+
+  // Get selected plant(s) for catalog
+  const selectedPlants = useMemo(() => {
+    return selectedPotIds
+      .map((potId) => {
+        const pot = pots.find((p) => p.id === potId);
+        if (!pot?.plantId) return null;
+        const plant = cabbages.find((c) => c.id === pot.plantId);
+        if (!plant || !fullyGrownCabbageIds.has(plant.id)) return null;
+        return { pot, plant };
+      })
+      .filter(Boolean) as Array<{ pot: PotData; plant: CabbageData }>;
+  }, [selectedPotIds, pots, cabbages, fullyGrownCabbageIds]);
+
+  // Check if selected plant is purple (both alleles are true)
+  const hasPurpleSelected = useMemo(() => {
+    return selectedPlants.some(
+      ({ plant }) => plant.genetics.allele1 && plant.genetics.allele2
+    );
+  }, [selectedPlants]);
+
+  // Check if selected plant is green (at least one allele is false)
+  const hasGreenSelected = useMemo(() => {
+    return selectedPlants.some(
+      ({ plant }) => !plant.genetics.allele1 || !plant.genetics.allele2
+    );
+  }, [selectedPlants]);
+
+  // Handler to sell plants of a specific type
+  const handleSellByType = (isPurple: boolean) => {
+    if (selectedPlants.length === 0) return;
+
+    // Filter plants by type
+    const plantsToSell = selectedPlants.filter(({ plant }) => {
+      const isPlantPurple = plant.genetics.allele1 && plant.genetics.allele2;
+      return isPlantPurple === isPurple;
+    });
+
+    if (plantsToSell.length === 0) return;
+
+    // Calculate money earned
+    const pricePerPlant = isPurple ? 10 : 5;
+    const totalEarned = plantsToSell.length * pricePerPlant;
+    setMoney((prev) => prev + totalEarned);
+
+    // Get all plant IDs to remove
+    const plantIdsToRemove = plantsToSell
+      .map(({ pot }) => pot.plantId!)
+      .filter(Boolean);
+
+    // Remove plants from pots
+    setPots((prev) =>
+      prev.map((p) =>
+        plantIdsToRemove.includes(p.plantId || "")
+          ? { ...p, plantId: undefined }
+          : p
+      )
+    );
+
+    // Remove plants from cabbages list
+    setCabbages((prev) => prev.filter((c) => !plantIdsToRemove.includes(c.id)));
+
+    // Remove from fully grown set
+    setFullyGrownCabbageIds((prev) => {
+      const updated = new Set(prev);
+      plantIdsToRemove.forEach((id) => updated.delete(id));
+      return updated;
+    });
+
+    // Clear selection
+    setSelectedPotIds([]);
+  };
+
+  // Catalog items data - each item handles its own sell logic
+  const catalogItems: CatalogItemData[] = [
+    {
+      id: "green-cabbage",
+      color: "#4ade80", // Green color
+      label: "Green Cabbage",
+      price: 2,
+      canSell: hasGreenSelected,
+      onSell: () => handleSellByType(false),
+    },
+    {
+      id: "purple-cabbage",
+      color: "#a78bfa", // Purple color
+      label: "Purple Cabbage",
+      price: 10,
+      canSell: hasPurpleSelected,
+      onSell: () => handleSellByType(true),
+    },
+  ];
+
   const canPlant =
     selectedSeedIds.length > 0 &&
     selectedPotIds.length > 0 &&
@@ -382,6 +510,16 @@ export default function Home() {
                 );
               }}
             />
+          </div>
+
+          {/* Catalog Section */}
+          <div className="mt-12 mb-12">
+            <Catalog items={catalogItems} />
+          </div>
+
+          {/* Shop Section */}
+          <div className="mt-12 mb-12">
+            <Shop money={money} items={shopItems} />
           </div>
         </div>
       </div>
