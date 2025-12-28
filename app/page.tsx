@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import PlantCollection from "./components/PlantCollection";
 import Cabbage from "./components/Cabbage";
-import Seed from "./components/Seed";
+import SeedStack from "./components/SeedStack";
 import Pot from "./components/Pot";
 import { PlantGenetics, breed, countPurpleCabbages } from "./types/genetics";
 
@@ -13,9 +13,9 @@ interface CabbageData {
   startGrowingAt?: number; // Timestamp when growth started
 }
 
-interface SeedData {
+interface SeedStackData {
   id: string;
-  count: number;
+  genetics: PlantGenetics[];
 }
 
 interface PotData {
@@ -37,10 +37,26 @@ export default function Home() {
     new Set(["c1", "c2"]) // Initial cabbages start fully grown
   );
 
-  // Seeds state
-  const [seeds, setSeeds] = useState<SeedData[]>([
-    { id: "s1", count: 5 },
-    { id: "s2", count: 3 },
+  // Seed stacks state
+  const [seedStacks, setSeedStacks] = useState<SeedStackData[]>([
+    {
+      id: "s1",
+      genetics: [
+        { allele1: false, allele2: false }, // RR
+        { allele1: false, allele2: false }, // RR
+        { allele1: false, allele2: true }, // Rr
+        { allele1: true, allele2: false }, // Rr
+        { allele1: true, allele2: true }, // rr
+      ],
+    },
+    {
+      id: "s2",
+      genetics: [
+        { allele1: false, allele2: true }, // Rr
+        { allele1: true, allele2: false }, // Rr
+        { allele1: true, allele2: true }, // rr
+      ],
+    },
   ]);
   const [selectedSeedIds, setSelectedSeedIds] = useState<string[]>([]);
 
@@ -102,11 +118,13 @@ export default function Home() {
 
       // Can only plant in empty pots
       if (pot && !pot.plantId) {
-        // Create a new plant with random genetics (from seeds)
-        const newGenetics: PlantGenetics = {
-          allele1: Math.random() < 0.5,
-          allele2: Math.random() < 0.5,
-        };
+        const seedStack = seedStacks.find((s) => s.id === seedId);
+
+        // Need a seed stack with at least one seed
+        if (!seedStack || seedStack.genetics.length === 0) return;
+
+        // Use the first genetics from the seed stack
+        const newGenetics = seedStack.genetics[0];
 
         const now = Date.now();
         const newCabbageId = `c${now}`;
@@ -126,13 +144,13 @@ export default function Home() {
           )
         );
 
-        // Decrease seed count
-        setSeeds((prev) => {
+        // Remove the first seed from the stack
+        setSeedStacks((prev) => {
           const updated = prev.map((s) =>
-            s.id === seedId ? { ...s, count: Math.max(0, s.count - 1) } : s
+            s.id === seedId ? { ...s, genetics: s.genetics.slice(1) } : s
           );
-          // Remove seeds with 0 count
-          return updated.filter((s) => s.count > 0);
+          // Remove seed stacks with 0 seeds
+          return updated.filter((s) => s.genetics.length > 0);
         });
 
         // Clear selections
@@ -217,20 +235,23 @@ export default function Home() {
             />
           </div>
 
-          {/* Seeds Section */}
+          {/* Seed Stacks Section */}
           <div className="bg-white rounded-lg shadow-lg p-8 mt-12 mb-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Seeds</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Seed Stacks
+            </h2>
             <p className="text-gray-600 mb-6">
-              Select seeds and then select an empty pot to plant them.
+              Select a seed stack and then select an empty pot to plant the
+              first seed.
             </p>
             <PlantCollection
-              items={seeds}
+              items={seedStacks}
               maxSelected={1}
               selectedIds={selectedSeedIds}
               onSelectionChange={setSelectedSeedIds}
-              renderItem={(seed, isSelected, onSelect) => (
-                <Seed
-                  count={seed.count}
+              renderItem={(seedStack, isSelected, onSelect) => (
+                <SeedStack
+                  genetics={seedStack.genetics}
                   size={100}
                   isSelected={isSelected}
                   onSelect={onSelect}

@@ -1,20 +1,21 @@
 "use client";
 
 import { useState } from "react";
+import { PlantGenetics } from "../types/genetics";
 
-interface SeedProps {
-  count: number;
+interface SeedStackProps {
+  genetics: PlantGenetics[];
   size?: number;
   isSelected?: boolean;
   onSelect?: (selected: boolean) => void;
 }
 
-export default function Seed({
-  count,
+export default function SeedStack({
+  genetics,
   size = 100,
   isSelected: controlledSelected,
   onSelect,
-}: SeedProps) {
+}: SeedStackProps) {
   const [internalSelected, setInternalSelected] = useState(false);
   const isSelected =
     controlledSelected !== undefined ? controlledSelected : internalSelected;
@@ -26,6 +27,8 @@ export default function Seed({
     }
     onSelect?.(newSelected);
   };
+
+  const count = genetics.length;
 
   return (
     <button
@@ -45,7 +48,7 @@ export default function Seed({
         backgroundColor: "#8B4513", // Brown color
         borderRadius: "8px",
       }}
-      aria-label={`Seed with count ${count}`}
+      aria-label={`Seed stack with ${count} seeds`}
     >
       <span
         className="text-white font-bold"
