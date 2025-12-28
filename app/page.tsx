@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import PlantCollection from "./components/PlantCollection";
 import Cabbage from "./components/Cabbage";
 import SeedStack from "./components/SeedStack";
 import Mutagen from "./components/Mutagen";
 import AutoBreederItem from "./components/AutoBreederItem";
-import AutoBreeder from "./components/AutoBreeder";
+import AutoBreeder, { AutoBreederHandle } from "./components/AutoBreeder";
 import Pot from "./components/Pot";
 import Shop, { ShopItemData } from "./components/Shop";
 import Catalog, { CatalogItemData } from "./components/Catalog";
@@ -94,6 +94,13 @@ export default function Home() {
   const [potsWithAutoBreeder, setPotsWithAutoBreeder] = useState<Set<string>>(
     new Set()
   );
+
+  // Selected auto breeder seed pairs (Set of pair keys)
+  const [selectedAutoBreederSeedPairs, setSelectedAutoBreederSeedPairs] =
+    useState<Set<string>>(new Set());
+
+  // Refs to auto breeder components (Map of pair key -> ref)
+  const autoBreederRefs = useRef<Map<string, AutoBreederHandle>>(new Map());
 
   // Pots state - start with all empty pots
   const [pots, setPots] = useState<PotData[]>([
@@ -252,6 +259,7 @@ export default function Home() {
       setSelectedPotIds([]);
       setSelectedMutagenIds([]);
       setSelectedAutoBreederIds([]);
+      setSelectedAutoBreederSeedPairs(new Set());
     }
   };
 
@@ -263,6 +271,7 @@ export default function Home() {
       setSelectedPotIds([]);
       setSelectedSeedIds([]);
       setSelectedAutoBreederIds([]);
+      setSelectedAutoBreederSeedPairs(new Set());
     }
   };
 
@@ -348,6 +357,65 @@ export default function Home() {
         // Always deselect the pot after applying mutagen
         setSelectedPotIds([]);
         return;
+      }
+    }
+
+    // If an auto breeder seed is selected and an empty pot is selected, plant immediately
+    if (potIds.length > 0 && selectedAutoBreederSeedPairs.size > 0) {
+      const potId = potIds[0];
+      const pairKey = Array.from(selectedAutoBreederSeedPairs)[0];
+
+      const pot = pots.find((p) => p.id === potId);
+
+      // Can only plant in empty pots
+      if (pot && !pot.plantId) {
+        const autoBreederRef = autoBreederRefs.current.get(pairKey);
+        if (autoBreederRef && autoBreederRef.hasSeeds()) {
+          // Check if there will be seeds remaining after planting (check before consuming)
+          const seedCount = autoBreederRef.getSeedCount();
+          const willHaveRemainingSeeds = seedCount > 1;
+
+          const seedGenetics = autoBreederRef.getSeed();
+          if (seedGenetics) {
+            // Use the genetics from the auto breeder seed
+            let newGenetics = seedGenetics;
+
+            // If pot has mutagen glow, mutate the genetics
+            if (potsWithMutagenGlow.has(potId)) {
+              newGenetics = mutate(newGenetics);
+            }
+
+            const now = Date.now();
+            const newCabbageId = `c${now}`;
+            const newCabbage: CabbageData = {
+              id: newCabbageId,
+              genetics: newGenetics,
+              startGrowingAt: now,
+            };
+
+            // Add the new plant
+            setCabbages((prev) => [...prev, newCabbage]);
+
+            // Assign plant to pot
+            setPots((prev) =>
+              prev.map((p) =>
+                p.id === potId ? { ...p, plantId: newCabbageId } : p
+              )
+            );
+
+            // If no seeds remain, clear selection; otherwise keep it selected
+            if (!willHaveRemainingSeeds) {
+              setSelectedAutoBreederSeedPairs((prev) => {
+                const updated = new Set(prev);
+                updated.delete(pairKey);
+                return updated;
+              });
+            }
+            // Always deselect the pot after planting
+            setSelectedPotIds([]);
+            return;
+          }
+        }
       }
     }
 
@@ -1038,9 +1106,38 @@ export default function Home() {
                         }
                       };
 
+                      // Get the pair key
+                      const pairKey = [pot.id, pot2.id].sort().join("-");
+                      const isSeedsSelected =
+                        selectedAutoBreederSeedPairs.has(pairKey);
+
+                      const handleSeedsSelect = (selected: boolean) => {
+                        setSelectedAutoBreederSeedPairs((prev) => {
+                          const updated = new Set(prev);
+                          if (selected) {
+                            updated.add(pairKey);
+                            // Clear other selections
+                            setSelectedPotIds([]);
+                            setSelectedSeedIds([]);
+                            setSelectedMutagenIds([]);
+                            setSelectedAutoBreederIds([]);
+                          } else {
+                            updated.delete(pairKey);
+                          }
+                          return updated;
+                        });
+                      };
+
                       return (
                         <div key={pot.id} className="col-span-2">
                           <AutoBreeder
+                            ref={(ref) => {
+                              if (ref) {
+                                autoBreederRefs.current.set(pairKey, ref);
+                              } else {
+                                autoBreederRefs.current.delete(pairKey);
+                              }
+                            }}
                             pot1={pot}
                             pot2={pot2}
                             pot1Plant={plant || undefined}
@@ -1060,6 +1157,8 @@ export default function Home() {
                             onRemove={(seeds) =>
                               handleRemoveAutoBreeder(pot.id, pot2.id, seeds)
                             }
+                            onSeedsSelect={handleSeedsSelect}
+                            isSeedsSelected={isSeedsSelected}
                             showDebugGenotypes={showDebugGenotypes}
                           />
                         </div>
