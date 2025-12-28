@@ -53,9 +53,6 @@ export default function Home() {
     { id: "p4" },
   ]);
   const [selectedPotIds, setSelectedPotIds] = useState<string[]>([]);
-  const [potSelectionMode, setPotSelectionMode] = useState<"plant" | "breed">(
-    "plant"
-  );
 
   // Count purple cabbages (only count fully grown ones in pots)
   const fullyGrownCabbagesInPots = useMemo(() => {
@@ -138,63 +135,58 @@ export default function Home() {
     setFullyGrownCabbageIds((prev) => new Set(prev).add(cabbageId));
   };
 
-  // Handle pot selection - either for planting or breeding
+  // Handle pot selection - automatically handles planting or breeding based on context
   const handlePotSelection = (potIds: string[]) => {
-    if (potSelectionMode === "plant") {
-      // Planting mode: if seeds are selected, plant them
-      setSelectedPotIds(potIds);
+    setSelectedPotIds(potIds);
 
-      if (potIds.length > 0 && selectedSeedIds.length > 0) {
-        const potId = potIds[0];
-        const seedId = selectedSeedIds[0];
+    // If a seed is selected and an empty pot is selected, plant immediately
+    if (potIds.length > 0 && selectedSeedIds.length > 0) {
+      const potId = potIds[0];
+      const seedId = selectedSeedIds[0];
 
-        const pot = pots.find((p) => p.id === potId);
+      const pot = pots.find((p) => p.id === potId);
 
-        // Can only plant in empty pots
-        if (pot && !pot.plantId) {
-          const seedStack = seedStacks.find((s) => s.id === seedId);
+      // Can only plant in empty pots
+      if (pot && !pot.plantId) {
+        const seedStack = seedStacks.find((s) => s.id === seedId);
 
-          // Need a seed stack with at least one seed
-          if (!seedStack || seedStack.genetics.length === 0) return;
+        // Need a seed stack with at least one seed
+        if (!seedStack || seedStack.genetics.length === 0) return;
 
-          // Use the first genetics from the seed stack
-          const newGenetics = seedStack.genetics[0];
+        // Use the first genetics from the seed stack
+        const newGenetics = seedStack.genetics[0];
 
-          const now = Date.now();
-          const newCabbageId = `c${now}`;
-          const newCabbage: CabbageData = {
-            id: newCabbageId,
-            genetics: newGenetics,
-            startGrowingAt: now,
-          };
+        const now = Date.now();
+        const newCabbageId = `c${now}`;
+        const newCabbage: CabbageData = {
+          id: newCabbageId,
+          genetics: newGenetics,
+          startGrowingAt: now,
+        };
 
-          // Add the new plant
-          setCabbages((prev) => [...prev, newCabbage]);
+        // Add the new plant
+        setCabbages((prev) => [...prev, newCabbage]);
 
-          // Assign plant to pot
-          setPots((prev) =>
-            prev.map((p) =>
-              p.id === potId ? { ...p, plantId: newCabbageId } : p
-            )
+        // Assign plant to pot
+        setPots((prev) =>
+          prev.map((p) =>
+            p.id === potId ? { ...p, plantId: newCabbageId } : p
+          )
+        );
+
+        // Remove the first seed from the stack
+        setSeedStacks((prev) => {
+          const updated = prev.map((s) =>
+            s.id === seedId ? { ...s, genetics: s.genetics.slice(1) } : s
           );
+          // Remove seed stacks with 0 seeds
+          return updated.filter((s) => s.genetics.length > 0);
+        });
 
-          // Remove the first seed from the stack
-          setSeedStacks((prev) => {
-            const updated = prev.map((s) =>
-              s.id === seedId ? { ...s, genetics: s.genetics.slice(1) } : s
-            );
-            // Remove seed stacks with 0 seeds
-            return updated.filter((s) => s.genetics.length > 0);
-          });
-
-          // Clear selections
-          setSelectedSeedIds([]);
-          setSelectedPotIds([]);
-        }
+        // Clear selections
+        setSelectedSeedIds([]);
+        setSelectedPotIds([]);
       }
-    } else {
-      // Breeding mode: select pots with fully grown plants
-      setSelectedPotIds(potIds);
     }
   };
 
@@ -213,7 +205,10 @@ export default function Home() {
   const canPlant =
     selectedSeedIds.length > 0 &&
     selectedPotIds.length > 0 &&
-    potSelectionMode === "plant";
+    selectedPotIds.some((potId) => {
+      const pot = pots.find((p) => p.id === potId);
+      return pot && !pot.plantId;
+    });
   return (
     <main className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100">
       <div className="container mx-auto px-4 py-16">
@@ -247,41 +242,6 @@ export default function Home() {
             </div>
 
             <div className="mb-6">
-              <div className="flex gap-4 justify-center mb-4">
-                <button
-                  onClick={() => {
-                    setPotSelectionMode("plant");
-                    setSelectedPotIds([]);
-                  }}
-                  className={`
-                    px-4 py-2 rounded-lg font-semibold transition-all
-                    ${
-                      potSelectionMode === "plant"
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                    }
-                  `}
-                >
-                  Plant Mode
-                </button>
-                <button
-                  onClick={() => {
-                    setPotSelectionMode("breed");
-                    setSelectedSeedIds([]);
-                    setSelectedPotIds([]);
-                  }}
-                  className={`
-                    px-4 py-2 rounded-lg font-semibold transition-all
-                    ${
-                      potSelectionMode === "breed"
-                        ? "bg-purple-600 text-white"
-                        : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                    }
-                  `}
-                >
-                  Breed Mode
-                </button>
-              </div>
               <button
                 onClick={handleBreed}
                 disabled={!canBreed}
@@ -296,9 +256,14 @@ export default function Home() {
               >
                 Breed Selected Plants
               </button>
-              {selectedPotIds.length > 0 && potSelectionMode === "breed" && (
+              {selectedPotIds.length === 2 && !canBreed && (
+                <p className="mt-2 text-sm text-gray-500">
+                  Select 2 fully grown plants to breed
+                </p>
+              )}
+              {selectedPotIds.length > 0 && canBreed && (
                 <p className="mt-2 text-sm text-gray-600">
-                  {selectedPotIds.length} pot(s) selected
+                  {selectedPotIds.length} pot(s) selected - ready to breed!
                 </p>
               )}
             </div>
@@ -331,15 +296,15 @@ export default function Home() {
           <div className="bg-white rounded-lg shadow-lg p-8 mt-12 mb-12">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Pots</h2>
             <p className="text-gray-600 mb-6">
-              {potSelectionMode === "plant"
-                ? selectedSeedIds.length > 0
-                  ? "Select an empty pot to plant your seeds."
-                  : "Select seeds first, then select a pot to plant them."
-                : "Select 2 fully grown plants in pots to breed them."}
+              {selectedSeedIds.length > 0
+                ? "Select an empty pot to plant your seeds."
+                : selectedPotIds.length === 2
+                ? "Select 2 fully grown plants to breed them."
+                : "Select seeds and an empty pot to plant, or select 2 fully grown plants to breed."}
             </p>
             <PlantCollection
               items={pots}
-              maxSelected={potSelectionMode === "breed" ? 2 : 1}
+              maxSelected={2}
               selectedIds={selectedPotIds}
               onSelectionChange={handlePotSelection}
               renderItem={(pot, isSelected, onSelect) => {
@@ -350,10 +315,8 @@ export default function Home() {
                 const isFullyGrown = plant
                   ? fullyGrownCabbageIds.has(plant.id)
                   : false;
-                const canSelect =
-                  potSelectionMode === "plant"
-                    ? isEmpty
-                    : !isEmpty && isFullyGrown;
+                // Can select empty pots (for planting) or pots with fully grown plants (for breeding)
+                const canSelect = isEmpty || isFullyGrown;
 
                 return (
                   <Pot
