@@ -560,7 +560,7 @@ export default function Home() {
               grown plants in pots and click Breed to get 1 seed.
             </p>
             <p className="text-gray-600 mb-6">
-              Make faster growing and more valuable plants by breeding them.
+              Make faster growing and more valuable plants by breeding and mutating them.
             </p>
 
             {hasWon && (
