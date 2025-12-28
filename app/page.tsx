@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import PlantCollection from "./components/PlantCollection";
 import Cabbage from "./components/Cabbage";
 import SeedStack from "./components/SeedStack";
+import Mutagen from "./components/Mutagen";
 import Pot from "./components/Pot";
 import Shop, { ShopItemData } from "./components/Shop";
 import Catalog, { CatalogItemData } from "./components/Catalog";
@@ -24,6 +25,10 @@ interface CabbageData {
 interface SeedStackData {
   id: string;
   genetics: PlantGenetics[];
+}
+
+interface MutagenData {
+  id: string;
 }
 
 interface PotData {
@@ -55,6 +60,10 @@ export default function Home() {
     },
   ]);
   const [selectedSeedIds, setSelectedSeedIds] = useState<string[]>([]);
+
+  // Mutagens state
+  const [mutagens, setMutagens] = useState<MutagenData[]>([]);
+  const [selectedMutagenIds, setSelectedMutagenIds] = useState<string[]>([]);
 
   // Pots state - start with all empty pots
   const [pots, setPots] = useState<PotData[]>([
@@ -183,6 +192,17 @@ export default function Home() {
     // Clear pot selections when selecting a seed
     if (seedIds.length > 0) {
       setSelectedPotIds([]);
+      setSelectedMutagenIds([]);
+    }
+  };
+
+  // Handle mutagen selection - clear pot and seed selections when selecting a mutagen
+  const handleMutagenSelection = (mutagenIds: string[]) => {
+    setSelectedMutagenIds(mutagenIds);
+    // Clear pot and seed selections when selecting a mutagen
+    if (mutagenIds.length > 0) {
+      setSelectedPotIds([]);
+      setSelectedSeedIds([]);
     }
   };
 
@@ -290,6 +310,17 @@ export default function Home() {
         if (money < 10) return;
         setMoney((prev) => prev - 10);
         setPots((prev) => [...prev, { id: `p${Date.now()}` }]);
+      },
+    },
+    {
+      id: "mutagen",
+      color: "#22c55e",
+      label: "Mutagen",
+      price: 1,
+      onPurchase: () => {
+        if (money < 1) return;
+        setMoney((prev) => prev - 1);
+        setMutagens((prev) => [...prev, { id: `m${Date.now()}` }]);
       },
     },
   ];
@@ -445,10 +476,12 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Seed Stacks Section */}
+          {/* Resources Section */}
           <div className="bg-white rounded-lg shadow-lg p-8 mt-12 mb-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Seeds</h2>
-            <p className="text-gray-600 mb-6">Select a seed</p>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Resources</h2>
+            <p className="text-gray-600 mb-6">Select a seed or mutagen</p>
+
+            {/* Seeds */}
             <PlantCollection
               items={seedStacks}
               maxSelected={1}
@@ -463,6 +496,24 @@ export default function Home() {
                     onSelect={onSelect}
                   />
                   <p className="text-gray-600 mb-6">Cabbages</p>
+                </div>
+              )}
+            />
+
+            {/* Mutagens */}
+            <PlantCollection
+              items={mutagens}
+              maxSelected={1}
+              selectedIds={selectedMutagenIds}
+              onSelectionChange={handleMutagenSelection}
+              renderItem={(mutagen, isSelected, onSelect) => (
+                <div className="flex flex-col items-center">
+                  <Mutagen
+                    id={mutagen.id}
+                    size={100}
+                    isSelected={isSelected}
+                    onSelect={onSelect}
+                  />
                 </div>
               )}
             />
