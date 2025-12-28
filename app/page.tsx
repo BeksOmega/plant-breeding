@@ -547,8 +547,10 @@ export default function Home() {
             <p className="text-gray-600 mb-6">Goal: Earn ${TARGET_MONEY}.</p>
             <p className="text-gray-600 mb-6">
               Plant seeds in pots, wait for them to grow, then select 2 fully
-              grown plants in pots and click Breed to get 1 seed. Plants remain
-              in their pots after breeding.
+              grown plants in pots and click Breed to get 1 seed.
+            </p>
+            <p className="text-gray-600 mb-6">
+              Make faster growing and more valuable plants by breeding them.
             </p>
 
             {hasWon && (

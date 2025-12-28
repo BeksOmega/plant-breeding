@@ -20,9 +20,9 @@ export default function Catalog({ items }: CatalogProps) {
     <div className="bg-white rounded-lg shadow-lg p-8">
       <h2 className="text-2xl font-bold text-gray-900 mb-6">Sell Plants</h2>
       <p className="text-gray-600 mb-6">
-        Select a fully grown plant to see sell prices and sell it.
+        Select a fully grown plant to sell it.
       </p>
-      
+
       {/* Catalog items in rows */}
       <div className="space-y-3">
         {items.map((item) => (
@@ -39,4 +39,3 @@ export default function Catalog({ items }: CatalogProps) {
     </div>
   );
 }
-
