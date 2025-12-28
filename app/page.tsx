@@ -5,6 +5,7 @@ import PlantCollection from "./components/PlantCollection";
 import Cabbage from "./components/Cabbage";
 import SeedStack from "./components/SeedStack";
 import Mutagen from "./components/Mutagen";
+import AutoBreeder from "./components/AutoBreeder";
 import Pot from "./components/Pot";
 import Shop, { ShopItemData } from "./components/Shop";
 import Catalog, { CatalogItemData } from "./components/Catalog";
@@ -29,6 +30,11 @@ interface SeedStackData {
 }
 
 interface MutagenStackData {
+  id: string;
+  count: number;
+}
+
+interface AutoBreederStackData {
   id: string;
   count: number;
 }
@@ -69,6 +75,14 @@ export default function Home() {
   // Mutagen stacks state
   const [mutagenStacks, setMutagenStacks] = useState<MutagenStackData[]>([]);
   const [selectedMutagenIds, setSelectedMutagenIds] = useState<string[]>([]);
+
+  // Auto breeder stacks state
+  const [autoBreederStacks, setAutoBreederStacks] = useState<
+    AutoBreederStackData[]
+  >([]);
+  const [selectedAutoBreederIds, setSelectedAutoBreederIds] = useState<
+    string[]
+  >([]);
 
   // Pots with mutagen glow (Set of pot IDs)
   const [potsWithMutagenGlow, setPotsWithMutagenGlow] = useState<Set<string>>(
@@ -216,6 +230,7 @@ export default function Home() {
     if (seedIds.length > 0) {
       setSelectedPotIds([]);
       setSelectedMutagenIds([]);
+      setSelectedAutoBreederIds([]);
     }
   };
 
@@ -226,6 +241,7 @@ export default function Home() {
     if (mutagenIds.length > 0) {
       setSelectedPotIds([]);
       setSelectedSeedIds([]);
+      setSelectedAutoBreederIds([]);
     }
   };
 
@@ -412,6 +428,38 @@ export default function Home() {
         });
       },
       shape: "circle",
+    },
+    {
+      id: "auto-breeder",
+      color: "#ef4444",
+      label: "Auto breeder",
+      price: 25,
+      description:
+        "An auto breeder that can be used to automate breeding. Stack them like seeds and mutagen.",
+      onPurchase: () => {
+        if (money < 25) return;
+        setMoney((prev) => prev - 25);
+        setAutoBreederStacks((prev) => {
+          if (prev.length === 0) {
+            return [
+              {
+                id: `ab${Date.now()}`,
+                count: 1,
+              },
+            ];
+          }
+          // Add to the first auto breeder stack
+          return prev.map((stack, index) =>
+            index === 0
+              ? {
+                  ...stack,
+                  count: stack.count + 1,
+                }
+              : stack
+          );
+        });
+      },
+      shape: "square",
     },
   ];
 
@@ -641,6 +689,33 @@ export default function Home() {
                       onSelect={onSelect}
                     />
                     <p className="text-gray-600 mb-6">Mutagens</p>
+                  </div>
+                )}
+              />
+
+              {/* Auto Breeders */}
+              <PlantCollection
+                items={autoBreederStacks}
+                maxSelected={1}
+                selectedIds={selectedAutoBreederIds}
+                onSelectionChange={(ids) => {
+                  setSelectedAutoBreederIds(ids);
+                  // Clear other selections when selecting auto breeder
+                  if (ids.length > 0) {
+                    setSelectedPotIds([]);
+                    setSelectedSeedIds([]);
+                    setSelectedMutagenIds([]);
+                  }
+                }}
+                renderItem={(autoBreederStack, isSelected, onSelect) => (
+                  <div className="flex flex-col items-center">
+                    <AutoBreeder
+                      count={autoBreederStack.count}
+                      size={100}
+                      isSelected={isSelected}
+                      onSelect={onSelect}
+                    />
+                    <p className="text-gray-600 mb-6">Auto Breeders</p>
                   </div>
                 )}
               />
