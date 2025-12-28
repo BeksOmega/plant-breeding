@@ -279,13 +279,13 @@ export default function Home() {
   const handlePotSelection = (potIds: string[]) => {
     setSelectedPotIds(potIds);
 
-    // If an auto breeder is selected and two adjacent pots are selected, apply auto breeder
+    // If an auto breeder is selected and two pots are selected, apply auto breeder
     if (potIds.length === 2 && selectedAutoBreederIds.length > 0) {
       const pot1Index = pots.findIndex((p) => p.id === potIds[0]);
       const pot2Index = pots.findIndex((p) => p.id === potIds[1]);
 
-      // Check if they are adjacent (differ by 1)
-      if (Math.abs(pot1Index - pot2Index) === 1) {
+      // Allow any two selected pots (not just adjacent ones)
+      if (pot1Index !== -1 && pot2Index !== -1) {
         const autoBreederId = selectedAutoBreederIds[0];
         const autoBreederStack = autoBreederStacks.find(
           (ab) => ab.id === autoBreederId
@@ -294,6 +294,20 @@ export default function Home() {
         if (autoBreederStack && autoBreederStack.count > 0) {
           // Create a key for the pot pair (sorted to ensure consistency)
           const potPairKey = [potIds[0], potIds[1]].sort().join("-");
+
+          // Reorder pots: move the two selected pots to the beginning
+          setPots((prevPots) => {
+            const newPots = [...prevPots];
+            const pot1 = newPots[pot1Index];
+            const pot2 = newPots[pot2Index];
+
+            // Remove both pots from their current positions
+            newPots.splice(Math.max(pot1Index, pot2Index), 1);
+            newPots.splice(Math.min(pot1Index, pot2Index), 1);
+
+            // Add them at the beginning
+            return [pot1, pot2, ...newPots];
+          });
 
           // Add auto breeder to the pot pair
           setPotsWithAutoBreeder((prev) => new Set(prev).add(potPairKey));
