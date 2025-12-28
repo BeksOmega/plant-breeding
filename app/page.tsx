@@ -173,6 +173,15 @@ export default function Home() {
     setFullyGrownCabbageIds((prev) => new Set(prev).add(cabbageId));
   };
 
+  // Handle seed selection - clear pot selections when selecting a seed
+  const handleSeedSelection = (seedIds: string[]) => {
+    setSelectedSeedIds(seedIds);
+    // Clear pot selections when selecting a seed
+    if (seedIds.length > 0) {
+      setSelectedPotIds([]);
+    }
+  };
+
   // Handle pot selection - automatically handles planting or breeding based on context
   const handlePotSelection = (potIds: string[]) => {
     setSelectedPotIds(potIds);
@@ -190,6 +199,9 @@ export default function Home() {
 
         // Need a seed stack with at least one seed
         if (!seedStack || seedStack.genetics.length === 0) return;
+
+        // Check if there will be seeds remaining after planting
+        const willHaveRemainingSeeds = seedStack.genetics.length > 1;
 
         // Use the first genetics from the seed stack
         const newGenetics = seedStack.genetics[0];
@@ -221,8 +233,11 @@ export default function Home() {
           return updated.filter((s) => s.genetics.length > 0);
         });
 
-        // Clear selections
-        setSelectedSeedIds([]);
+        // If seeds remain, keep the seed selected; otherwise clear it
+        if (!willHaveRemainingSeeds) {
+          setSelectedSeedIds([]);
+        }
+        // Always deselect the pot after planting
         setSelectedPotIds([]);
       }
     }
@@ -416,7 +431,7 @@ export default function Home() {
               items={seedStacks}
               maxSelected={1}
               selectedIds={selectedSeedIds}
-              onSelectionChange={setSelectedSeedIds}
+              onSelectionChange={handleSeedSelection}
               renderItem={(seedStack, isSelected, onSelect) => (
                 <div className="flex flex-col items-center">
                   <SeedStack
@@ -474,7 +489,6 @@ export default function Home() {
 
             <PlantCollection
               items={pots}
-              maxSelected={2}
               selectedIds={selectedPotIds}
               onSelectionChange={handlePotSelection}
               renderItem={(pot, isSelected, onSelect) => {
@@ -485,8 +499,10 @@ export default function Home() {
                 const isFullyGrown = plant
                   ? fullyGrownCabbageIds.has(plant.id)
                   : false;
-                // Can select empty pots (for planting) or pots with any plants (for breeding or culling)
-                const canSelect = isEmpty || !!plant;
+                // If seeds are selected, only empty pots can be selected (for planting)
+                // Otherwise, any pot can be selected (for breeding or culling)
+                const canSelect =
+                  selectedSeedIds.length > 0 ? isEmpty : isEmpty || !!plant;
 
                 return (
                   <Pot
