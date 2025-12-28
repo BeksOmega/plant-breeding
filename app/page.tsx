@@ -72,13 +72,12 @@ export default function Home() {
 
           {/* Breeding Game */}
           <div className="bg-white rounded-lg shadow-lg p-8 mt-12 mb-12">
-            <h2 className="text-3xl font-semibold text-gray-800 mb-4">
-              Cabbage Breeding Game
-            </h2>
             <p className="text-gray-600 mb-6">
-              Goal: Breed {TARGET_PURPLE_COUNT} purple cabbages (rr genotype).
+              Goal: Breed {TARGET_PURPLE_COUNT} purple cabbages.
+            </p>
+            <p className="text-gray-600 mb-6">
               Select 2 cabbages and click Breed to create a new cabbage with
-              randomly combined alleles from the parents.
+              randomly combined traits from the parents.
             </p>
 
             {hasWon && (

@@ -18,7 +18,7 @@ interface CabbageProps {
   showGenotype?: boolean;
 }
 
-const GROWTH_TIME_MS = 10000; // 10 seconds
+const GROWTH_TIME_MS = 5000; // 5 seconds
 
 export default function Cabbage({
   genetics,
