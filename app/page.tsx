@@ -7,6 +7,8 @@ import SeedStack from "./components/SeedStack";
 import Mutagen from "./components/Mutagen";
 import AutoBreederItem from "./components/AutoBreederItem";
 import AutoBreeder, { AutoBreederHandle } from "./components/AutoBreeder";
+import AutoPlanterItem from "./components/AutoPlanterItem";
+import AutoPlanter from "./components/AutoPlanter";
 import Pot from "./components/Pot";
 import Shop, { ShopItemData } from "./components/Shop";
 import Catalog, { CatalogItemData } from "./components/Catalog";
@@ -36,6 +38,11 @@ interface MutagenStackData {
 }
 
 interface AutoBreederStackData {
+  id: string;
+  count: number;
+}
+
+interface AutoPlanterStackData {
   id: string;
   count: number;
 }
@@ -85,6 +92,14 @@ export default function Home() {
     string[]
   >([]);
 
+  // Auto planter stacks state
+  const [autoPlanterStacks, setAutoPlanterStacks] = useState<
+    AutoPlanterStackData[]
+  >([]);
+  const [selectedAutoPlanterIds, setSelectedAutoPlanterIds] = useState<
+    string[]
+  >([]);
+
   // Pots with mutagen glow (Set of pot IDs)
   const [potsWithMutagenGlow, setPotsWithMutagenGlow] = useState<Set<string>>(
     new Set()
@@ -92,6 +107,11 @@ export default function Home() {
 
   // Pots with auto breeders applied (Set of pot pair keys, e.g., "p1-p2")
   const [potsWithAutoBreeder, setPotsWithAutoBreeder] = useState<Set<string>>(
+    new Set()
+  );
+
+  // Pots with auto planters applied (Set of pot IDs)
+  const [potsWithAutoPlanter, setPotsWithAutoPlanter] = useState<Set<string>>(
     new Set()
   );
 
@@ -233,6 +253,15 @@ export default function Home() {
       return updated;
     });
 
+    // Remove auto planters from pots that had plants culled
+    setPotsWithAutoPlanter((prev) => {
+      const updated = new Set(prev);
+      potIdsToClearGlow.forEach((potId) => {
+        updated.delete(potId);
+      });
+      return updated;
+    });
+
     // Remove plants from cabbages list
     setCabbages((prev) => prev.filter((c) => !plantIdsToRemove.includes(c.id)));
 
@@ -259,6 +288,7 @@ export default function Home() {
       setSelectedPotIds([]);
       setSelectedMutagenIds([]);
       setSelectedAutoBreederIds([]);
+      setSelectedAutoPlanterIds([]);
       setSelectedAutoBreederSeedPairs(new Set());
     }
   };
@@ -271,6 +301,7 @@ export default function Home() {
       setSelectedPotIds([]);
       setSelectedSeedIds([]);
       setSelectedAutoBreederIds([]);
+      setSelectedAutoPlanterIds([]);
       setSelectedAutoBreederSeedPairs(new Set());
     }
   };
@@ -331,6 +362,58 @@ export default function Home() {
             setSelectedAutoBreederIds([]);
           }
           // Always deselect the pots after applying auto breeder
+          setSelectedPotIds([]);
+          return;
+        }
+      }
+    }
+
+    // If an auto planter is selected and one pot is selected, apply auto planter
+    if (potIds.length === 1 && selectedAutoPlanterIds.length > 0) {
+      const potId = potIds[0];
+      const potIndex = pots.findIndex((p) => p.id === potId);
+
+      if (potIndex !== -1) {
+        const autoPlanterId = selectedAutoPlanterIds[0];
+        const autoPlanterStack = autoPlanterStacks.find(
+          (ap) => ap.id === autoPlanterId
+        );
+
+        if (autoPlanterStack && autoPlanterStack.count > 0) {
+          // Reorder pots: move the selected pot to the beginning
+          setPots((prevPots) => {
+            const newPots = [...prevPots];
+            const pot = newPots[potIndex];
+
+            // Remove pot from its current position
+            newPots.splice(potIndex, 1);
+
+            // Add it at the beginning
+            return [pot, ...newPots];
+          });
+
+          // Add auto planter to the pot
+          setPotsWithAutoPlanter((prev) => new Set(prev).add(potId));
+
+          // Check if there will be auto planters remaining after consuming one
+          const willHaveRemainingAutoPlanters = autoPlanterStack.count > 1;
+
+          // Consume one auto planter
+          setAutoPlanterStacks((prev) => {
+            const updated = prev.map((stack) =>
+              stack.id === autoPlanterId
+                ? { ...stack, count: stack.count - 1 }
+                : stack
+            );
+            // Remove stacks with 0 count
+            return updated.filter((s) => s.count > 0);
+          });
+
+          // If auto planters remain, keep the auto planter selected; otherwise clear it
+          if (!willHaveRemainingAutoPlanters) {
+            setSelectedAutoPlanterIds([]);
+          }
+          // Always deselect the pot after applying auto planter
           setSelectedPotIds([]);
           return;
         }
@@ -608,6 +691,38 @@ export default function Home() {
       },
       shape: "square",
     },
+    {
+      id: "auto-planter",
+      color: "#10b981",
+      label: "Auto planter",
+      price: 20,
+      description:
+        "An auto planter that can wrap a single pot. Stack them like seeds and mutagen.",
+      onPurchase: () => {
+        if (money < 20) return;
+        setMoney((prev) => prev - 20);
+        setAutoPlanterStacks((prev) => {
+          if (prev.length === 0) {
+            return [
+              {
+                id: `ap${Date.now()}`,
+                count: 1,
+              },
+            ];
+          }
+          // Add to the first auto planter stack
+          return prev.map((stack, index) =>
+            index === 0
+              ? {
+                  ...stack,
+                  count: stack.count + 1,
+                }
+              : stack
+          );
+        });
+      },
+      shape: "square",
+    },
   ];
 
   // Get selected plant(s) for catalog
@@ -697,6 +812,15 @@ export default function Home() {
       return updated;
     });
 
+    // Remove auto planters from pots that had plants sold
+    setPotsWithAutoPlanter((prev) => {
+      const updated = new Set(prev);
+      potIdsToClearGlow.forEach((potId) => {
+        updated.delete(potId);
+      });
+      return updated;
+    });
+
     // Remove plants from cabbages list
     setCabbages((prev) => prev.filter((c) => !plantIdsToRemove.includes(c.id)));
 
@@ -772,6 +896,37 @@ export default function Home() {
     });
   };
 
+  // Handler to remove an auto planter from a pot
+  const handleRemoveAutoPlanter = (potId: string) => {
+    // Remove from potsWithAutoPlanter
+    setPotsWithAutoPlanter((prev) => {
+      const updated = new Set(prev);
+      updated.delete(potId);
+      return updated;
+    });
+
+    // Add back to auto planter stack
+    setAutoPlanterStacks((prev) => {
+      if (prev.length === 0) {
+        return [
+          {
+            id: `ap${Date.now()}`,
+            count: 1,
+          },
+        ];
+      }
+      // Add to the first auto planter stack
+      return prev.map((stack, index) =>
+        index === 0
+          ? {
+              ...stack,
+              count: stack.count + 1,
+            }
+          : stack
+      );
+    });
+  };
+
   // Catalog items data - each item handles its own sell logic
   const catalogItems: CatalogItemData[] = [
     {
@@ -829,6 +984,23 @@ export default function Home() {
     });
     return ids;
   }, [potsWithAutoBreeder]);
+
+  // Check which pots have auto planters applied (for rendering)
+  const potsWithAutoPlanterIndices = useMemo(() => {
+    const indices: number[] = [];
+    potsWithAutoPlanter.forEach((potId) => {
+      const potIndex = pots.findIndex((p) => p.id === potId);
+      if (potIndex !== -1) {
+        indices.push(potIndex);
+      }
+    });
+    return indices;
+  }, [potsWithAutoPlanter, pots]);
+
+  // Set of pot IDs that already have auto planters
+  const potIdsInAutoPlanterPairs = useMemo(() => {
+    return new Set(potsWithAutoPlanter);
+  }, [potsWithAutoPlanter]);
   return (
     <main className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100">
       <div className="container mx-auto px-4 py-16">
@@ -1000,6 +1172,7 @@ export default function Home() {
                                 setSelectedPotIds([]);
                                 setSelectedSeedIds([]);
                                 setSelectedMutagenIds([]);
+                                setSelectedAutoPlanterIds([]);
                               } else {
                                 setSelectedAutoBreederIds([]);
                               }
@@ -1012,6 +1185,46 @@ export default function Home() {
                   <p className="text-gray-600">Auto Breeders</p>
                 </div>
               )}
+
+              {/* Auto Planters */}
+              {autoPlanterStacks.length > 0 && (
+                <div className="flex flex-col gap-4 items-center">
+                  <div className="flex flex-row gap-4 flex-wrap justify-center">
+                    {autoPlanterStacks.map((autoPlanterStack) => {
+                      const isSelected = selectedAutoPlanterIds.includes(
+                        autoPlanterStack.id
+                      );
+                      return (
+                        <div
+                          key={autoPlanterStack.id}
+                          className="flex flex-col items-center"
+                        >
+                          <AutoPlanterItem
+                            count={autoPlanterStack.count}
+                            size={100}
+                            isSelected={isSelected}
+                            onSelect={(selected: boolean) => {
+                              if (selected) {
+                                setSelectedAutoPlanterIds([
+                                  autoPlanterStack.id,
+                                ]);
+                                // Clear other selections when selecting auto planter
+                                setSelectedPotIds([]);
+                                setSelectedSeedIds([]);
+                                setSelectedMutagenIds([]);
+                                setSelectedAutoBreederIds([]);
+                              } else {
+                                setSelectedAutoPlanterIds([]);
+                              }
+                            }}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <p className="text-gray-600">Auto Planters</p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -1021,6 +1234,8 @@ export default function Home() {
             <p className="text-gray-600 mb-6">
               {selectedAutoBreederIds.length > 0
                 ? "Select 2 adjacent pots to wrap them in an auto breeder."
+                : selectedAutoPlanterIds.length > 0
+                ? "Select 1 pot to wrap it in an auto planter."
                 : selectedSeedIds.length > 0
                 ? "Select an empty pot to plant your seeds."
                 : selectedPotIds.length === 2
@@ -1044,17 +1259,19 @@ export default function Home() {
               </button>
             </div>
 
-            {potPairsWithAutoBreeder.length > 0 ? (
-              // Render pots with auto breeder wrappers for applied auto breeders
+            {potPairsWithAutoBreeder.length > 0 ||
+            potsWithAutoPlanterIndices.length > 0 ? (
+              // Render pots with auto breeder/planter wrappers for applied auto breeders/planters
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {pots
                   .map((pot, index) => {
-                    // Skip if this is the second pot of a pair (already rendered in wrapper)
-                    const isSecondPotOfPair = potPairsWithAutoBreeder.some(
-                      ([idx1, idx2]) => index === idx2
-                    );
+                    // Skip if this is the second pot of an auto breeder pair (already rendered in wrapper)
+                    const isSecondPotOfBreederPair =
+                      potPairsWithAutoBreeder.some(
+                        ([idx1, idx2]) => index === idx2
+                      );
 
-                    if (isSecondPotOfPair) {
+                    if (isSecondPotOfBreederPair) {
                       return null;
                     }
 
@@ -1065,16 +1282,22 @@ export default function Home() {
                     const isFullyGrown = plant
                       ? fullyGrownCabbageIds.has(plant.id)
                       : false;
-                    // If auto breeder is selected, can't select pots that are already in a pair
+                    // If auto breeder or auto planter is selected, can't select pots that are already in a pair
                     const isInAutoBreederPair = potIdsInAutoBreederPairs.has(
                       pot.id
                     );
+                    const isInAutoPlanterPair = potIdsInAutoPlanterPairs.has(
+                      pot.id
+                    );
+                    const isInAnyPair =
+                      isInAutoBreederPair || isInAutoPlanterPair;
                     const canSelect =
                       selectedSeedIds.length > 0 ||
                       selectedMutagenIds.length > 0
                         ? isEmpty
-                        : selectedAutoBreederIds.length > 0
-                        ? (isEmpty || !!plant) && !isInAutoBreederPair
+                        : selectedAutoBreederIds.length > 0 ||
+                          selectedAutoPlanterIds.length > 0
+                        ? (isEmpty || !!plant) && !isInAnyPair
                         : isEmpty || !!plant;
                     const hasGlow = potsWithMutagenGlow.has(pot.id);
                     const isSelected = selectedPotIds.includes(pot.id);
@@ -1138,12 +1361,18 @@ export default function Home() {
                       const isInAutoBreederPair2 = potIdsInAutoBreederPairs.has(
                         pot2.id
                       );
+                      const isInAutoPlanterPair2 = potIdsInAutoPlanterPairs.has(
+                        pot2.id
+                      );
+                      const isInAnyPair2 =
+                        isInAutoBreederPair2 || isInAutoPlanterPair2;
                       const canSelect2 =
                         selectedSeedIds.length > 0 ||
                         selectedMutagenIds.length > 0
                           ? isEmpty2
-                          : selectedAutoBreederIds.length > 0
-                          ? (isEmpty2 || !!plant2) && !isInAutoBreederPair2
+                          : selectedAutoBreederIds.length > 0 ||
+                            selectedAutoPlanterIds.length > 0
+                          ? (isEmpty2 || !!plant2) && !isInAnyPair2
                           : isEmpty2 || !!plant2;
                       const hasGlow2 = potsWithMutagenGlow.has(pot2.id);
                       const isSelected2 = selectedPotIds.includes(pot2.id);
@@ -1217,6 +1446,30 @@ export default function Home() {
                       );
                     }
 
+                    // If this pot has an auto planter, wrap it
+                    const hasAutoPlanter =
+                      potsWithAutoPlanterIndices.includes(index);
+
+                    if (hasAutoPlanter) {
+                      return (
+                        <div key={pot.id}>
+                          <AutoPlanter
+                            pot={pot}
+                            potPlant={plant || undefined}
+                            potIsSelected={isSelected}
+                            potCanSelect={canSelect}
+                            potHasMutagenGlow={hasGlow}
+                            potIsFullyGrown={isFullyGrown}
+                            fullyGrownCabbageIds={fullyGrownCabbageIds}
+                            onPotSelect={handleSelect}
+                            onCabbageFullyGrown={handleCabbageFullyGrown}
+                            onRemove={() => handleRemoveAutoPlanter(pot.id)}
+                            showDebugGenotypes={showDebugGenotypes}
+                          />
+                        </div>
+                      );
+                    }
+
                     // Render normal pot
                     return <div key={pot.id}>{renderPot()}</div>;
                   })
@@ -1239,16 +1492,22 @@ export default function Home() {
                     : false;
                   // If seeds are selected, only empty pots can be selected (for planting)
                   // If mutagens are selected, only empty pots can be selected (for applying glow)
-                  // If auto breeder is selected, allow selecting pots (but not ones already in a pair)
+                  // If auto breeder or auto planter is selected, allow selecting pots (but not ones already in a pair)
                   // Otherwise, any pot can be selected (for breeding or culling)
                   const isInAutoBreederPair = potIdsInAutoBreederPairs.has(
                     pot.id
                   );
+                  const isInAutoPlanterPair = potIdsInAutoPlanterPairs.has(
+                    pot.id
+                  );
+                  const isInAnyPair =
+                    isInAutoBreederPair || isInAutoPlanterPair;
                   const canSelect =
                     selectedSeedIds.length > 0 || selectedMutagenIds.length > 0
                       ? isEmpty
-                      : selectedAutoBreederIds.length > 0
-                      ? (isEmpty || !!plant) && !isInAutoBreederPair
+                      : selectedAutoBreederIds.length > 0 ||
+                        selectedAutoPlanterIds.length > 0
+                      ? (isEmpty || !!plant) && !isInAnyPair
                       : isEmpty || !!plant;
 
                   const hasGlow = potsWithMutagenGlow.has(pot.id);
