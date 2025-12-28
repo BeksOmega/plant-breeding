@@ -12,6 +12,7 @@ import {
   breed,
   countPurpleCabbages,
   getPhenotypeColor,
+  getGenotype,
 } from "./types/genetics";
 
 interface CabbageData {
@@ -33,6 +34,9 @@ interface PotData {
 const TARGET_MONEY = 100;
 
 export default function Home() {
+  // Debug mode state
+  const [showDebugGenotypes, setShowDebugGenotypes] = useState(false);
+
   // Start with no cabbages - only seeds
   const [cabbages, setCabbages] = useState<CabbageData[]>([]);
 
@@ -45,8 +49,8 @@ export default function Home() {
     {
       id: "s1",
       genetics: [
-        { allele1: false, allele2: false }, // RR
-        { allele1: true, allele2: true }, // rr
+        { chromosome1: [false, false], chromosome2: [false, false] }, // RSRS
+        { chromosome1: [false, true], chromosome2: [true, true] }, // Rsrs
       ],
     },
   ]);
@@ -303,17 +307,19 @@ export default function Home() {
       .filter(Boolean) as Array<{ pot: PotData; plant: CabbageData }>;
   }, [selectedPotIds, pots, cabbages, fullyGrownCabbageIds]);
 
-  // Check if selected plant is purple (both alleles are true)
+  // Check if selected plant is purple (both chromosomes are true)
   const hasPurpleSelected = useMemo(() => {
     return selectedPlants.some(
-      ({ plant }) => plant.genetics.allele1 && plant.genetics.allele2
+      ({ plant }) =>
+        plant.genetics.chromosome1[0] && plant.genetics.chromosome2[0]
     );
   }, [selectedPlants]);
 
-  // Check if selected plant is green (at least one allele is false)
+  // Check if selected plant is green (at least one chromosome is false)
   const hasGreenSelected = useMemo(() => {
     return selectedPlants.some(
-      ({ plant }) => !plant.genetics.allele1 || !plant.genetics.allele2
+      ({ plant }) =>
+        !plant.genetics.chromosome1[0] || !plant.genetics.chromosome2[0]
     );
   }, [selectedPlants]);
 
@@ -323,7 +329,8 @@ export default function Home() {
 
     // Filter plants by type
     const plantsToSell = selectedPlants.filter(({ plant }) => {
-      const isPlantPurple = plant.genetics.allele1 && plant.genetics.allele2;
+      const isPlantPurple =
+        plant.genetics.chromosome1[0] && plant.genetics.chromosome2[0];
       return isPlantPurple === isPurple;
     });
 
@@ -396,6 +403,23 @@ export default function Home() {
           <h1 className="text-6xl font-bold text-gray-900 mb-6">
             Plant Breeding
           </h1>
+
+          {/* Debug Checkbox */}
+          <div className="mb-6 flex justify-center items-center gap-2">
+            <input
+              type="checkbox"
+              id="debug-checkbox"
+              checked={showDebugGenotypes}
+              onChange={(e) => setShowDebugGenotypes(e.target.checked)}
+              className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+            />
+            <label
+              htmlFor="debug-checkbox"
+              className="text-sm font-medium text-gray-700 cursor-pointer"
+            >
+              Show Genotypes (Debug)
+            </label>
+          </div>
 
           {/* Breeding Game */}
           <div className="bg-white rounded-lg shadow-lg p-8 mt-12 mb-12">
@@ -489,24 +513,31 @@ export default function Home() {
                   selectedSeedIds.length > 0 ? isEmpty : isEmpty || !!plant;
 
                 return (
-                  <Pot
-                    size={100}
-                    isSelected={isSelected}
-                    onSelect={canSelect ? onSelect : undefined}
-                    isEmpty={isEmpty}
-                    canSelect={canSelect}
-                  >
-                    {plant && (
-                      <Cabbage
-                        genetics={plant.genetics}
-                        size={80}
-                        isSelected={false}
-                        startGrowingAt={plant.startGrowingAt}
-                        onFullyGrown={() => handleCabbageFullyGrown(plant.id)}
-                        showGenotype={false}
-                      />
+                  <div className="flex flex-col items-center">
+                    <Pot
+                      size={100}
+                      isSelected={isSelected}
+                      onSelect={canSelect ? onSelect : undefined}
+                      isEmpty={isEmpty}
+                      canSelect={canSelect}
+                    >
+                      {plant && (
+                        <Cabbage
+                          genetics={plant.genetics}
+                          size={80}
+                          isSelected={false}
+                          startGrowingAt={plant.startGrowingAt}
+                          onFullyGrown={() => handleCabbageFullyGrown(plant.id)}
+                          showGenotype={false}
+                        />
+                      )}
+                    </Pot>
+                    {showDebugGenotypes && plant && (
+                      <div className="mt-2 text-xs font-mono text-gray-600 bg-gray-100 px-2 py-1 rounded">
+                        {getGenotype(plant.genetics)}
+                      </div>
                     )}
-                  </Pot>
+                  </div>
                 );
               }}
             />

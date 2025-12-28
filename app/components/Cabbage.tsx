@@ -6,6 +6,7 @@ import {
   PlantGenetics,
   getPhenotypeColor,
   getGenotype,
+  getGrowingSpeed,
 } from "../types/genetics";
 
 interface CabbageProps {
@@ -17,8 +18,6 @@ interface CabbageProps {
   onFullyGrown?: () => void; // Callback when growth completes
   showGenotype?: boolean;
 }
-
-const GROWTH_TIME_MS = 5000; // 5 seconds
 
 export default function Cabbage({
   genetics,
@@ -33,6 +32,7 @@ export default function Cabbage({
   const [isFullyGrown, setIsFullyGrown] = useState(!startGrowingAt);
 
   const isGrowing = startGrowingAt !== undefined && !isFullyGrown;
+  const growthTimeMs = getGrowingSpeed(genetics);
 
   // Update growth progress
   useEffect(() => {
@@ -43,28 +43,32 @@ export default function Cabbage({
       setCurrentTime(now);
 
       const elapsed = now - startGrowingAt!;
-      if (elapsed >= GROWTH_TIME_MS) {
+      if (elapsed >= growthTimeMs) {
         setIsFullyGrown(true);
         onFullyGrown?.();
       }
     }, 100); // Update every 100ms for smooth animation
 
     return () => clearInterval(interval);
-  }, [isGrowing, startGrowingAt, onFullyGrown]);
+  }, [isGrowing, startGrowingAt, onFullyGrown, growthTimeMs]);
 
   const growthProgress = isGrowing
-    ? Math.min(((currentTime - startGrowingAt!) / GROWTH_TIME_MS) * 100, 100)
+    ? Math.min(((currentTime - startGrowingAt!) / growthTimeMs) * 100, 100)
     : 100;
 
   const color = isGrowing ? "#9ca3af" : getPhenotypeColor(genetics);
   const canSelect = isFullyGrown;
+
+  // Fast-growing plants (homozygous recessive for speed) are smaller when fully grown
+  const isFastGrowing = genetics.chromosome1[1] && genetics.chromosome2[1];
+  const displaySize = isFullyGrown && isFastGrowing ? size * 0.9 : size;
 
   return (
     <div className="flex flex-col items-center">
       <div className="relative">
         <Plant
           color={color}
-          size={size}
+          size={displaySize}
           isSelected={isSelected && canSelect}
           onSelect={canSelect ? onSelect : undefined}
         />
@@ -72,7 +76,7 @@ export default function Cabbage({
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="text-xs font-bold text-white drop-shad  ow-lg">
               {(
-                (GROWTH_TIME_MS - (currentTime - startGrowingAt!)) /
+                (growthTimeMs - (currentTime - startGrowingAt!)) /
                 1000
               ).toFixed(1)}
               s

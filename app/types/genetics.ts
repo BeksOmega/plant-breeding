@@ -1,45 +1,73 @@
 // Plant genetics data structure
-// Each plant has a pair of alleles (booleans)
-// true = recessive allele
-// false = dominant allele
+// Each plant has two chromosomes, each containing parallel arrays of traits
+// true = recessive chromosome
+// false = dominant chromosome
+// chromosome1[0] and chromosome2[0]: color trait (purple/green)
+// chromosome1[1] and chromosome2[1]: growing speed trait (slow/fast)
 
 export interface PlantGenetics {
-  allele1: boolean; // First allele
-  allele2: boolean; // Second allele
+  chromosome1: [boolean, boolean]; // First chromosome: [color, speed]
+  chromosome2: [boolean, boolean]; // Second chromosome: [color, speed]
 }
 
 // Determine phenotype color based on genotype
-// Purple (recessive) only shows if both alleles are true (homozygous recessive)
-// Green (dominant) shows if at least one allele is false (has dominant allele)
+// Purple (recessive) only shows if both chromosomes are true (homozygous recessive)
+// Green (dominant) shows if at least one chromosome is false (has dominant chromosome)
 export function getPhenotypeColor(genetics: PlantGenetics): string {
   // If both are true (homozygous recessive), show purple
-  if (genetics.allele1 && genetics.allele2) {
-    return '#a78bfa'; // Purple color
+  if (genetics.chromosome1[0] && genetics.chromosome2[0]) {
+    return "#a78bfa"; // Purple color
   }
   // Otherwise, show green (dominant trait)
-  return '#4ade80'; // Green color
+  return "#4ade80"; // Green color
 }
 
-// Get genotype string representation (e.g., "RR", "Rr", "rr")
+// Get genotype string representation (e.g., "RR, SS" for color and speed)
 export function getGenotype(genetics: PlantGenetics): string {
-  const allele1Char = genetics.allele1 ? 'r' : 'R';
-  const allele2Char = genetics.allele2 ? 'r' : 'R';
-  return `${allele1Char}${allele2Char}`;
+  const colorChar1 = genetics.chromosome1[0] ? "r" : "R";
+  const colorChar2 = genetics.chromosome2[0] ? "r" : "R";
+  const speedChar1 = genetics.chromosome1[1] ? "s" : "S";
+  const speedChar2 = genetics.chromosome2[1] ? "s" : "S";
+  return `${colorChar1}${colorChar2}, ${speedChar1}${speedChar2}`;
 }
 
-// Breed two plants by randomly selecting one allele from each parent
-export function breed(parent1: PlantGenetics, parent2: PlantGenetics): PlantGenetics {
-  // Randomly select one allele from parent1
-  const allele1 = Math.random() < 0.5 ? parent1.allele1 : parent1.allele2;
-  // Randomly select one allele from parent2
-  const allele2 = Math.random() < 0.5 ? parent2.allele1 : parent2.allele2;
-  return { allele1, allele2 };
+// Get growing speed in milliseconds based on speed trait
+// Dominant (S): 10 seconds (10000ms)
+// Recessive (s): 2 seconds (2000ms)
+// Recessive only shows if both chromosomes are true (homozygous recessive)
+export function getGrowingSpeed(genetics: PlantGenetics): number {
+  // If both are true (homozygous recessive), fast growth (2s)
+  if (genetics.chromosome1[1] && genetics.chromosome2[1]) {
+    return 2000; // 2 seconds
+  }
+  // Otherwise, slow growth (10s) - dominant trait
+  return 10000; // 10 seconds
+}
+
+// Breed two plants by randomly selecting one chromosome from each parent
+export function breed(
+  parent1: PlantGenetics,
+  parent2: PlantGenetics
+): PlantGenetics {
+  // Randomly select one chromosome from parent1
+  const chromosome1 =
+    Math.random() < 0.5 ? parent1.chromosome1 : parent1.chromosome2;
+  // Randomly select one chromosome from parent2
+  const chromosome2 =
+    Math.random() < 0.5 ? parent2.chromosome1 : parent2.chromosome2;
+
+  return {
+    chromosome1,
+    chromosome2,
+  };
 }
 
 // Count purple (recessive) cabbages
-export function countPurpleCabbages(cabbages: { genetics: PlantGenetics }[]): number {
+export function countPurpleCabbages(
+  cabbages: { genetics: PlantGenetics }[]
+): number {
   return cabbages.filter(
-    (cabbage) => cabbage.genetics.allele1 && cabbage.genetics.allele2
+    (cabbage) =>
+      cabbage.genetics.chromosome1[0] && cabbage.genetics.chromosome2[0]
   ).length;
 }
-
