@@ -242,6 +242,9 @@ export default function Home() {
 
       // Can only apply mutagen to empty pots
       if (pot && !pot.plantId && mutagenStack && mutagenStack.count > 0) {
+        // Check if there will be mutagens remaining after consuming one
+        const willHaveRemainingMutagens = mutagenStack.count > 1;
+
         // Add glow to pot
         setPotsWithMutagenGlow((prev) => new Set(prev).add(potId));
 
@@ -256,8 +259,11 @@ export default function Home() {
           return updated.filter((s) => s.count > 0);
         });
 
-        // Clear selections
-        setSelectedMutagenIds([]);
+        // If mutagens remain, keep the mutagen selected; otherwise clear it
+        if (!willHaveRemainingMutagens) {
+          setSelectedMutagenIds([]);
+        }
+        // Always deselect the pot after applying mutagen
         setSelectedPotIds([]);
         return;
       }
