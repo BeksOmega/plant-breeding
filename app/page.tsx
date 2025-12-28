@@ -1,18 +1,14 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import PlantCollection from "./components/PlantCollection";
 import Cabbage from "./components/Cabbage";
-import {
-  PlantGenetics,
-  breed,
-  countPurpleCabbages,
-  getGenotype,
-} from "./types/genetics";
+import { PlantGenetics, breed, countPurpleCabbages } from "./types/genetics";
 
 interface CabbageData {
   id: string;
   genetics: PlantGenetics;
+  startGrowingAt?: number; // Timestamp when growth started
 }
 
 const TARGET_PURPLE_COUNT = 3;
@@ -25,9 +21,19 @@ export default function Home() {
   ]);
 
   const [selectedCabbageIds, setSelectedCabbageIds] = useState<string[]>([]);
+  const [fullyGrownCabbageIds, setFullyGrownCabbageIds] = useState<Set<string>>(
+    new Set(["c1", "c2"]) // Initial cabbages start fully grown
+  );
 
-  // Count purple cabbages
-  const purpleCount = useMemo(() => countPurpleCabbages(cabbages), [cabbages]);
+  // Count purple cabbages (only count fully grown ones)
+  const fullyGrownCabbages = useMemo(
+    () => cabbages.filter((c) => fullyGrownCabbageIds.has(c.id)),
+    [cabbages, fullyGrownCabbageIds]
+  );
+  const purpleCount = useMemo(
+    () => countPurpleCabbages(fullyGrownCabbages),
+    [fullyGrownCabbages]
+  );
 
   const hasWon = purpleCount >= TARGET_PURPLE_COUNT;
 
@@ -40,13 +46,19 @@ export default function Home() {
     if (!parent1 || !parent2) return;
 
     const childGenetics = breed(parent1.genetics, parent2.genetics);
+    const now = Date.now();
     const newCabbage: CabbageData = {
-      id: `c${Date.now()}`,
+      id: `c${now}`,
       genetics: childGenetics,
+      startGrowingAt: now,
     };
 
     setCabbages((prev) => [...prev, newCabbage]);
     setSelectedCabbageIds([]);
+  };
+
+  const handleCabbageFullyGrown = (cabbageId: string) => {
+    setFullyGrownCabbageIds((prev) => new Set(prev).add(cabbageId));
   };
 
   const canBreed = selectedCabbageIds.length === 2;
@@ -111,14 +123,15 @@ export default function Home() {
               selectedIds={selectedCabbageIds}
               onSelectionChange={setSelectedCabbageIds}
               renderItem={(cabbage, isSelected, onSelect) => (
-                <div className="flex flex-col items-center">
-                  <Cabbage
-                    genetics={cabbage.genetics}
-                    size={100}
-                    isSelected={isSelected}
-                    onSelect={onSelect}
-                  />
-                </div>
+                <Cabbage
+                  genetics={cabbage.genetics}
+                  size={100}
+                  isSelected={isSelected}
+                  onSelect={onSelect}
+                  startGrowingAt={cabbage.startGrowingAt}
+                  onFullyGrown={() => handleCabbageFullyGrown(cabbage.id)}
+                  showGenotype={true}
+                />
               )}
             />
           </div>
