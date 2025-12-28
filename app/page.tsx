@@ -629,6 +629,40 @@ export default function Home() {
     setSelectedPotIds([]);
   };
 
+  // Handler to remove an auto breeder from a pot pair and return it to resources
+  const handleRemoveAutoBreeder = (pot1Id: string, pot2Id: string) => {
+    // Create the pair key (sorted to match how it's stored)
+    const pairKey = [pot1Id, pot2Id].sort().join("-");
+
+    // Remove from potsWithAutoBreeder
+    setPotsWithAutoBreeder((prev) => {
+      const updated = new Set(prev);
+      updated.delete(pairKey);
+      return updated;
+    });
+
+    // Add back to auto breeder stack
+    setAutoBreederStacks((prev) => {
+      if (prev.length === 0) {
+        return [
+          {
+            id: `ab${Date.now()}`,
+            count: 1,
+          },
+        ];
+      }
+      // Add to the first auto breeder stack
+      return prev.map((stack, index) =>
+        index === 0
+          ? {
+              ...stack,
+              count: stack.count + 1,
+            }
+          : stack
+      );
+    });
+  };
+
   // Catalog items data - each item handles its own sell logic
   const catalogItems: CatalogItemData[] = [
     {
@@ -996,6 +1030,9 @@ export default function Home() {
                             onPot1Select={handleSelect}
                             onPot2Select={handleSelect2}
                             onCabbageFullyGrown={handleCabbageFullyGrown}
+                            onRemove={() =>
+                              handleRemoveAutoBreeder(pot.id, pot2.id)
+                            }
                             showDebugGenotypes={showDebugGenotypes}
                           />
                         </div>

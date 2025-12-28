@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Pot from "./Pot";
 import Cabbage from "./Cabbage";
 import { PlantGenetics, getGenotype } from "../types/genetics";
@@ -32,6 +33,7 @@ interface AutoBreederProps {
   onPot1Select: (selected: boolean) => void;
   onPot2Select: (selected: boolean) => void;
   onCabbageFullyGrown: (cabbageId: string) => void;
+  onRemove?: () => void;
   showDebugGenotypes?: boolean;
 }
 
@@ -52,8 +54,10 @@ export default function AutoBreeder({
   onPot1Select,
   onPot2Select,
   onCabbageFullyGrown,
+  onRemove,
   showDebugGenotypes = false,
 }: AutoBreederProps) {
+  const [isHovered, setIsHovered] = useState(false);
   const pot1IsEmpty = !pot1.plantId;
   const pot2IsEmpty = !pot2.plantId;
 
@@ -96,7 +100,23 @@ export default function AutoBreeder({
   );
 
   return (
-    <div className="border-4 border-red-500 rounded-lg p-2 flex gap-4 items-center justify-center bg-red-50">
+    <div
+      className="border-4 border-red-500 rounded-lg p-2 flex gap-4 items-center justify-center bg-red-50 relative"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {onRemove && isHovered && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onRemove();
+          }}
+          className="absolute top-1 right-1 w-6 h-6 bg-gray-600 hover:bg-gray-700 text-white rounded-full flex items-center justify-center text-xs font-bold transition-colors z-10"
+          aria-label="Remove auto breeder"
+        >
+          ×
+        </button>
+      )}
       {renderPot(
         pot1,
         pot1Plant,
