@@ -629,10 +629,37 @@ export default function Home() {
     setSelectedPotIds([]);
   };
 
-  // Handler to remove an auto breeder from a pot pair and return it to resources
-  const handleRemoveAutoBreeder = (pot1Id: string, pot2Id: string) => {
+  // Handler to remove an auto breeder from a pot pair and return seeds to resources
+  const handleRemoveAutoBreeder = (
+    pot1Id: string,
+    pot2Id: string,
+    seeds: PlantGenetics[]
+  ) => {
     // Create the pair key (sorted to match how it's stored)
     const pairKey = [pot1Id, pot2Id].sort().join("-");
+
+    // Add seeds from the auto breeder to general resources
+    if (seeds.length > 0) {
+      setSeedStacks((prev) => {
+        if (prev.length === 0) {
+          return [
+            {
+              id: `s${Date.now()}`,
+              genetics: seeds,
+            },
+          ];
+        }
+        // Add to the first seed stack
+        return prev.map((stack, index) =>
+          index === 0
+            ? {
+                ...stack,
+                genetics: [...stack.genetics, ...seeds],
+              }
+            : stack
+        );
+      });
+    }
 
     // Remove from potsWithAutoBreeder
     setPotsWithAutoBreeder((prev) => {
@@ -1030,8 +1057,8 @@ export default function Home() {
                             onPot1Select={handleSelect}
                             onPot2Select={handleSelect2}
                             onCabbageFullyGrown={handleCabbageFullyGrown}
-                            onRemove={() =>
-                              handleRemoveAutoBreeder(pot.id, pot2.id)
+                            onRemove={(seeds) =>
+                              handleRemoveAutoBreeder(pot.id, pot2.id, seeds)
                             }
                             showDebugGenotypes={showDebugGenotypes}
                           />

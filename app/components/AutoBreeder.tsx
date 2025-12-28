@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Pot from "./Pot";
 import Cabbage from "./Cabbage";
-import { PlantGenetics, getGenotype } from "../types/genetics";
+import { PlantGenetics, getGenotype, breed } from "../types/genetics";
 
 interface PotData {
   id: string;
@@ -33,7 +33,7 @@ interface AutoBreederProps {
   onPot1Select: (selected: boolean) => void;
   onPot2Select: (selected: boolean) => void;
   onCabbageFullyGrown: (cabbageId: string) => void;
-  onRemove?: () => void;
+  onRemove?: (seeds: PlantGenetics[]) => void;
   showDebugGenotypes?: boolean;
 }
 
@@ -58,8 +58,29 @@ export default function AutoBreeder({
   showDebugGenotypes = false,
 }: AutoBreederProps) {
   const [isHovered, setIsHovered] = useState(false);
+  const [seeds, setSeeds] = useState<PlantGenetics[]>([]);
   const pot1IsEmpty = !pot1.plantId;
   const pot2IsEmpty = !pot2.plantId;
+
+  // Auto-breeding logic: check every 10 seconds if both pots are fully grown
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Both plants must be fully grown to breed
+      if (pot1IsFullyGrown && pot2IsFullyGrown && pot1Plant && pot2Plant) {
+        // Generate exactly 1 seed from breeding
+        const newSeed = breed(pot1Plant.genetics, pot2Plant.genetics);
+        setSeeds((prev) => [...prev, newSeed]);
+      }
+    }, 10000); // Every 10 seconds
+
+    return () => clearInterval(interval);
+  }, [pot1IsFullyGrown, pot2IsFullyGrown, pot1Plant, pot2Plant]);
+
+  const handleRemove = () => {
+    if (onRemove) {
+      onRemove(seeds);
+    }
+  };
 
   const renderPot = (
     pot: PotData,
@@ -105,11 +126,17 @@ export default function AutoBreeder({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
+      {/* Seed count display at the top */}
+      {seeds.length > 0 && (
+        <div className="absolute top-1 left-1 bg-white border-2 border-gray-400 rounded px-2 py-1 text-xs font-semibold text-gray-700 z-10">
+          {seeds.length} seed{seeds.length !== 1 ? "s" : ""}
+        </div>
+      )}
       {onRemove && isHovered && (
         <button
           onClick={(e) => {
             e.stopPropagation();
-            onRemove();
+            handleRemove();
           }}
           className="absolute top-1 right-1 w-6 h-6 bg-gray-600 hover:bg-gray-700 text-white rounded-full flex items-center justify-center text-xs font-bold transition-colors z-10"
           aria-label="Remove auto breeder"
