@@ -10,6 +10,7 @@ export interface ShopItemData {
   price: number;
   onPurchase: () => void; // Each item handles its own purchase logic
   shape: "square" | "circle";
+  description?: string; // Tooltip description explaining what the item does
 }
 
 interface ShopProps {
@@ -36,6 +37,7 @@ export default function Shop({ money, items }: ShopProps) {
             shape={item.shape}
             canAfford={money >= item.price}
             onPurchase={item.onPurchase}
+            description={item.description}
           />
         ))}
       </div>

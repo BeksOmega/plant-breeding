@@ -371,6 +371,8 @@ export default function Home() {
       color: "#8B4513",
       label: "Extra Pot",
       price: 10,
+      description:
+        "Adds a new pot to your collection. More pots allow you to grow more plants simultaneously.",
       onPurchase: () => {
         if (money < 10) return;
         setMoney((prev) => prev - 10);
@@ -383,6 +385,8 @@ export default function Home() {
       color: "#22c55e",
       label: "Mutagen",
       price: 1,
+      description:
+        "Apply to an empty pot before planting. Seeds planted in mutagen-treated pots will have their genetics randomly mutated, potentially creating new traits.",
       onPurchase: () => {
         if (money < 1) return;
         setMoney((prev) => prev - 1);
