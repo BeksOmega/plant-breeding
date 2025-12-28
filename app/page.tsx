@@ -27,8 +27,9 @@ interface SeedStackData {
   genetics: PlantGenetics[];
 }
 
-interface MutagenData {
+interface MutagenStackData {
   id: string;
+  count: number;
 }
 
 interface PotData {
@@ -61,8 +62,8 @@ export default function Home() {
   ]);
   const [selectedSeedIds, setSelectedSeedIds] = useState<string[]>([]);
 
-  // Mutagens state
-  const [mutagens, setMutagens] = useState<MutagenData[]>([]);
+  // Mutagen stacks state
+  const [mutagenStacks, setMutagenStacks] = useState<MutagenStackData[]>([]);
   const [selectedMutagenIds, setSelectedMutagenIds] = useState<string[]>([]);
 
   // Pots state - start with all empty pots
@@ -320,7 +321,25 @@ export default function Home() {
       onPurchase: () => {
         if (money < 1) return;
         setMoney((prev) => prev - 1);
-        setMutagens((prev) => [...prev, { id: `m${Date.now()}` }]);
+        setMutagenStacks((prev) => {
+          if (prev.length === 0) {
+            return [
+              {
+                id: `m${Date.now()}`,
+                count: 1,
+              },
+            ];
+          }
+          // Add to the first mutagen stack
+          return prev.map((stack, index) =>
+            index === 0
+              ? {
+                  ...stack,
+                  count: stack.count + 1,
+                }
+              : stack
+          );
+        });
       },
     },
   ];
@@ -502,18 +521,19 @@ export default function Home() {
 
             {/* Mutagens */}
             <PlantCollection
-              items={mutagens}
+              items={mutagenStacks}
               maxSelected={1}
               selectedIds={selectedMutagenIds}
               onSelectionChange={handleMutagenSelection}
-              renderItem={(mutagen, isSelected, onSelect) => (
+              renderItem={(mutagenStack, isSelected, onSelect) => (
                 <div className="flex flex-col items-center">
                   <Mutagen
-                    id={mutagen.id}
+                    count={mutagenStack.count}
                     size={100}
                     isSelected={isSelected}
                     onSelect={onSelect}
                   />
+                  <p className="text-gray-600 mb-6">Mutagens</p>
                 </div>
               )}
             />

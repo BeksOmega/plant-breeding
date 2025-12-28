@@ -1,20 +1,29 @@
 "use client";
 
+import { useState } from "react";
+
 interface MutagenProps {
-  id: string;
+  count: number;
   size?: number;
   isSelected?: boolean;
   onSelect?: (selected: boolean) => void;
 }
 
 export default function Mutagen({
-  id,
+  count,
   size = 100,
-  isSelected,
+  isSelected: controlledSelected,
   onSelect,
 }: MutagenProps) {
+  const [internalSelected, setInternalSelected] = useState(false);
+  const isSelected =
+    controlledSelected !== undefined ? controlledSelected : internalSelected;
+
   const handleClick = () => {
     const newSelected = !isSelected;
+    if (controlledSelected === undefined) {
+      setInternalSelected(newSelected);
+    }
     onSelect?.(newSelected);
   };
 
@@ -39,8 +48,17 @@ export default function Mutagen({
           ? "0 0 20px rgba(34, 197, 94, 0.8), 0 0 40px rgba(34, 197, 94, 0.6)"
           : "0 0 15px rgba(34, 197, 94, 0.6), 0 0 30px rgba(34, 197, 94, 0.4)",
       }}
-      aria-label="Mutagen"
-    />
+      aria-label={`Mutagen stack with ${count} mutagens`}
+    >
+      <span
+        className="text-white font-bold"
+        style={{
+          fontSize: `${size * 0.3}px`,
+        }}
+      >
+        {count}
+      </span>
+    </button>
   );
 }
 
