@@ -43,6 +43,7 @@ const TARGET_MONEY = 100;
 export default function Home() {
   // Debug mode state
   const [showDebugGenotypes, setShowDebugGenotypes] = useState(false);
+  const [isDebugOpen, setIsDebugOpen] = useState(false);
 
   // Start with no cabbages - only seeds
   const [cabbages, setCabbages] = useState<CabbageData[]>([]);
@@ -535,21 +536,42 @@ export default function Home() {
             Plant Breeding
           </h1>
 
-          {/* Debug Checkbox */}
-          <div className="mb-6 flex justify-center items-center gap-2">
-            <input
-              type="checkbox"
-              id="debug-checkbox"
-              checked={showDebugGenotypes}
-              onChange={(e) => setShowDebugGenotypes(e.target.checked)}
-              className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
-            />
-            <label
-              htmlFor="debug-checkbox"
-              className="text-sm font-medium text-gray-700 cursor-pointer"
-            >
-              Show Genotypes (Debug)
-            </label>
+          {/* Debug Foldout */}
+          <div className="mb-6 flex justify-center">
+            <div className="w-full max-w-md">
+              <button
+                onClick={() => setIsDebugOpen(!isDebugOpen)}
+                className="w-full px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg font-medium text-gray-700 transition-colors flex items-center justify-between"
+              >
+                <span>Debug Options</span>
+                <span className="text-lg">{isDebugOpen ? "−" : "+"}</span>
+              </button>
+              {isDebugOpen && (
+                <div className="mt-2 p-4 bg-gray-50 rounded-lg border border-gray-200 space-y-3">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id="debug-checkbox"
+                      checked={showDebugGenotypes}
+                      onChange={(e) => setShowDebugGenotypes(e.target.checked)}
+                      className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                    />
+                    <label
+                      htmlFor="debug-checkbox"
+                      className="text-sm font-medium text-gray-700 cursor-pointer"
+                    >
+                      Show Genotypes
+                    </label>
+                  </div>
+                  <button
+                    onClick={() => setMoney((prev) => prev + 100)}
+                    className="w-full px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+                  >
+                    Give $100
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Breeding Game */}
@@ -560,7 +582,8 @@ export default function Home() {
               grown plants in pots and click Breed to get 1 seed.
             </p>
             <p className="text-gray-600 mb-6">
-              Make faster growing and more valuable plants by breeding and mutating them.
+              Make faster growing and more valuable plants by breeding and
+              mutating them.
             </p>
 
             {hasWon && (
@@ -655,6 +678,8 @@ export default function Home() {
               items={pots}
               selectedIds={selectedPotIds}
               onSelectionChange={handlePotSelection}
+              draggable={true}
+              onReorder={(reorderedPots) => setPots(reorderedPots)}
               renderItem={(pot, isSelected, onSelect) => {
                 const isEmpty = !pot.plantId;
                 const plant = pot.plantId
