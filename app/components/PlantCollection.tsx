@@ -9,6 +9,8 @@ interface SelectableItem {
 interface PlantCollectionProps<T extends SelectableItem> {
   items: T[];
   maxSelected?: number;
+  selectedIds?: string[];
+  onSelectionChange?: (selectedIds: string[]) => void;
   renderItem: (
     item: T,
     isSelected: boolean,
@@ -19,12 +21,18 @@ interface PlantCollectionProps<T extends SelectableItem> {
 export default function PlantCollection<T extends SelectableItem>({
   items,
   maxSelected = Infinity,
+  selectedIds: controlledSelectedIds,
+  onSelectionChange,
   renderItem,
 }: PlantCollectionProps<T>) {
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [internalSelectedIds, setInternalSelectedIds] = useState<string[]>([]);
+  const selectedIds =
+    controlledSelectedIds !== undefined
+      ? controlledSelectedIds
+      : internalSelectedIds;
 
   const handleItemSelect = (itemId: string, selected: boolean) => {
-    setSelectedIds((prev) => {
+    const getNewSelection = (prev: string[]): string[] => {
       if (selected) {
         // If selecting and we're at max, remove the first selected
         if (prev.length >= maxSelected) {
@@ -35,7 +43,20 @@ export default function PlantCollection<T extends SelectableItem>({
         // If deselecting, remove from the array
         return prev.filter((id) => id !== itemId);
       }
-    });
+    };
+
+    if (controlledSelectedIds !== undefined) {
+      // Controlled mode - call the callback
+      const newSelection = getNewSelection(selectedIds);
+      onSelectionChange?.(newSelection);
+    } else {
+      // Uncontrolled mode - update internal state
+      setInternalSelectedIds((prev) => {
+        const newSelection = getNewSelection(prev);
+        onSelectionChange?.(newSelection);
+        return newSelection;
+      });
+    }
   };
 
   return (

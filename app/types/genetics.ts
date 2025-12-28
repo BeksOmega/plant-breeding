@@ -27,3 +27,19 @@ export function getGenotype(genetics: PlantGenetics): string {
   return `${allele1Char}${allele2Char}`;
 }
 
+// Breed two plants by randomly selecting one allele from each parent
+export function breed(parent1: PlantGenetics, parent2: PlantGenetics): PlantGenetics {
+  // Randomly select one allele from parent1
+  const allele1 = Math.random() < 0.5 ? parent1.allele1 : parent1.allele2;
+  // Randomly select one allele from parent2
+  const allele2 = Math.random() < 0.5 ? parent2.allele1 : parent2.allele2;
+  return { allele1, allele2 };
+}
+
+// Count purple (recessive) cabbages
+export function countPurpleCabbages(cabbages: { genetics: PlantGenetics }[]): number {
+  return cabbages.filter(
+    (cabbage) => cabbage.genetics.allele1 && cabbage.genetics.allele2
+  ).length;
+}
+
