@@ -8,6 +8,7 @@ interface PotProps {
   onSelect?: (selected: boolean) => void;
   isEmpty?: boolean;
   canSelect?: boolean; // Whether the pot can be selected (for breeding mode with fully grown plants)
+  hasMutagenGlow?: boolean; // Whether the pot has mutagen glow
   children?: ReactNode; // Plant growing in the pot
 }
 
@@ -17,6 +18,7 @@ export default function Pot({
   onSelect,
   isEmpty = true,
   canSelect: canSelectProp,
+  hasMutagenGlow = false,
   children,
 }: PotProps) {
   const [internalSelected, setInternalSelected] = useState(false);
@@ -35,17 +37,20 @@ export default function Pot({
     onSelect?.(newSelected);
   };
 
+  // Get box-shadow for mutagen glow (selection ring uses outline for proper offset support)
+  const getBoxShadow = () => {
+    if (!hasMutagenGlow) return undefined;
+
+    return "0 0 20px rgba(34, 197, 94, 0.8), 0 0 40px rgba(34, 197, 94, 0.6), inset 0 0 20px rgba(34, 197, 94, 0.3)";
+  };
+
   return (
     <button
       onClick={handleClick}
       className={`
         transition-all duration-200 ease-in-out
         relative
-        ${
-          isSelected
-            ? "ring-4 ring-green-500 ring-offset-2 scale-105"
-            : "hover:scale-105"
-        }
+        ${isSelected ? "scale-105" : "hover:scale-105"}
       `}
       style={{
         width: `${size}px`,
@@ -53,6 +58,11 @@ export default function Pot({
         backgroundColor: "#f5f5dc", // Beige/light brown for empty pot
         border: "2px solid #8B4513", // Brown border
         borderRadius: "8px",
+        boxShadow: getBoxShadow(),
+        // Use outline for selection ring (matches Tailwind's ring-4 ring-green-500 ring-offset-2)
+        // Outline works independently from box-shadow, so both can be visible
+        outline: isSelected ? "4px solid rgba(16, 185, 129, 1)" : undefined,
+        outlineOffset: isSelected ? "2px" : undefined,
       }}
       aria-label={isEmpty ? "Empty pot" : "Pot with plant"}
       disabled={!canSelect}

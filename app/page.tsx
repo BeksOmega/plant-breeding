@@ -14,6 +14,7 @@ import {
   countPurpleCabbages,
   getPhenotypeColor,
   getGenotype,
+  mutate,
 } from "./types/genetics";
 
 interface CabbageData {
@@ -55,8 +56,10 @@ export default function Home() {
     {
       id: "s1",
       genetics: [
-        { chromosome1: [false, false], chromosome2: [false, false] }, // RSRS
-        { chromosome1: [false, true], chromosome2: [true, true] }, // Rsrs
+        { chromosome1: [false, false], chromosome2: [false, false] }, // RR, SS
+        // For testing purposes, you can uncomment this to use the rr, ss genotype
+        // { chromosome1: [true, true], chromosome2: [true, true] }, // rr, ss
+        { chromosome1: [false, true], chromosome2: [true, true] }, // Rr, ss
       ],
     },
   ]);
@@ -65,6 +68,11 @@ export default function Home() {
   // Mutagen stacks state
   const [mutagenStacks, setMutagenStacks] = useState<MutagenStackData[]>([]);
   const [selectedMutagenIds, setSelectedMutagenIds] = useState<string[]>([]);
+
+  // Pots with mutagen glow (Set of pot IDs)
+  const [potsWithMutagenGlow, setPotsWithMutagenGlow] = useState<Set<string>>(
+    new Set()
+  );
 
   // Pots state - start with all empty pots
   const [pots, setPots] = useState<PotData[]>([
@@ -160,6 +168,12 @@ export default function Home() {
       .map((pot) => pot!.plantId!)
       .filter(Boolean);
 
+    // Get pot IDs that had plants culled
+    const potIdsToClearGlow = selectedPotIds.filter((potId) => {
+      const pot = pots.find((p) => p.id === potId);
+      return pot && pot.plantId;
+    });
+
     // Remove plants from pots
     setPots((prev) =>
       prev.map((p) =>
@@ -168,6 +182,13 @@ export default function Home() {
           : p
       )
     );
+
+    // Remove mutagen glow from pots that had plants culled
+    setPotsWithMutagenGlow((prev) => {
+      const updated = new Set(prev);
+      potIdsToClearGlow.forEach((id) => updated.delete(id));
+      return updated;
+    });
 
     // Remove plants from cabbages list
     setCabbages((prev) => prev.filter((c) => !plantIdsToRemove.includes(c.id)));
@@ -211,6 +232,37 @@ export default function Home() {
   const handlePotSelection = (potIds: string[]) => {
     setSelectedPotIds(potIds);
 
+    // If a mutagen is selected and an empty pot is selected, apply glow
+    if (potIds.length > 0 && selectedMutagenIds.length > 0) {
+      const potId = potIds[0];
+      const mutagenId = selectedMutagenIds[0];
+
+      const pot = pots.find((p) => p.id === potId);
+      const mutagenStack = mutagenStacks.find((m) => m.id === mutagenId);
+
+      // Can only apply mutagen to empty pots
+      if (pot && !pot.plantId && mutagenStack && mutagenStack.count > 0) {
+        // Add glow to pot
+        setPotsWithMutagenGlow((prev) => new Set(prev).add(potId));
+
+        // Consume one mutagen
+        setMutagenStacks((prev) => {
+          const updated = prev.map((stack) =>
+            stack.id === mutagenId
+              ? { ...stack, count: stack.count - 1 }
+              : stack
+          );
+          // Remove stacks with 0 count
+          return updated.filter((s) => s.count > 0);
+        });
+
+        // Clear selections
+        setSelectedMutagenIds([]);
+        setSelectedPotIds([]);
+        return;
+      }
+    }
+
     // If a seed is selected and an empty pot is selected, plant immediately
     if (potIds.length > 0 && selectedSeedIds.length > 0) {
       const potId = potIds[0];
@@ -229,7 +281,13 @@ export default function Home() {
         const willHaveRemainingSeeds = seedStack.genetics.length > 1;
 
         // Use the first genetics from the seed stack
-        const newGenetics = seedStack.genetics[0];
+        let newGenetics = seedStack.genetics[0];
+
+        // If pot has mutagen glow, mutate the genetics
+        if (potsWithMutagenGlow.has(potId)) {
+          newGenetics = mutate(newGenetics);
+          // Glow persists until plant is sold/culled
+        }
 
         const now = Date.now();
         const newCabbageId = `c${now}`;
@@ -304,7 +362,7 @@ export default function Home() {
   const shopItems: ShopItemData[] = [
     {
       id: "item4",
-      color: "#60a5fa",
+      color: "#8B4513",
       label: "Extra Pot",
       price: 10,
       onPurchase: () => {
@@ -312,6 +370,7 @@ export default function Home() {
         setMoney((prev) => prev - 10);
         setPots((prev) => [...prev, { id: `p${Date.now()}` }]);
       },
+      shape: "square",
     },
     {
       id: "mutagen",
@@ -341,6 +400,7 @@ export default function Home() {
           );
         });
       },
+      shape: "circle",
     },
   ];
 
@@ -396,6 +456,11 @@ export default function Home() {
       .map(({ pot }) => pot.plantId!)
       .filter(Boolean);
 
+    // Get pot IDs that had plants removed
+    const potIdsToClearGlow = pots
+      .filter((p) => plantIdsToRemove.includes(p.plantId || ""))
+      .map((p) => p.id);
+
     // Remove plants from pots
     setPots((prev) =>
       prev.map((p) =>
@@ -404,6 +469,13 @@ export default function Home() {
           : p
       )
     );
+
+    // Remove mutagen glow from pots that had plants sold
+    setPotsWithMutagenGlow((prev) => {
+      const updated = new Set(prev);
+      potIdsToClearGlow.forEach((id) => updated.delete(id));
+      return updated;
+    });
 
     // Remove plants from cabbages list
     setCabbages((prev) => prev.filter((c) => !plantIdsToRemove.includes(c.id)));
@@ -500,43 +572,45 @@ export default function Home() {
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Resources</h2>
             <p className="text-gray-600 mb-6">Select a seed or mutagen</p>
 
-            {/* Seeds */}
-            <PlantCollection
-              items={seedStacks}
-              maxSelected={1}
-              selectedIds={selectedSeedIds}
-              onSelectionChange={handleSeedSelection}
-              renderItem={(seedStack, isSelected, onSelect) => (
-                <div className="flex flex-col items-center">
-                  <SeedStack
-                    genetics={seedStack.genetics}
-                    size={100}
-                    isSelected={isSelected}
-                    onSelect={onSelect}
-                  />
-                  <p className="text-gray-600 mb-6">Cabbages</p>
-                </div>
-              )}
-            />
+            <div className="flex flex-row gap-4 justify-center">
+              {/* Seeds */}
+              <PlantCollection
+                items={seedStacks}
+                maxSelected={1}
+                selectedIds={selectedSeedIds}
+                onSelectionChange={handleSeedSelection}
+                renderItem={(seedStack, isSelected, onSelect) => (
+                  <div className="flex flex-col items-center">
+                    <SeedStack
+                      genetics={seedStack.genetics}
+                      size={100}
+                      isSelected={isSelected}
+                      onSelect={onSelect}
+                    />
+                    <p className="text-gray-600 mb-6">Cabbages</p>
+                  </div>
+                )}
+              />
 
-            {/* Mutagens */}
-            <PlantCollection
-              items={mutagenStacks}
-              maxSelected={1}
-              selectedIds={selectedMutagenIds}
-              onSelectionChange={handleMutagenSelection}
-              renderItem={(mutagenStack, isSelected, onSelect) => (
-                <div className="flex flex-col items-center">
-                  <Mutagen
-                    count={mutagenStack.count}
-                    size={100}
-                    isSelected={isSelected}
-                    onSelect={onSelect}
-                  />
-                  <p className="text-gray-600 mb-6">Mutagens</p>
-                </div>
-              )}
-            />
+              {/* Mutagens */}
+              <PlantCollection
+                items={mutagenStacks}
+                maxSelected={1}
+                selectedIds={selectedMutagenIds}
+                onSelectionChange={handleMutagenSelection}
+                renderItem={(mutagenStack, isSelected, onSelect) => (
+                  <div className="flex flex-col items-center">
+                    <Mutagen
+                      count={mutagenStack.count}
+                      size={100}
+                      isSelected={isSelected}
+                      onSelect={onSelect}
+                    />
+                    <p className="text-gray-600 mb-6">Mutagens</p>
+                  </div>
+                )}
+              />
+            </div>
           </div>
 
           {/* Pots Section */}
@@ -579,9 +653,14 @@ export default function Home() {
                   ? fullyGrownCabbageIds.has(plant.id)
                   : false;
                 // If seeds are selected, only empty pots can be selected (for planting)
+                // If mutagens are selected, only empty pots can be selected (for applying glow)
                 // Otherwise, any pot can be selected (for breeding or culling)
                 const canSelect =
-                  selectedSeedIds.length > 0 ? isEmpty : isEmpty || !!plant;
+                  selectedSeedIds.length > 0 || selectedMutagenIds.length > 0
+                    ? isEmpty
+                    : isEmpty || !!plant;
+
+                const hasGlow = potsWithMutagenGlow.has(pot.id);
 
                 return (
                   <div className="flex flex-col items-center">
@@ -591,6 +670,7 @@ export default function Home() {
                       onSelect={canSelect ? onSelect : undefined}
                       isEmpty={isEmpty}
                       canSelect={canSelect}
+                      hasMutagenGlow={hasGlow}
                     >
                       {plant && (
                         <Cabbage

@@ -71,3 +71,25 @@ export function countPurpleCabbages(
       cabbage.genetics.chromosome1[0] && cabbage.genetics.chromosome2[0]
   ).length;
 }
+
+// Mutate a plant's genetics by randomly flipping one boolean value
+export function mutate(genetics: PlantGenetics): PlantGenetics {
+  // Create a deep copy
+  const mutated: PlantGenetics = {
+    chromosome1: [...genetics.chromosome1],
+    chromosome2: [...genetics.chromosome2],
+  };
+
+  // Randomly select which chromosome and which trait to flip
+  const chromosomeIndex = Math.random() < 0.5 ? 0 : 1;
+  const traitIndex = Math.random() < 0.5 ? 0 : 1;
+
+  // Flip the selected boolean
+  if (chromosomeIndex === 0) {
+    mutated.chromosome1[traitIndex] = !mutated.chromosome1[traitIndex];
+  } else {
+    mutated.chromosome2[traitIndex] = !mutated.chromosome2[traitIndex];
+  }
+
+  return mutated;
+}

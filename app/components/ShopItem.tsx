@@ -6,6 +6,7 @@ interface ShopItemProps {
   price: number;
   onPurchase?: () => void;
   canAfford?: boolean;
+  shape: "square" | "circle";
 }
 
 export default function ShopItem({
@@ -14,6 +15,7 @@ export default function ShopItem({
   price,
   onPurchase,
   canAfford = true,
+  shape = "square",
 }: ShopItemProps) {
   return (
     <button
@@ -30,7 +32,9 @@ export default function ShopItem({
     >
       {/* Colored square (picture) */}
       <div
-        className="w-16 h-16 rounded-lg flex-shrink-0"
+        className={`w-16 h-16 ${
+          shape === "circle" ? "rounded-full" : "rounded-lg"
+        } flex-shrink-0`}
         style={{ backgroundColor: color }}
       />
 
