@@ -1,53 +1,52 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Plant from './Plant';
+import { useState, ReactNode } from "react";
 
-interface PlantData {
+interface SelectableItem {
   id: string;
-  color: string;
 }
 
-interface PlantCollectionProps {
-  plants: PlantData[];
+interface PlantCollectionProps<T extends SelectableItem> {
+  items: T[];
   maxSelected?: number;
-  size?: number;
+  renderItem: (
+    item: T,
+    isSelected: boolean,
+    onSelect: (selected: boolean) => void
+  ) => ReactNode;
 }
 
-export default function PlantCollection({ 
-  plants, 
+export default function PlantCollection<T extends SelectableItem>({
+  items,
   maxSelected = Infinity,
-  size = 100 
-}: PlantCollectionProps) {
+  renderItem,
+}: PlantCollectionProps<T>) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-  const handlePlantSelect = (plantId: string, selected: boolean) => {
+  const handleItemSelect = (itemId: string, selected: boolean) => {
     setSelectedIds((prev) => {
       if (selected) {
         // If selecting and we're at max, remove the first selected
         if (prev.length >= maxSelected) {
-          return [...prev.slice(1), plantId];
+          return [...prev.slice(1), itemId];
         }
-        return [...prev, plantId];
+        return [...prev, itemId];
       } else {
         // If deselecting, remove from the array
-        return prev.filter((id) => id !== plantId);
+        return prev.filter((id) => id !== itemId);
       }
     });
   };
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-      {plants.map((plant) => (
-        <Plant
-          key={plant.id}
-          color={plant.color}
-          size={size}
-          isSelected={selectedIds.includes(plant.id)}
-          onSelect={(selected) => handlePlantSelect(plant.id, selected)}
-        />
+      {items.map((item) => (
+        <div key={item.id}>
+          {renderItem(item, selectedIds.includes(item.id), (selected) =>
+            handleItemSelect(item.id, selected)
+          )}
+        </div>
       ))}
     </div>
   );
 }
-

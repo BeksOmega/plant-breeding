@@ -1,5 +1,9 @@
+"use client";
+
 import Plant from "./components/Plant";
 import PlantCollection from "./components/PlantCollection";
+import Cabbage from "./components/Cabbage";
+import { PlantGenetics } from "./types/genetics";
 
 export default function Home() {
   const samplePlants = [
@@ -14,6 +18,17 @@ export default function Home() {
     { id: "9", color: "#c084fc" },
     { id: "10", color: "#22d3ee" },
   ];
+
+  const sampleCabbages = [
+    { id: "c1", genetics: { allele1: false, allele2: false } }, // RR
+    { id: "c2", genetics: { allele1: false, allele2: true } }, // Rr
+    { id: "c3", genetics: { allele1: true, allele2: false } }, // rR
+    { id: "c4", genetics: { allele1: true, allele2: true } }, // rr
+    { id: "c5", genetics: { allele1: false, allele2: false } }, // RR
+    { id: "c6", genetics: { allele1: false, allele2: true } }, // Rr
+    { id: "c7", genetics: { allele1: true, allele2: true } }, // rr
+    { id: "c8", genetics: { allele1: false, allele2: false } }, // RR
+  ];
   return (
     <main className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100">
       <div className="container mx-auto px-4 py-16">
@@ -22,16 +37,29 @@ export default function Home() {
             Plant Breeding
           </h1>
 
-          {/* Plant Collection Demo */}
+          {/* Cabbage Genetics Demo */}
           <div className="bg-white rounded-lg shadow-lg p-8 mt-12 mb-12">
             <h2 className="text-3xl font-semibold text-gray-800 mb-4">
-              Plant Collection
+              Cabbage Genetics
             </h2>
             <p className="text-gray-600 mb-6">
-              Select up to 3 plants. When you select more, the first selected
-              will be deselected.
+              Mendelian genetics: Purple (recessive) only shows when both
+              alleles are recessive (rr). Green (dominant) shows when at least
+              one dominant allele is present (RR or Rr). Select up to 2
+              cabbages.
             </p>
-            <PlantCollection plants={samplePlants} maxSelected={3} />
+            <PlantCollection
+              items={sampleCabbages}
+              maxSelected={2}
+              renderItem={(cabbage, isSelected, onSelect) => (
+                <Cabbage
+                  genetics={cabbage.genetics}
+                  size={100}
+                  isSelected={isSelected}
+                  onSelect={onSelect}
+                />
+              )}
+            />
           </div>
         </div>
       </div>
