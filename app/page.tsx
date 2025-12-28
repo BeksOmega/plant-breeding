@@ -5,6 +5,7 @@ import PlantCollection from "./components/PlantCollection";
 import Cabbage from "./components/Cabbage";
 import SeedStack from "./components/SeedStack";
 import Mutagen from "./components/Mutagen";
+import AutoBreederItem from "./components/AutoBreederItem";
 import AutoBreeder from "./components/AutoBreeder";
 import Pot from "./components/Pot";
 import Shop, { ShopItemData } from "./components/Shop";
@@ -86,6 +87,11 @@ export default function Home() {
 
   // Pots with mutagen glow (Set of pot IDs)
   const [potsWithMutagenGlow, setPotsWithMutagenGlow] = useState<Set<string>>(
+    new Set()
+  );
+
+  // Pots with auto breeders applied (Set of pot pair keys, e.g., "p1-p2")
+  const [potsWithAutoBreeder, setPotsWithAutoBreeder] = useState<Set<string>>(
     new Set()
   );
 
@@ -205,6 +211,21 @@ export default function Home() {
       return updated;
     });
 
+    // Remove auto breeders from pots that had plants culled
+    setPotsWithAutoBreeder((prev) => {
+      const updated = new Set(prev);
+      potIdsToClearGlow.forEach((potId) => {
+        // Remove any pair that contains this pot ID
+        Array.from(updated).forEach((pairKey) => {
+          const [id1, id2] = pairKey.split("-");
+          if (id1 === potId || id2 === potId) {
+            updated.delete(pairKey);
+          }
+        });
+      });
+      return updated;
+    });
+
     // Remove plants from cabbages list
     setCabbages((prev) => prev.filter((c) => !plantIdsToRemove.includes(c.id)));
 
@@ -248,6 +269,50 @@ export default function Home() {
   // Handle pot selection - automatically handles planting or breeding based on context
   const handlePotSelection = (potIds: string[]) => {
     setSelectedPotIds(potIds);
+
+    // If an auto breeder is selected and two adjacent pots are selected, apply auto breeder
+    if (potIds.length === 2 && selectedAutoBreederIds.length > 0) {
+      const pot1Index = pots.findIndex((p) => p.id === potIds[0]);
+      const pot2Index = pots.findIndex((p) => p.id === potIds[1]);
+
+      // Check if they are adjacent (differ by 1)
+      if (Math.abs(pot1Index - pot2Index) === 1) {
+        const autoBreederId = selectedAutoBreederIds[0];
+        const autoBreederStack = autoBreederStacks.find(
+          (ab) => ab.id === autoBreederId
+        );
+
+        if (autoBreederStack && autoBreederStack.count > 0) {
+          // Create a key for the pot pair (sorted to ensure consistency)
+          const potPairKey = [potIds[0], potIds[1]].sort().join("-");
+
+          // Add auto breeder to the pot pair
+          setPotsWithAutoBreeder((prev) => new Set(prev).add(potPairKey));
+
+          // Check if there will be auto breeders remaining after consuming one
+          const willHaveRemainingAutoBreeders = autoBreederStack.count > 1;
+
+          // Consume one auto breeder
+          setAutoBreederStacks((prev) => {
+            const updated = prev.map((stack) =>
+              stack.id === autoBreederId
+                ? { ...stack, count: stack.count - 1 }
+                : stack
+            );
+            // Remove stacks with 0 count
+            return updated.filter((s) => s.count > 0);
+          });
+
+          // If auto breeders remain, keep the auto breeder selected; otherwise clear it
+          if (!willHaveRemainingAutoBreeders) {
+            setSelectedAutoBreederIds([]);
+          }
+          // Always deselect the pots after applying auto breeder
+          setSelectedPotIds([]);
+          return;
+        }
+      }
+    }
 
     // If a mutagen is selected and an empty pot is selected, apply glow
     if (potIds.length > 0 && selectedMutagenIds.length > 0) {
@@ -535,6 +600,21 @@ export default function Home() {
       return updated;
     });
 
+    // Remove auto breeders from pots that had plants sold
+    setPotsWithAutoBreeder((prev) => {
+      const updated = new Set(prev);
+      potIdsToClearGlow.forEach((potId) => {
+        // Remove any pair that contains this pot ID
+        Array.from(updated).forEach((pairKey) => {
+          const [id1, id2] = pairKey.split("-");
+          if (id1 === potId || id2 === potId) {
+            updated.delete(pairKey);
+          }
+        });
+      });
+      return updated;
+    });
+
     // Remove plants from cabbages list
     setCabbages((prev) => prev.filter((c) => !plantIdsToRemove.includes(c.id)));
 
@@ -576,6 +656,36 @@ export default function Home() {
       const pot = pots.find((p) => p.id === potId);
       return pot && !pot.plantId;
     });
+
+  // Check which pot pairs have auto breeders applied (for rendering)
+  const potPairsWithAutoBreeder = useMemo(() => {
+    const pairs: Array<[number, number]> = [];
+    potsWithAutoBreeder.forEach((pairKey) => {
+      const [potId1, potId2] = pairKey.split("-");
+      const pot1Index = pots.findIndex((p) => p.id === potId1);
+      const pot2Index = pots.findIndex((p) => p.id === potId2);
+      if (pot1Index !== -1 && pot2Index !== -1) {
+        // Return indices in order (lower index first)
+        const sortedIndices =
+          pot1Index < pot2Index
+            ? [pot1Index, pot2Index]
+            : [pot2Index, pot1Index];
+        pairs.push([sortedIndices[0], sortedIndices[1]]);
+      }
+    });
+    return pairs;
+  }, [potsWithAutoBreeder, pots]);
+
+  // Set of pot IDs that are already in an auto breeder pair
+  const potIdsInAutoBreederPairs = useMemo(() => {
+    const ids = new Set<string>();
+    potsWithAutoBreeder.forEach((pairKey) => {
+      const [potId1, potId2] = pairKey.split("-");
+      ids.add(potId1);
+      ids.add(potId2);
+    });
+    return ids;
+  }, [potsWithAutoBreeder]);
   return (
     <main className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100">
       <div className="container mx-auto px-4 py-16">
@@ -652,7 +762,9 @@ export default function Home() {
           {/* Resources Section */}
           <div className="bg-white rounded-lg shadow-lg p-8 mt-12 mb-12">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Resources</h2>
-            <p className="text-gray-600 mb-6">Select a seed or mutagen</p>
+            <p className="text-gray-600 mb-6">
+              Select a seed, mutagen, or auto breeder
+            </p>
 
             <div className="flex flex-row gap-4 justify-center">
               {/* Seeds */}
@@ -709,7 +821,7 @@ export default function Home() {
                 }}
                 renderItem={(autoBreederStack, isSelected, onSelect) => (
                   <div className="flex flex-col items-center">
-                    <AutoBreeder
+                    <AutoBreederItem
                       count={autoBreederStack.count}
                       size={100}
                       isSelected={isSelected}
@@ -726,7 +838,9 @@ export default function Home() {
           <div className="bg-white rounded-lg shadow-lg p-8 mt-12 mb-12">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Pots</h2>
             <p className="text-gray-600 mb-6">
-              {selectedSeedIds.length > 0
+              {selectedAutoBreederIds.length > 0
+                ? "Select 2 adjacent pots to wrap them in an auto breeder."
+                : selectedSeedIds.length > 0
                 ? "Select an empty pot to plant your seeds."
                 : selectedPotIds.length === 2
                 ? "Select 2 fully grown plants to breed them."
@@ -749,60 +863,214 @@ export default function Home() {
               </button>
             </div>
 
-            <PlantCollection
-              items={pots}
-              selectedIds={selectedPotIds}
-              onSelectionChange={handlePotSelection}
-              draggable={true}
-              onReorder={(reorderedPots) => setPots(reorderedPots)}
-              renderItem={(pot, isSelected, onSelect) => {
-                const isEmpty = !pot.plantId;
-                const plant = pot.plantId
-                  ? cabbages.find((c) => c.id === pot.plantId)
-                  : null;
-                const isFullyGrown = plant
-                  ? fullyGrownCabbageIds.has(plant.id)
-                  : false;
-                // If seeds are selected, only empty pots can be selected (for planting)
-                // If mutagens are selected, only empty pots can be selected (for applying glow)
-                // Otherwise, any pot can be selected (for breeding or culling)
-                const canSelect =
-                  selectedSeedIds.length > 0 || selectedMutagenIds.length > 0
-                    ? isEmpty
-                    : isEmpty || !!plant;
+            {potPairsWithAutoBreeder.length > 0 ? (
+              // Render pots with auto breeder wrappers for applied auto breeders
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                {pots
+                  .map((pot, index) => {
+                    // Skip if this is the second pot of a pair (already rendered in wrapper)
+                    const isSecondPotOfPair = potPairsWithAutoBreeder.some(
+                      ([idx1, idx2]) => index === idx2
+                    );
 
-                const hasGlow = potsWithMutagenGlow.has(pot.id);
+                    if (isSecondPotOfPair) {
+                      return null;
+                    }
 
-                return (
-                  <div className="flex flex-col items-center">
-                    <Pot
-                      size={100}
-                      isSelected={isSelected}
-                      onSelect={canSelect ? onSelect : undefined}
-                      isEmpty={isEmpty}
-                      canSelect={canSelect}
-                      hasMutagenGlow={hasGlow}
-                    >
-                      {plant && (
-                        <Cabbage
-                          genetics={plant.genetics}
-                          size={80}
-                          isSelected={false}
-                          startGrowingAt={plant.startGrowingAt}
-                          onFullyGrown={() => handleCabbageFullyGrown(plant.id)}
-                          showGenotype={false}
-                        />
-                      )}
-                    </Pot>
-                    {showDebugGenotypes && plant && (
-                      <div className="mt-2 text-xs font-mono text-gray-600 bg-gray-100 px-2 py-1 rounded">
-                        {getGenotype(plant.genetics)}
+                    const isEmpty = !pot.plantId;
+                    const plant = pot.plantId
+                      ? cabbages.find((c) => c.id === pot.plantId)
+                      : null;
+                    const isFullyGrown = plant
+                      ? fullyGrownCabbageIds.has(plant.id)
+                      : false;
+                    // If auto breeder is selected, can't select pots that are already in a pair
+                    const isInAutoBreederPair = potIdsInAutoBreederPairs.has(
+                      pot.id
+                    );
+                    const canSelect =
+                      selectedSeedIds.length > 0 ||
+                      selectedMutagenIds.length > 0
+                        ? isEmpty
+                        : selectedAutoBreederIds.length > 0
+                        ? (isEmpty || !!plant) && !isInAutoBreederPair
+                        : isEmpty || !!plant;
+                    const hasGlow = potsWithMutagenGlow.has(pot.id);
+                    const isSelected = selectedPotIds.includes(pot.id);
+
+                    const handleSelect = (selected: boolean) => {
+                      if (selected) {
+                        handlePotSelection([...selectedPotIds, pot.id]);
+                      } else {
+                        handlePotSelection(
+                          selectedPotIds.filter((id) => id !== pot.id)
+                        );
+                      }
+                    };
+
+                    const renderPot = () => (
+                      <div className="flex flex-col items-center">
+                        <Pot
+                          size={100}
+                          isSelected={isSelected}
+                          onSelect={canSelect ? handleSelect : undefined}
+                          isEmpty={isEmpty}
+                          canSelect={canSelect}
+                          hasMutagenGlow={hasGlow}
+                        >
+                          {plant && (
+                            <Cabbage
+                              genetics={plant.genetics}
+                              size={80}
+                              isSelected={false}
+                              startGrowingAt={plant.startGrowingAt}
+                              onFullyGrown={() =>
+                                handleCabbageFullyGrown(plant.id)
+                              }
+                              showGenotype={false}
+                            />
+                          )}
+                        </Pot>
+                        {showDebugGenotypes && plant && (
+                          <div className="mt-2 text-xs font-mono text-gray-600 bg-gray-100 px-2 py-1 rounded">
+                            {getGenotype(plant.genetics)}
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                );
-              }}
-            />
+                    );
+
+                    // If this is the first pot of an auto breeder pair, wrap both pots
+                    const autoBreederPair = potPairsWithAutoBreeder.find(
+                      ([idx1, idx2]) => index === idx1
+                    );
+
+                    if (autoBreederPair) {
+                      const [, pot2Index] = autoBreederPair;
+                      const pot2 = pots[pot2Index];
+                      const isEmpty2 = !pot2.plantId;
+                      const plant2 = pot2.plantId
+                        ? cabbages.find((c) => c.id === pot2.plantId)
+                        : null;
+                      const isFullyGrown2 = plant2
+                        ? fullyGrownCabbageIds.has(plant2.id)
+                        : false;
+                      const isInAutoBreederPair2 = potIdsInAutoBreederPairs.has(
+                        pot2.id
+                      );
+                      const canSelect2 =
+                        selectedSeedIds.length > 0 ||
+                        selectedMutagenIds.length > 0
+                          ? isEmpty2
+                          : selectedAutoBreederIds.length > 0
+                          ? (isEmpty2 || !!plant2) && !isInAutoBreederPair2
+                          : isEmpty2 || !!plant2;
+                      const hasGlow2 = potsWithMutagenGlow.has(pot2.id);
+                      const isSelected2 = selectedPotIds.includes(pot2.id);
+
+                      const handleSelect2 = (selected: boolean) => {
+                        if (selected) {
+                          handlePotSelection([...selectedPotIds, pot2.id]);
+                        } else {
+                          handlePotSelection(
+                            selectedPotIds.filter((id) => id !== pot2.id)
+                          );
+                        }
+                      };
+
+                      return (
+                        <div key={pot.id} className="col-span-2">
+                          <AutoBreeder
+                            pot1={pot}
+                            pot2={pot2}
+                            pot1Plant={plant || undefined}
+                            pot2Plant={plant2 || undefined}
+                            pot1IsSelected={isSelected}
+                            pot2IsSelected={isSelected2}
+                            pot1CanSelect={canSelect}
+                            pot2CanSelect={canSelect2}
+                            pot1HasMutagenGlow={hasGlow}
+                            pot2HasMutagenGlow={hasGlow2}
+                            pot1IsFullyGrown={isFullyGrown}
+                            pot2IsFullyGrown={isFullyGrown2}
+                            fullyGrownCabbageIds={fullyGrownCabbageIds}
+                            onPot1Select={handleSelect}
+                            onPot2Select={handleSelect2}
+                            onCabbageFullyGrown={handleCabbageFullyGrown}
+                            showDebugGenotypes={showDebugGenotypes}
+                          />
+                        </div>
+                      );
+                    }
+
+                    // Render normal pot
+                    return <div key={pot.id}>{renderPot()}</div>;
+                  })
+                  .filter((item) => item !== null)}
+              </div>
+            ) : (
+              <PlantCollection
+                items={pots}
+                selectedIds={selectedPotIds}
+                onSelectionChange={handlePotSelection}
+                draggable={true}
+                onReorder={(reorderedPots) => setPots(reorderedPots)}
+                renderItem={(pot, isSelected, onSelect) => {
+                  const isEmpty = !pot.plantId;
+                  const plant = pot.plantId
+                    ? cabbages.find((c) => c.id === pot.plantId)
+                    : null;
+                  const isFullyGrown = plant
+                    ? fullyGrownCabbageIds.has(plant.id)
+                    : false;
+                  // If seeds are selected, only empty pots can be selected (for planting)
+                  // If mutagens are selected, only empty pots can be selected (for applying glow)
+                  // If auto breeder is selected, allow selecting pots (but not ones already in a pair)
+                  // Otherwise, any pot can be selected (for breeding or culling)
+                  const isInAutoBreederPair = potIdsInAutoBreederPairs.has(
+                    pot.id
+                  );
+                  const canSelect =
+                    selectedSeedIds.length > 0 || selectedMutagenIds.length > 0
+                      ? isEmpty
+                      : selectedAutoBreederIds.length > 0
+                      ? (isEmpty || !!plant) && !isInAutoBreederPair
+                      : isEmpty || !!plant;
+
+                  const hasGlow = potsWithMutagenGlow.has(pot.id);
+
+                  return (
+                    <div className="flex flex-col items-center">
+                      <Pot
+                        size={100}
+                        isSelected={isSelected}
+                        onSelect={canSelect ? onSelect : undefined}
+                        isEmpty={isEmpty}
+                        canSelect={canSelect}
+                        hasMutagenGlow={hasGlow}
+                      >
+                        {plant && (
+                          <Cabbage
+                            genetics={plant.genetics}
+                            size={80}
+                            isSelected={false}
+                            startGrowingAt={plant.startGrowingAt}
+                            onFullyGrown={() =>
+                              handleCabbageFullyGrown(plant.id)
+                            }
+                            showGenotype={false}
+                          />
+                        )}
+                      </Pot>
+                      {showDebugGenotypes && plant && (
+                        <div className="mt-2 text-xs font-mono text-gray-600 bg-gray-100 px-2 py-1 rounded">
+                          {getGenotype(plant.genetics)}
+                        </div>
+                      )}
+                    </div>
+                  );
+                }}
+              />
+            )}
           </div>
 
           {/* Catalog Section */}
