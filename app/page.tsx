@@ -434,7 +434,7 @@ export default function Home() {
   }, [selectedPlants]);
 
   // Handler to sell plants of a specific type
-  const handleSellByType = (isPurple: boolean) => {
+  const handleSellByType = (isPurple: boolean, price: number) => {
     if (selectedPlants.length === 0) return;
 
     // Filter plants by type
@@ -446,9 +446,8 @@ export default function Home() {
 
     if (plantsToSell.length === 0) return;
 
-    // Calculate money earned
-    const pricePerPlant = isPurple ? 10 : 5;
-    const totalEarned = plantsToSell.length * pricePerPlant;
+    // Calculate money earned using the price from catalogItems
+    const totalEarned = plantsToSell.length * price;
     setMoney((prev) => prev + totalEarned);
 
     // Get all plant IDs to remove
@@ -499,7 +498,7 @@ export default function Home() {
       label: "Green Cabbage",
       price: 2,
       canSell: hasGreenSelected,
-      onSell: () => handleSellByType(false),
+      onSell: () => handleSellByType(false, 2),
     },
     {
       id: "purple-cabbage",
@@ -507,7 +506,7 @@ export default function Home() {
       label: "Purple Cabbage",
       price: 10,
       canSell: hasPurpleSelected,
-      onSell: () => handleSellByType(true),
+      onSell: () => handleSellByType(true, 10),
     },
   ];
 
