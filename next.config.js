@@ -5,8 +5,8 @@ const nextConfig = {
     unoptimized: true,
   },
   // If deploying to a subdirectory, uncomment and set your repository name:
-  // basePath: '/plant-breeding',
-  // assetPrefix: '/plant-breeding',
+  basePath: '/plant-breeding',
+  assetPrefix: '/plant-breeding',
 }
 
 module.exports = nextConfig
