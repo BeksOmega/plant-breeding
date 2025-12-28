@@ -30,7 +30,7 @@ interface PotData {
   plantId?: string; // ID of the plant growing in this pot, undefined if empty
 }
 
-const TARGET_PURPLE_COUNT = 3;
+const TARGET_MONEY = 100;
 
 export default function Home() {
   // Start with no cabbages - only seeds
@@ -78,7 +78,7 @@ export default function Home() {
     [fullyGrownCabbagesInPots]
   );
 
-  const hasWon = purpleCount >= TARGET_PURPLE_COUNT;
+  const hasWon = money >= TARGET_MONEY;
 
   const handleBreed = () => {
     if (selectedPotIds.length !== 2) return;
@@ -399,9 +399,7 @@ export default function Home() {
 
           {/* Breeding Game */}
           <div className="bg-white rounded-lg shadow-lg p-8 mt-12 mb-12">
-            <p className="text-gray-600 mb-6">
-              Goal: Breed {TARGET_PURPLE_COUNT} purple cabbages.
-            </p>
+            <p className="text-gray-600 mb-6">Goal: Earn ${TARGET_MONEY}.</p>
             <p className="text-gray-600 mb-6">
               Plant seeds in pots, wait for them to grow, then select 2 fully
               grown plants in pots and click Breed to get 1 seed. Plants remain
@@ -411,14 +409,14 @@ export default function Home() {
             {hasWon && (
               <div className="mb-6 p-4 bg-green-100 border-2 border-green-500 rounded-lg">
                 <p className="text-2xl font-bold text-green-800">
-                  🎉 Congratulations! You've bred {purpleCount} purple cabbages!
+                  🎉 Congratulations! You've earned ${money}!
                 </p>
               </div>
             )}
 
             <div className="mb-6">
               <p className="text-lg font-semibold text-gray-700">
-                Purple Cabbages: {purpleCount} / {TARGET_PURPLE_COUNT}
+                Money: ${money} / ${TARGET_MONEY}
               </p>
             </div>
           </div>
@@ -453,8 +451,8 @@ export default function Home() {
               {selectedSeedIds.length > 0
                 ? "Select an empty pot to plant your seeds."
                 : selectedPotIds.length === 2
-                ? "Select 2 fully grown plants to breed them, or select plants to cull."
-                : "Select seeds and an empty pot to plant, select 2 fully grown plants to breed, or select plants to cull."}
+                ? "Select 2 fully grown plants to breed them."
+                : "Select seeds and an empty pot to plant, select 2 fully grown plants to breed."}
             </p>
             <div className="mb-6 flex gap-4 justify-center">
               <button
@@ -470,20 +468,6 @@ export default function Home() {
                 `}
               >
                 Breed Selected Plants
-              </button>
-              <button
-                onClick={handleCull}
-                disabled={!canCull}
-                className={`
-                  px-6 py-3 rounded-lg font-semibold text-white transition-all
-                  ${
-                    canCull
-                      ? "bg-red-600 hover:bg-red-700 cursor-pointer"
-                      : "bg-gray-400 cursor-not-allowed"
-                  }
-                `}
-              >
-                Cull Selected Plant{selectedPotIds.length !== 1 ? "s" : ""}
               </button>
             </div>
 
