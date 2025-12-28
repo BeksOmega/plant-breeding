@@ -911,99 +911,107 @@ export default function Home() {
 
             <div className="flex flex-row gap-8 justify-center flex-wrap">
               {/* Seeds */}
-              <div className="flex flex-col gap-4 items-center">
-                <div className="flex flex-row gap-4 flex-wrap justify-center">
-                  {seedStacks.map((seedStack) => {
-                    const isSelected = selectedSeedIds.includes(seedStack.id);
-                    return (
-                      <div
-                        key={seedStack.id}
-                        className="flex flex-col items-center"
-                      >
-                        <SeedStack
-                          genetics={seedStack.genetics}
-                          size={100}
-                          isSelected={isSelected}
-                          onSelect={(selected) => {
-                            if (selected) {
-                              handleSeedSelection([seedStack.id]);
-                            } else {
-                              handleSeedSelection([]);
-                            }
-                          }}
-                        />
-                      </div>
-                    );
-                  })}
+              {seedStacks.length > 0 && (
+                <div className="flex flex-col gap-4 items-center">
+                  <div className="flex flex-row gap-4 flex-wrap justify-center">
+                    {seedStacks.map((seedStack) => {
+                      const isSelected = selectedSeedIds.includes(seedStack.id);
+                      return (
+                        <div
+                          key={seedStack.id}
+                          className="flex flex-col items-center"
+                        >
+                          <SeedStack
+                            genetics={seedStack.genetics}
+                            size={100}
+                            isSelected={isSelected}
+                            onSelect={(selected) => {
+                              if (selected) {
+                                handleSeedSelection([seedStack.id]);
+                              } else {
+                                handleSeedSelection([]);
+                              }
+                            }}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <p className="text-gray-600">Cabbages</p>
                 </div>
-                <p className="text-gray-600">Cabbages</p>
-              </div>
+              )}
 
               {/* Mutagens */}
-              <div className="flex flex-col gap-4 items-center">
-                <div className="flex flex-row gap-4 flex-wrap justify-center">
-                  {mutagenStacks.map((mutagenStack) => {
-                    const isSelected = selectedMutagenIds.includes(
-                      mutagenStack.id
-                    );
-                    return (
-                      <div
-                        key={mutagenStack.id}
-                        className="flex flex-col items-center"
-                      >
-                        <Mutagen
-                          count={mutagenStack.count}
-                          size={100}
-                          isSelected={isSelected}
-                          onSelect={(selected) => {
-                            if (selected) {
-                              handleMutagenSelection([mutagenStack.id]);
-                            } else {
-                              handleMutagenSelection([]);
-                            }
-                          }}
-                        />
-                      </div>
-                    );
-                  })}
+              {mutagenStacks.length > 0 && (
+                <div className="flex flex-col gap-4 items-center">
+                  <div className="flex flex-row gap-4 flex-wrap justify-center">
+                    {mutagenStacks.map((mutagenStack) => {
+                      const isSelected = selectedMutagenIds.includes(
+                        mutagenStack.id
+                      );
+                      return (
+                        <div
+                          key={mutagenStack.id}
+                          className="flex flex-col items-center"
+                        >
+                          <Mutagen
+                            count={mutagenStack.count}
+                            size={100}
+                            isSelected={isSelected}
+                            onSelect={(selected) => {
+                              if (selected) {
+                                handleMutagenSelection([mutagenStack.id]);
+                              } else {
+                                handleMutagenSelection([]);
+                              }
+                            }}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <p className="text-gray-600">Mutagens</p>
                 </div>
-                <p className="text-gray-600">Mutagens</p>
-              </div>
+              )}
 
               {/* Auto Breeders */}
-              <div className="flex flex-col gap-4 items-center">
-                <div className="flex flex-row gap-4 flex-wrap justify-center">
-                  {autoBreederStacks.map((autoBreederStack) => {
-                    const isSelected = selectedAutoBreederIds.includes(
-                      autoBreederStack.id
-                    );
-                    return (
-                      <div
-                        key={autoBreederStack.id}
-                        className="flex flex-col items-center"
-                      >
-                        <AutoBreederItem
-                          count={autoBreederStack.count}
-                          size={100}
-                          isSelected={isSelected}
-                          onSelect={(selected: boolean) => {
-                            if (selected) {
-                              setSelectedAutoBreederIds([autoBreederStack.id]);
-                              // Clear other selections when selecting auto breeder
-                              setSelectedPotIds([]);
-                              setSelectedSeedIds([]);
-                              setSelectedMutagenIds([]);
-                            } else {
-                              setSelectedAutoBreederIds([]);
-                            }
-                          }}
-                        />
-                      </div>
-                    );
-                  })}
+              {autoBreederStacks.length > 0 && (
+                <div className="flex flex-col gap-4 items-center">
+                  <div className="flex flex-row gap-4 flex-wrap justify-center">
+                    {autoBreederStacks.map((autoBreederStack) => {
+                      const isSelected = selectedAutoBreederIds.includes(
+                        autoBreederStack.id
+                      );
+                      return (
+                        <div
+                          key={autoBreederStack.id}
+                          className="flex flex-col items-center"
+                        >
+                          <AutoBreederItem
+                            count={autoBreederStack.count}
+                            size={100}
+                            isSelected={isSelected}
+                            onSelect={(selected: boolean) => {
+                              if (selected) {
+                                setSelectedAutoBreederIds([
+                                  autoBreederStack.id,
+                                ]);
+                                // Clear other selections when selecting auto breeder
+                                setSelectedPotIds([]);
+                                setSelectedSeedIds([]);
+                                setSelectedMutagenIds([]);
+                              } else {
+                                setSelectedAutoBreederIds([]);
+                              }
+                            }}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <p className="text-gray-600">Auto Breeders</p>
                 </div>
-                <p className="text-gray-600">Auto Breeders</p>
-              </div>
+              )}
             </div>
           </div>
 
