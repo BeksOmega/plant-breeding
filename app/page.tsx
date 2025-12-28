@@ -6,6 +6,7 @@ import Cabbage from "./components/Cabbage";
 import SeedStack from "./components/SeedStack";
 import Pot from "./components/Pot";
 import { PlantGenetics, breed, countPurpleCabbages } from "./types/genetics";
+import { randomInRange } from "./utils/random";
 
 interface CabbageData {
   id: string;
@@ -51,6 +52,7 @@ export default function Home() {
     { id: "p2" },
     { id: "p3" },
     { id: "p4" },
+    { id: "p5" },
   ]);
   const [selectedPotIds, setSelectedPotIds] = useState<string[]>([]);
 
@@ -91,8 +93,9 @@ export default function Home() {
     }
 
     // Generate 2 seeds from breeding
-    const seed1Genetics = breed(parent1.genetics, parent2.genetics);
-    const seed2Genetics = breed(parent1.genetics, parent2.genetics);
+    const seeds = Array.from({ length: randomInRange(2, 3) }, () =>
+      breed(parent1.genetics, parent2.genetics)
+    );
 
     // Add seeds to the first seed stack (or create a new one if none exist)
     setSeedStacks((prev) => {
@@ -100,7 +103,7 @@ export default function Home() {
         return [
           {
             id: `s${Date.now()}`,
-            genetics: [seed1Genetics, seed2Genetics],
+            genetics: seeds,
           },
         ];
       }
@@ -109,7 +112,7 @@ export default function Home() {
         index === 0
           ? {
               ...stack,
-              genetics: [...stack.genetics, seed1Genetics, seed2Genetics],
+              genetics: [...stack.genetics, ...seeds],
             }
           : stack
       );
@@ -240,33 +243,6 @@ export default function Home() {
                 Purple Cabbages: {purpleCount} / {TARGET_PURPLE_COUNT}
               </p>
             </div>
-
-            <div className="mb-6">
-              <button
-                onClick={handleBreed}
-                disabled={!canBreed}
-                className={`
-                  px-6 py-3 rounded-lg font-semibold text-white transition-all
-                  ${
-                    canBreed
-                      ? "bg-green-600 hover:bg-green-700 cursor-pointer"
-                      : "bg-gray-400 cursor-not-allowed"
-                  }
-                `}
-              >
-                Breed Selected Plants
-              </button>
-              {selectedPotIds.length === 2 && !canBreed && (
-                <p className="mt-2 text-sm text-gray-500">
-                  Select 2 fully grown plants to breed
-                </p>
-              )}
-              {selectedPotIds.length > 0 && canBreed && (
-                <p className="mt-2 text-sm text-gray-600">
-                  {selectedPotIds.length} pot(s) selected - ready to breed!
-                </p>
-              )}
-            </div>
           </div>
 
           {/* Seed Stacks Section */}
@@ -302,6 +278,23 @@ export default function Home() {
                 ? "Select 2 fully grown plants to breed them."
                 : "Select seeds and an empty pot to plant, or select 2 fully grown plants to breed."}
             </p>
+            <div className="mb-6">
+              <button
+                onClick={handleBreed}
+                disabled={!canBreed}
+                className={`
+                  px-6 py-3 rounded-lg font-semibold text-white transition-all
+                  ${
+                    canBreed
+                      ? "bg-green-600 hover:bg-green-700 cursor-pointer"
+                      : "bg-gray-400 cursor-not-allowed"
+                  }
+                `}
+              >
+                Breed Selected Plants
+              </button>
+            </div>
+
             <PlantCollection
               items={pots}
               maxSelected={2}
