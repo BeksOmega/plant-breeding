@@ -84,6 +84,10 @@ export default function Home() {
   ]);
   const [selectedPotIds, setSelectedPotIds] = useState<string[]>([]);
 
+  // Shelf state - stores pots that are on the shelf
+  const [shelfPots, setShelfPots] = useState<PotData[]>([]);
+  const [selectedShelfPotIds, setSelectedShelfPotIds] = useState<string[]>([]);
+
   // Money state - earned from selling cabbages
   const [money, setMoney] = useState<number>(0);
 
@@ -353,6 +357,71 @@ export default function Home() {
     });
   }, [selectedPotIds, pots]);
 
+  // Check if we can move to shelf (need at least 1 pot with a plant selected)
+  const canMoveToShelf = useMemo(() => {
+    if (selectedPotIds.length === 0) return false;
+    return selectedPotIds.some((potId) => {
+      const pot = pots.find((p) => p.id === potId);
+      return pot && pot.plantId;
+    });
+  }, [selectedPotIds, pots]);
+
+  // Handler to move pots (with plants) from pots collection to shelf
+  const handleMoveToShelf = () => {
+    if (selectedPotIds.length === 0) return;
+
+    // Get all selected pots with plants
+    const potsToMove = selectedPotIds
+      .map((potId) => pots.find((p) => p.id === potId))
+      .filter((pot) => pot && pot.plantId) as PotData[];
+
+    if (potsToMove.length === 0) return;
+
+    // Add pots to shelf
+    setShelfPots((prev) => [...prev, ...potsToMove]);
+
+    // Remove pots from pots collection
+    setPots((prev) => prev.filter((p) => !selectedPotIds.includes(p.id)));
+
+    // Remove mutagen glow from pots that were moved
+    setPotsWithMutagenGlow((prev) => {
+      const updated = new Set(prev);
+      selectedPotIds.forEach((id) => updated.delete(id));
+      return updated;
+    });
+
+    // Clear selection
+    setSelectedPotIds([]);
+  };
+
+  // Check if we can move from shelf (need selected pots)
+  const canMoveFromShelf = useMemo(() => {
+    return selectedShelfPotIds.length > 0;
+  }, [selectedShelfPotIds]);
+
+  // Handler to move pots from shelf back to pots collection
+  const handleMoveFromShelf = () => {
+    if (selectedShelfPotIds.length === 0) return;
+
+    // Get pots to move from shelf
+    const potsToMove = shelfPots.filter((pot) =>
+      selectedShelfPotIds.includes(pot.id)
+    );
+
+    if (potsToMove.length === 0) return;
+
+    // Add pots back to pots collection
+    setPots((prev) => [...prev, ...potsToMove]);
+
+    // Remove pots from shelf
+    setShelfPots((prev) =>
+      prev.filter((pot) => !selectedShelfPotIds.includes(pot.id))
+    );
+
+    // Clear selection
+    setSelectedShelfPotIds([]);
+  };
+
   // Check if we can sell (need at least 1 pot with a fully grown plant selected)
   const canSell = useMemo(() => {
     if (selectedPotIds.length === 0) return false;
@@ -560,7 +629,8 @@ export default function Home() {
               grown plants in pots and click Breed to get 1 seed.
             </p>
             <p className="text-gray-600 mb-6">
-              Make faster growing and more valuable plants by breeding and mutating them.
+              Make faster growing and more valuable plants by breeding and
+              mutating them.
             </p>
 
             {hasWon && (
@@ -649,6 +719,21 @@ export default function Home() {
               >
                 Breed Selected Plants
               </button>
+              <button
+                onClick={handleMoveToShelf}
+                disabled={!canMoveToShelf}
+                className={`
+                  px-6 py-3 rounded-lg font-semibold text-white transition-all
+                  ${
+                    canMoveToShelf
+                      ? "bg-blue-600 hover:bg-blue-700 cursor-pointer"
+                      : "bg-gray-400 cursor-not-allowed"
+                  }
+                `}
+                title="Store plants to use for genetic diversity."
+              >
+                Move to Shelf
+              </button>
             </div>
 
             <PlantCollection
@@ -704,6 +789,78 @@ export default function Home() {
               }}
             />
           </div>
+
+          {/* Shelf Section - only show if there are pots on the shelf */}
+          {shelfPots.length > 0 && (
+            <div className="bg-white rounded-lg shadow-lg p-8 mt-12 mb-12">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Shelf</h2>
+              <p className="text-gray-600 mb-6">
+                Store plants to use for genetic diversity.
+              </p>
+              <div className="mb-6 flex gap-4 justify-center">
+                <button
+                  onClick={handleMoveFromShelf}
+                  disabled={!canMoveFromShelf}
+                  className={`
+                    px-6 py-3 rounded-lg font-semibold text-white transition-all
+                    ${
+                      canMoveFromShelf
+                        ? "bg-blue-600 hover:bg-blue-700 cursor-pointer"
+                        : "bg-gray-400 cursor-not-allowed"
+                    }
+                  `}
+                >
+                  Move to Pots
+                </button>
+              </div>
+              <PlantCollection
+                items={shelfPots}
+                selectedIds={selectedShelfPotIds}
+                onSelectionChange={setSelectedShelfPotIds}
+                renderItem={(pot, isSelected, onSelect) => {
+                  const isEmpty = !pot.plantId;
+                  const plant = pot.plantId
+                    ? cabbages.find((c) => c.id === pot.plantId)
+                    : null;
+                  const isFullyGrown = plant
+                    ? fullyGrownCabbageIds.has(plant.id)
+                    : false;
+                  const hasGlow = potsWithMutagenGlow.has(pot.id);
+
+                  return (
+                    <div className="flex flex-col items-center">
+                      <Pot
+                        size={100}
+                        isSelected={isSelected}
+                        onSelect={onSelect}
+                        isEmpty={isEmpty}
+                        canSelect={true}
+                        hasMutagenGlow={hasGlow}
+                      >
+                        {plant && (
+                          <Cabbage
+                            genetics={plant.genetics}
+                            size={80}
+                            isSelected={false}
+                            startGrowingAt={plant.startGrowingAt}
+                            onFullyGrown={() =>
+                              handleCabbageFullyGrown(plant.id)
+                            }
+                            showGenotype={false}
+                          />
+                        )}
+                      </Pot>
+                      {showDebugGenotypes && plant && (
+                        <div className="mt-2 text-xs font-mono text-gray-600 bg-gray-100 px-2 py-1 rounded">
+                          {getGenotype(plant.genetics)}
+                        </div>
+                      )}
+                    </div>
+                  );
+                }}
+              />
+            </div>
+          )}
 
           {/* Catalog Section */}
           <div className="mt-12 mb-12">
