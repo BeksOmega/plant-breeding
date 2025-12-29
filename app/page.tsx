@@ -810,16 +810,32 @@ export default function Home() {
 
   // Get selected plant(s) for catalog
   const selectedPlants = useMemo(() => {
+    // Get set of pot IDs that are in auto breeders
+    const potIdsInAutoBreeders = new Set<string>();
+    potsWithAutoBreeder.forEach((pairKey) => {
+      const [potId1, potId2] = pairKey.split("-");
+      potIdsInAutoBreeders.add(potId1);
+      potIdsInAutoBreeders.add(potId2);
+    });
+
     return selectedPotIds
       .map((potId) => {
         const pot = pots.find((p) => p.id === potId);
         if (!pot?.plantId) return null;
+        // Skip plants that are in an auto breeder
+        if (potIdsInAutoBreeders.has(potId)) return null;
         const plant = cabbages.find((c) => c.id === pot.plantId);
         if (!plant || !fullyGrownCabbageIds.has(plant.id)) return null;
         return { pot, plant };
       })
       .filter(Boolean) as Array<{ pot: PotData; plant: CabbageData }>;
-  }, [selectedPotIds, pots, cabbages, fullyGrownCabbageIds]);
+  }, [
+    selectedPotIds,
+    pots,
+    cabbages,
+    fullyGrownCabbageIds,
+    potsWithAutoBreeder,
+  ]);
 
   // Check if selected plant is purple (both chromosomes are true)
   const hasPurpleSelected = useMemo(() => {
