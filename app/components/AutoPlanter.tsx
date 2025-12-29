@@ -33,6 +33,9 @@ interface AutoPlanterProps {
   associatedBreederPairKey?: string;
   showDebugGenotypes?: boolean;
   onTryPlantFromBreeder?: (breederPairKey: string, planterPotId: string) => void;
+  // Optional auto-harvest props (when pot also has auto harvester)
+  onHarvest?: (plant: CabbageData, potId: string) => void;
+  countTotalItems?: () => number;
 }
 
 const AutoPlanter = function AutoPlanter({
@@ -52,10 +55,13 @@ const AutoPlanter = function AutoPlanter({
   associatedBreederPairKey,
   showDebugGenotypes = false,
   onTryPlantFromBreeder,
+  onHarvest,
+  countTotalItems,
 }: AutoPlanterProps) {
   const [isHovered, setIsHovered] = useState(false);
   const potIsEmpty = !pot.plantId;
   const prevAssociatedBreederRef = useRef<string | undefined>(undefined);
+  const harvestedPlantIdRef = useRef<string | null>(null);
 
   // Watch for association changes and try to plant immediately
   useEffect(() => {
@@ -89,6 +95,36 @@ const AutoPlanter = function AutoPlanter({
     }
   };
 
+  // Handle plant becoming fully grown - check if we should auto-harvest (if harvester is also present)
+  const handlePlantFullyGrown = () => {
+    if (!potPlant) return;
+    
+    // Notify parent that plant is fully grown
+    onCabbageFullyGrown(potPlant.id);
+    
+    // If auto harvester is also present, check if we should auto-harvest
+    if (onHarvest && countTotalItems) {
+      // Check if we should auto-harvest (prevent duplicate harvests)
+      if (harvestedPlantIdRef.current !== potPlant.id) {
+        // Check if selling would leave us with 2 or fewer total items
+        const currentTotal = countTotalItems();
+        if (currentTotal - 1 >= 2) {
+          harvestedPlantIdRef.current = potPlant.id;
+          onHarvest(potPlant, pot.id);
+        }
+      }
+    }
+  };
+
+  // Reset ref when plant changes
+  useEffect(() => {
+    if (!potPlant) {
+      harvestedPlantIdRef.current = null;
+    } else if (harvestedPlantIdRef.current && harvestedPlantIdRef.current !== potPlant.id) {
+      harvestedPlantIdRef.current = null;
+    }
+  }, [potPlant]);
+
   const renderPot = (
     pot: PotData,
     plant: CabbageData | undefined,
@@ -114,7 +150,7 @@ const AutoPlanter = function AutoPlanter({
             size={80}
             isSelected={false}
             startGrowingAt={plant.startGrowingAt}
-            onFullyGrown={() => onCabbageFullyGrown(plant.id)}
+            onFullyGrown={handlePlantFullyGrown}
             showGenotype={false}
           />
         )}

@@ -1943,6 +1943,15 @@ export default function Home() {
                             associatedBreederPairKey={associatedBreederPairKey}
                             showDebugGenotypes={showDebugGenotypes}
                             onTryPlantFromBreeder={handleTryPlantFromBreeder}
+                            // Pass auto-harvest props if harvester is also present
+                            onHarvest={
+                              potHasAutoHarvester
+                                ? handleAutoHarvest
+                                : undefined
+                            }
+                            countTotalItems={
+                              potHasAutoHarvester ? countTotalItems : undefined
+                            }
                           />
                           {potHasAutoHarvester && (
                             <div
