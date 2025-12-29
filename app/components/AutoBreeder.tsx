@@ -38,6 +38,10 @@ interface AutoBreederProps {
   onRemove?: (seeds: PlantGenetics[]) => void;
   onSeedsSelect?: (selected: boolean) => void;
   isSeedsSelected?: boolean;
+  isSelected?: boolean;
+  onSelect?: (selected: boolean) => void;
+  associatedPlanterPotIds?: string[];
+  onSeedGenerated?: () => void;
   showDebugGenotypes?: boolean;
 }
 
@@ -69,6 +73,10 @@ const AutoBreeder = forwardRef<AutoBreederHandle, AutoBreederProps>(
       onRemove,
       onSeedsSelect,
       isSeedsSelected = false,
+      isSelected = false,
+      onSelect,
+      associatedPlanterPotIds = [],
+      onSeedGenerated,
       showDebugGenotypes = false,
     },
     ref
@@ -107,6 +115,8 @@ const AutoBreeder = forwardRef<AutoBreederHandle, AutoBreederProps>(
           // Generate exactly 1 seed from breeding
           const newSeed = breed(pot1Plant!.genetics, pot2Plant!.genetics);
           setSeeds((prev) => [...prev, newSeed]);
+          // Notify that a seed was generated
+          onSeedGenerated?.();
           // Reset timer
           setLastBreedTime(Date.now());
           setBreedingProgress(0);
@@ -192,11 +202,23 @@ const AutoBreeder = forwardRef<AutoBreederHandle, AutoBreederProps>(
       </div>
     );
 
+    const handleAutoBreederClick = (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (onSelect) {
+        onSelect(!isSelected);
+      }
+    };
+
     return (
       <div
-        className="border-4 border-red-500 rounded-lg p-2 flex gap-4 items-center justify-center bg-red-50 relative"
+        className={`border-4 rounded-lg p-2 flex gap-4 items-center justify-center relative transition-all ${
+          isSelected
+            ? "border-red-600 bg-red-100 ring-4 ring-red-500 ring-offset-2"
+            : "border-red-500 bg-red-50"
+        } ${onSelect ? "cursor-pointer" : ""}`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
+        onClick={onSelect ? handleAutoBreederClick : undefined}
       >
         {/* Seed count display at the top */}
         {(seeds.length > 0 || canBreed) && (
@@ -259,6 +281,16 @@ const AutoBreeder = forwardRef<AutoBreederHandle, AutoBreederProps>(
           >
             ×
           </button>
+        )}
+        {associatedPlanterPotIds.length > 0 && (
+          <div
+            className="absolute top-1 left-1 bg-blue-500 text-white text-xs font-bold rounded-full border-2 border-white flex items-center justify-center min-w-[20px] h-5 px-1"
+            title={`Associated with ${
+              associatedPlanterPotIds.length
+            } auto planter${associatedPlanterPotIds.length !== 1 ? "s" : ""}`}
+          >
+            {associatedPlanterPotIds.length}
+          </div>
         )}
         {renderPot(
           pot1,

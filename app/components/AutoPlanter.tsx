@@ -27,6 +27,10 @@ interface AutoPlanterProps {
   onPotSelect: (selected: boolean) => void;
   onCabbageFullyGrown: (cabbageId: string) => void;
   onRemove?: () => void;
+  isSelected?: boolean;
+  onSelect?: (selected: boolean) => void;
+  canAssociate?: boolean;
+  associatedBreederPairKey?: string;
   showDebugGenotypes?: boolean;
 }
 
@@ -41,10 +45,21 @@ const AutoPlanter = function AutoPlanter({
   onPotSelect,
   onCabbageFullyGrown,
   onRemove,
+  isSelected = false,
+  onSelect,
+  canAssociate = false,
+  associatedBreederPairKey,
   showDebugGenotypes = false,
 }: AutoPlanterProps) {
   const [isHovered, setIsHovered] = useState(false);
   const potIsEmpty = !pot.plantId;
+
+  const handleAutoPlanterClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onSelect) {
+      onSelect(!isSelected);
+    }
+  };
 
   const handleRemove = () => {
     if (onRemove) {
@@ -92,9 +107,16 @@ const AutoPlanter = function AutoPlanter({
 
   return (
     <div
-      className="border-4 border-green-500 rounded-lg p-2 flex gap-4 items-center justify-center bg-green-50 relative"
+      className={`border-4 rounded-lg p-2 flex gap-4 items-center justify-center relative transition-all ${
+        isSelected
+          ? "border-green-600 bg-green-100 ring-4 ring-green-500 ring-offset-2"
+          : canAssociate
+          ? "border-green-500 bg-green-100 hover:border-green-600"
+          : "border-green-500 bg-green-50"
+      } ${onSelect ? "cursor-pointer" : ""}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onClick={onSelect ? handleAutoPlanterClick : undefined}
     >
       {onRemove && isHovered && (
         <button
@@ -107,6 +129,9 @@ const AutoPlanter = function AutoPlanter({
         >
           ×
         </button>
+      )}
+      {associatedBreederPairKey && (
+        <div className="absolute top-1 left-1 w-3 h-3 bg-blue-500 rounded-full border-2 border-white" title="Associated with auto breeder" />
       )}
       {renderPot(
         pot,

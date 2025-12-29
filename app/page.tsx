@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import PlantCollection from "./components/PlantCollection";
 import Cabbage from "./components/Cabbage";
 import SeedStack from "./components/SeedStack";
@@ -118,6 +118,17 @@ export default function Home() {
   // Selected auto breeder seed pairs (Set of pair keys)
   const [selectedAutoBreederSeedPairs, setSelectedAutoBreederSeedPairs] =
     useState<Set<string>>(new Set());
+
+  // Selected auto breeder (pair key) for association
+  const [
+    selectedAutoBreederForAssociation,
+    setSelectedAutoBreederForAssociation,
+  ] = useState<string | null>(null);
+
+  // Associations between auto planters (pot IDs) and auto breeders (pair keys)
+  // Map: planter pot ID -> breeder pair key (one planter can only have one breeder)
+  const [autoPlanterBreederAssociations, setAutoPlanterBreederAssociations] =
+    useState<Map<string, string>>(new Map());
 
   // Refs to auto breeder components (Map of pair key -> ref)
   const autoBreederRefs = useRef<Map<string, AutoBreederHandle>>(new Map());
@@ -278,6 +289,58 @@ export default function Home() {
 
   const handleCabbageFullyGrown = (cabbageId: string) => {
     setFullyGrownCabbageIds((prev) => new Set(prev).add(cabbageId));
+  };
+
+  // Handle seed generated from auto breeder - check for associated auto planters
+  const handleAutoBreederSeedGenerated = (breederPairKey: string) => {
+    // Find all auto planters associated with this breeder
+    const associatedPlanterPotIds = Array.from(
+      autoPlanterBreederAssociations.entries()
+    )
+      .filter(([_, key]) => key === breederPairKey)
+      .map(([potId]) => potId);
+
+    // Try to plant seeds in empty associated planters
+    for (const planterPotId of associatedPlanterPotIds) {
+      const pot = pots.find((p) => p.id === planterPotId);
+      if (pot && !pot.plantId) {
+        // Pot is empty, check if breeder has seeds
+        const autoBreederRef = autoBreederRefs.current.get(breederPairKey);
+        if (autoBreederRef && autoBreederRef.hasSeeds()) {
+          const seedGenetics = autoBreederRef.getSeed();
+          if (seedGenetics) {
+            // Use the genetics from the auto breeder seed
+            let newGenetics = seedGenetics;
+
+            // If pot has mutagen glow, mutate the genetics
+            if (potsWithMutagenGlow.has(planterPotId)) {
+              newGenetics = mutate(newGenetics);
+            }
+
+            const now = Date.now();
+            const newCabbageId = `c${now}`;
+            const newCabbage: CabbageData = {
+              id: newCabbageId,
+              genetics: newGenetics,
+              startGrowingAt: now,
+            };
+
+            // Add the new plant
+            setCabbages((prev) => [...prev, newCabbage]);
+
+            // Assign plant to pot
+            setPots((prev) =>
+              prev.map((p) =>
+                p.id === planterPotId ? { ...p, plantId: newCabbageId } : p
+              )
+            );
+
+            // Only plant one seed per generation event
+            break;
+          }
+        }
+      }
+    }
   };
 
   // Handle seed selection - clear pot selections when selecting a seed
@@ -844,6 +907,17 @@ export default function Home() {
     // Create the pair key (sorted to match how it's stored)
     const pairKey = [pot1Id, pot2Id].sort().join("-");
 
+    // Remove any associations with this auto breeder
+    setAutoPlanterBreederAssociations((prev) => {
+      const updated = new Map(prev);
+      Array.from(updated.entries()).forEach(([planterPotId, breederKey]) => {
+        if (breederKey === pairKey) {
+          updated.delete(planterPotId);
+        }
+      });
+      return updated;
+    });
+
     // Add seeds from the auto breeder to general resources
     if (seeds.length > 0) {
       setSeedStacks((prev) => {
@@ -1232,7 +1306,9 @@ export default function Home() {
           <div className="bg-white rounded-lg shadow-lg p-8 mt-12 mb-12">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Pots</h2>
             <p className="text-gray-600 mb-6">
-              {selectedAutoBreederIds.length > 0
+              {selectedAutoBreederForAssociation !== null
+                ? "Select auto planter(s) to associate with this auto breeder."
+                : selectedAutoBreederIds.length > 0
                 ? "Select 2 adjacent pots to wrap them in an auto breeder."
                 : selectedAutoPlanterIds.length > 0
                 ? "Select 1 pot to wrap it in an auto planter."
@@ -1409,6 +1485,29 @@ export default function Home() {
                         });
                       };
 
+                      const isAutoBreederSelectedForAssociation =
+                        selectedAutoBreederForAssociation === pairKey;
+                      // Get all planters associated with this breeder
+                      const associatedPlanterPotIds = Array.from(
+                        autoPlanterBreederAssociations.entries()
+                      )
+                        .filter(([_, breederKey]) => breederKey === pairKey)
+                        .map(([planterPotId]) => planterPotId);
+
+                      const handleAutoBreederSelect = (selected: boolean) => {
+                        if (selected) {
+                          // Select this breeder for association
+                          setSelectedAutoBreederForAssociation(pairKey);
+                          // Clear other selections
+                          setSelectedPotIds([]);
+                          setSelectedSeedIds([]);
+                          setSelectedMutagenIds([]);
+                          setSelectedAutoBreederIds([]);
+                        } else {
+                          setSelectedAutoBreederForAssociation(null);
+                        }
+                      };
+
                       return (
                         <div key={pot.id} className="col-span-2">
                           <AutoBreeder
@@ -1440,6 +1539,12 @@ export default function Home() {
                             }
                             onSeedsSelect={handleSeedsSelect}
                             isSeedsSelected={isSeedsSelected}
+                            isSelected={isAutoBreederSelectedForAssociation}
+                            onSelect={handleAutoBreederSelect}
+                            associatedPlanterPotIds={associatedPlanterPotIds}
+                            onSeedGenerated={() =>
+                              handleAutoBreederSeedGenerated(pairKey)
+                            }
                             showDebugGenotypes={showDebugGenotypes}
                           />
                         </div>
@@ -1451,6 +1556,28 @@ export default function Home() {
                       potsWithAutoPlanterIndices.includes(index);
 
                     if (hasAutoPlanter) {
+                      const isAutoPlanterSelected = false; // Planters are not selected for association, only breeders are
+                      const associatedBreederPairKey =
+                        autoPlanterBreederAssociations.get(pot.id);
+                      const canAssociateWithBreeder =
+                        selectedAutoBreederForAssociation !== null;
+
+                      const handleAutoPlanterSelect = (selected: boolean) => {
+                        if (selected && selectedAutoBreederForAssociation) {
+                          // Create association (or reassign if already associated)
+                          setAutoPlanterBreederAssociations((prev) => {
+                            const updated = new Map(prev);
+                            // If this planter was already associated with a different breeder, remove that association
+                            updated.set(
+                              pot.id,
+                              selectedAutoBreederForAssociation
+                            );
+                            return updated;
+                          });
+                          // Don't clear the breeder selection so user can associate multiple planters
+                        }
+                      };
+
                       return (
                         <div key={pot.id}>
                           <AutoPlanter
@@ -1463,7 +1590,23 @@ export default function Home() {
                             fullyGrownCabbageIds={fullyGrownCabbageIds}
                             onPotSelect={handleSelect}
                             onCabbageFullyGrown={handleCabbageFullyGrown}
-                            onRemove={() => handleRemoveAutoPlanter(pot.id)}
+                            onRemove={() => {
+                              handleRemoveAutoPlanter(pot.id);
+                              // Remove association if it exists
+                              setAutoPlanterBreederAssociations((prev) => {
+                                const updated = new Map(prev);
+                                updated.delete(pot.id);
+                                return updated;
+                              });
+                            }}
+                            isSelected={isAutoPlanterSelected}
+                            onSelect={
+                              canAssociateWithBreeder
+                                ? handleAutoPlanterSelect
+                                : undefined
+                            }
+                            canAssociate={canAssociateWithBreeder}
+                            associatedBreederPairKey={associatedBreederPairKey}
                             showDebugGenotypes={showDebugGenotypes}
                           />
                         </div>
