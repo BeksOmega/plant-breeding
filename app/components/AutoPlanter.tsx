@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Pot from "./Pot";
 import Cabbage from "./Cabbage";
 import { PlantGenetics, getGenotype } from "../types/genetics";
@@ -32,6 +32,7 @@ interface AutoPlanterProps {
   canAssociate?: boolean;
   associatedBreederPairKey?: string;
   showDebugGenotypes?: boolean;
+  onTryPlantFromBreeder?: (breederPairKey: string, planterPotId: string) => void;
 }
 
 const AutoPlanter = function AutoPlanter({
@@ -50,9 +51,30 @@ const AutoPlanter = function AutoPlanter({
   canAssociate = false,
   associatedBreederPairKey,
   showDebugGenotypes = false,
+  onTryPlantFromBreeder,
 }: AutoPlanterProps) {
   const [isHovered, setIsHovered] = useState(false);
   const potIsEmpty = !pot.plantId;
+  const prevAssociatedBreederRef = useRef<string | undefined>(undefined);
+
+  // Watch for association changes and try to plant immediately
+  useEffect(() => {
+    // If we just got associated with a breeder (or changed association), try to plant
+    if (associatedBreederPairKey && 
+        associatedBreederPairKey !== prevAssociatedBreederRef.current &&
+        potIsEmpty &&
+        onTryPlantFromBreeder) {
+      onTryPlantFromBreeder(associatedBreederPairKey, pot.id);
+    }
+    prevAssociatedBreederRef.current = associatedBreederPairKey;
+  }, [associatedBreederPairKey, potIsEmpty, pot.id, onTryPlantFromBreeder]);
+
+  // Also try to plant when the pot becomes empty (if we're already associated)
+  useEffect(() => {
+    if (potIsEmpty && associatedBreederPairKey && onTryPlantFromBreeder) {
+      onTryPlantFromBreeder(associatedBreederPairKey, pot.id);
+    }
+  }, [potIsEmpty, associatedBreederPairKey, pot.id, onTryPlantFromBreeder]);
 
   const handleAutoPlanterClick = (e: React.MouseEvent) => {
     e.stopPropagation();

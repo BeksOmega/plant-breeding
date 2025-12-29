@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import PlantCollection from "./components/PlantCollection";
 import Cabbage from "./components/Cabbage";
 import SeedStack from "./components/SeedStack";
@@ -290,57 +290,78 @@ export default function Home() {
     setFullyGrownCabbageIds((prev) => new Set(prev).add(cabbageId));
   };
 
-  // Handle seed generated from auto breeder - check for associated auto planters
-  const handleAutoBreederSeedGenerated = (breederPairKey: string) => {
-    // Find all auto planters associated with this breeder
-    const associatedPlanterPotIds = Array.from(
-      autoPlanterBreederAssociations.entries()
-    )
-      .filter(([_, key]) => key === breederPairKey)
-      .map(([potId]) => potId);
+  // Helper function to try planting a seed from a breeder into an associated planter
+  const tryPlantSeedFromBreeder = useCallback(
+    (breederPairKey: string, planterPotId?: string) => {
+      // If a specific planter pot ID is provided, only try that one
+      // Otherwise, try all associated planters
+      const planterPotIdsToTry = planterPotId
+        ? [planterPotId]
+        : Array.from(autoPlanterBreederAssociations.entries())
+            .filter(([_, key]) => key === breederPairKey)
+            .map(([potId]) => potId);
 
-    // Try to plant seeds in empty associated planters
-    for (const planterPotId of associatedPlanterPotIds) {
-      const pot = pots.find((p) => p.id === planterPotId);
-      if (pot && !pot.plantId) {
-        // Pot is empty, check if breeder has seeds
-        const autoBreederRef = autoBreederRefs.current.get(breederPairKey);
-        if (autoBreederRef && autoBreederRef.hasSeeds()) {
-          const seedGenetics = autoBreederRef.getSeed();
-          if (seedGenetics) {
-            // Use the genetics from the auto breeder seed
-            let newGenetics = seedGenetics;
+      // Try to plant seeds in empty associated planters
+      for (const targetPlanterPotId of planterPotIdsToTry) {
+        const pot = pots.find((p) => p.id === targetPlanterPotId);
+        if (pot && !pot.plantId) {
+          // Pot is empty, check if breeder has seeds
+          const autoBreederRef = autoBreederRefs.current.get(breederPairKey);
+          if (autoBreederRef && autoBreederRef.hasSeeds()) {
+            const seedGenetics = autoBreederRef.getSeed();
+            if (seedGenetics) {
+              // Use the genetics from the auto breeder seed
+              let newGenetics = seedGenetics;
 
-            // If pot has mutagen glow, mutate the genetics
-            if (potsWithMutagenGlow.has(planterPotId)) {
-              newGenetics = mutate(newGenetics);
+              // If pot has mutagen glow, mutate the genetics
+              if (potsWithMutagenGlow.has(targetPlanterPotId)) {
+                newGenetics = mutate(newGenetics);
+              }
+
+              const now = Date.now();
+              const newCabbageId = `c${now}`;
+              const newCabbage: CabbageData = {
+                id: newCabbageId,
+                genetics: newGenetics,
+                startGrowingAt: now,
+              };
+
+              // Add the new plant
+              setCabbages((prev) => [...prev, newCabbage]);
+
+              // Assign plant to pot
+              setPots((prev) =>
+                prev.map((p) =>
+                  p.id === targetPlanterPotId
+                    ? { ...p, plantId: newCabbageId }
+                    : p
+                )
+              );
+
+              // Only plant one seed per call
+              return true;
             }
-
-            const now = Date.now();
-            const newCabbageId = `c${now}`;
-            const newCabbage: CabbageData = {
-              id: newCabbageId,
-              genetics: newGenetics,
-              startGrowingAt: now,
-            };
-
-            // Add the new plant
-            setCabbages((prev) => [...prev, newCabbage]);
-
-            // Assign plant to pot
-            setPots((prev) =>
-              prev.map((p) =>
-                p.id === planterPotId ? { ...p, plantId: newCabbageId } : p
-              )
-            );
-
-            // Only plant one seed per generation event
-            break;
           }
         }
       }
-    }
+      return false;
+    },
+    [autoPlanterBreederAssociations, pots, potsWithMutagenGlow]
+  );
+
+  // Handle seed generated from auto breeder - check for associated auto planters
+  const handleAutoBreederSeedGenerated = (breederPairKey: string) => {
+    tryPlantSeedFromBreeder(breederPairKey);
   };
+
+  // Callback for auto planter to try planting from associated breeder
+  const handleTryPlantFromBreeder = useCallback(
+    (breederPairKey: string, planterPotId: string) => {
+      // Try planting in this specific planter's pot
+      tryPlantSeedFromBreeder(breederPairKey, planterPotId);
+    },
+    [tryPlantSeedFromBreeder]
+  );
 
   // Handle seed selection - clear pot selections when selecting a seed
   const handleSeedSelection = (seedIds: string[]) => {
@@ -1575,6 +1596,7 @@ export default function Home() {
                             );
                             return updated;
                           });
+                          // The AutoPlanter component will handle planting immediately when association is created
                           // Don't clear the breeder selection so user can associate multiple planters
                         }
                       };
@@ -1609,6 +1631,7 @@ export default function Home() {
                             canAssociate={canAssociateWithBreeder}
                             associatedBreederPairKey={associatedBreederPairKey}
                             showDebugGenotypes={showDebugGenotypes}
+                            onTryPlantFromBreeder={handleTryPlantFromBreeder}
                           />
                         </div>
                       );
