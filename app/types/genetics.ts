@@ -4,31 +4,42 @@
 // false = dominant chromosome
 // chromosome1[0] and chromosome2[0]: color trait (purple/green)
 // chromosome1[1] and chromosome2[1]: growing speed trait (slow/fast)
+// chromosome1[2] and chromosome2[2]: blue trait (blue/non-blue)
 
 export interface PlantGenetics {
-  chromosome1: [boolean, boolean]; // First chromosome: [color, speed]
-  chromosome2: [boolean, boolean]; // Second chromosome: [color, speed]
+  chromosome1: [boolean, boolean, boolean]; // First chromosome: [color, speed, blue]
+  chromosome2: [boolean, boolean, boolean]; // Second chromosome: [color, speed, blue]
 }
 
 // Determine phenotype color based on genotype
-// Purple (recessive) only shows if both chromosomes are true (homozygous recessive)
-// Green (dominant) shows if at least one chromosome is false (has dominant chromosome)
+// Blue (recessive) only shows if both blue alleles are true AND both purple alleles are true
+// Purple (recessive) only shows if both purple chromosomes are true (homozygous recessive) but blue is not
+// Green (dominant) shows if at least one purple chromosome is false (has dominant chromosome)
 export function getPhenotypeColor(genetics: PlantGenetics): string {
+  const isPurple = genetics.chromosome1[0] && genetics.chromosome2[0];
+  const isBlue = genetics.chromosome1[2] && genetics.chromosome2[2];
+
+  // Blue only shows if both blue and purple are homozygous recessive
+  if (isPurple && isBlue) {
+    return "#3b82f6"; // Blue color
+  }
   // If both are true (homozygous recessive), show purple
-  if (genetics.chromosome1[0] && genetics.chromosome2[0]) {
+  if (isPurple) {
     return "#a78bfa"; // Purple color
   }
   // Otherwise, show green (dominant trait)
   return "#4ade80"; // Green color
 }
 
-// Get genotype string representation (e.g., "RR, SS" for color and speed)
+// Get genotype string representation (e.g., "RR, SS, BB" for color, speed, and blue)
 export function getGenotype(genetics: PlantGenetics): string {
   const colorChar1 = genetics.chromosome1[0] ? "r" : "R";
   const colorChar2 = genetics.chromosome2[0] ? "r" : "R";
   const speedChar1 = genetics.chromosome1[1] ? "s" : "S";
   const speedChar2 = genetics.chromosome2[1] ? "s" : "S";
-  return `${colorChar1}${colorChar2}, ${speedChar1}${speedChar2}`;
+  const blueChar1 = genetics.chromosome1[2] ? "b" : "B";
+  const blueChar2 = genetics.chromosome2[2] ? "b" : "B";
+  return `${colorChar1}${colorChar2}, ${speedChar1}${speedChar2}, ${blueChar1}${blueChar2}`;
 }
 
 // Get growing speed in milliseconds based on speed trait
@@ -82,7 +93,7 @@ export function mutate(genetics: PlantGenetics): PlantGenetics {
 
   // Randomly select which chromosome and which trait to flip
   const chromosomeIndex = Math.random() < 0.5 ? 0 : 1;
-  const traitIndex = Math.random() < 0.5 ? 0 : 1;
+  const traitIndex = Math.floor(Math.random() * 3); // 0, 1, or 2 (color, speed, blue)
 
   // Flip the selected boolean
   if (chromosomeIndex === 0) {
@@ -94,10 +105,17 @@ export function mutate(genetics: PlantGenetics): PlantGenetics {
   return mutated;
 }
 
-// Get readable color description (Green or Purple)
+// Get readable color description (Green, Purple, or Blue)
 export function getColorDescription(genetics: PlantGenetics): string {
+  const isPurple = genetics.chromosome1[0] && genetics.chromosome2[0];
+  const isBlue = genetics.chromosome1[2] && genetics.chromosome2[2];
+
+  // Blue only shows if both blue and purple are homozygous recessive
+  if (isPurple && isBlue) {
+    return "Blue";
+  }
   // If both are true (homozygous recessive), it's purple
-  if (genetics.chromosome1[0] && genetics.chromosome2[0]) {
+  if (isPurple) {
     return "Purple";
   }
   // Otherwise, it's green (dominant trait)

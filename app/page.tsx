@@ -56,10 +56,13 @@ export default function Home() {
     {
       id: "s1",
       genetics: [
-        { chromosome1: [false, false], chromosome2: [false, false] }, // RR, SS
+        {
+          chromosome1: [false, false, false],
+          chromosome2: [false, false, false],
+        }, // RR, SS, BB
         // For testing purposes, you can uncomment this to use the rr, ss genotype
-        // { chromosome1: [true, true], chromosome2: [true, true] }, // rr, ss
-        { chromosome1: [false, true], chromosome2: [true, true] }, // Rr, ss
+        // { chromosome1: [true, true, true], chromosome2: [true, true, true] }, // rr, ss, bb
+        { chromosome1: [false, true, false], chromosome2: [true, true, false] }, // Rr, ss, BB
       ],
     },
   ]);
@@ -496,15 +499,28 @@ export default function Home() {
       .filter(Boolean) as Array<{ pot: PotData; plant: CabbageData }>;
   }, [selectedPotIds, pots, cabbages, fullyGrownCabbageIds]);
 
-  // Check if selected plant is purple (both chromosomes are true)
-  const hasPurpleSelected = useMemo(() => {
+  // Check if selected plant is blue (both purple and blue are homozygous recessive)
+  const hasBlueSelected = useMemo(() => {
     return selectedPlants.some(
       ({ plant }) =>
-        plant.genetics.chromosome1[0] && plant.genetics.chromosome2[0]
+        plant.genetics.chromosome1[0] &&
+        plant.genetics.chromosome2[0] &&
+        plant.genetics.chromosome1[2] &&
+        plant.genetics.chromosome2[2]
     );
   }, [selectedPlants]);
 
-  // Check if selected plant is green (at least one chromosome is false)
+  // Check if selected plant is purple (both purple chromosomes are true, but not blue)
+  const hasPurpleSelected = useMemo(() => {
+    return selectedPlants.some(
+      ({ plant }) =>
+        plant.genetics.chromosome1[0] &&
+        plant.genetics.chromosome2[0] &&
+        !(plant.genetics.chromosome1[2] && plant.genetics.chromosome2[2])
+    );
+  }, [selectedPlants]);
+
+  // Check if selected plant is green (at least one purple chromosome is false)
   const hasGreenSelected = useMemo(() => {
     return selectedPlants.some(
       ({ plant }) =>
@@ -520,7 +536,76 @@ export default function Home() {
     const plantsToSell = selectedPlants.filter(({ plant }) => {
       const isPlantPurple =
         plant.genetics.chromosome1[0] && plant.genetics.chromosome2[0];
-      return isPlantPurple === isPurple;
+      const isPlantBlue =
+        plant.genetics.chromosome1[2] && plant.genetics.chromosome2[2];
+
+      if (isPurple) {
+        // For purple, exclude blue cabbages (purple but not blue)
+        return isPlantPurple && !isPlantBlue;
+      } else {
+        // For green, just check if not purple
+        return !isPlantPurple;
+      }
+    });
+
+    if (plantsToSell.length === 0) return;
+
+    // Calculate money earned using the price from catalogItems
+    const totalEarned = plantsToSell.length * price;
+    setMoney((prev) => prev + totalEarned);
+
+    // Get all plant IDs to remove
+    const plantIdsToRemove = plantsToSell
+      .map(({ pot }) => pot.plantId!)
+      .filter(Boolean);
+
+    // Get pot IDs that had plants removed
+    const potIdsToClearGlow = pots
+      .filter((p) => plantIdsToRemove.includes(p.plantId || ""))
+      .map((p) => p.id);
+
+    // Remove plants from pots
+    setPots((prev) =>
+      prev.map((p) =>
+        plantIdsToRemove.includes(p.plantId || "")
+          ? { ...p, plantId: undefined }
+          : p
+      )
+    );
+
+    // Remove mutagen glow from pots that had plants sold
+    setPotsWithMutagenGlow((prev) => {
+      const updated = new Set(prev);
+      potIdsToClearGlow.forEach((id) => updated.delete(id));
+      return updated;
+    });
+
+    // Remove plants from cabbages list
+    setCabbages((prev) => prev.filter((c) => !plantIdsToRemove.includes(c.id)));
+
+    // Remove from fully grown set
+    setFullyGrownCabbageIds((prev) => {
+      const updated = new Set(prev);
+      plantIdsToRemove.forEach((id) => updated.delete(id));
+      return updated;
+    });
+
+    // Clear selection
+    setSelectedPotIds([]);
+  };
+
+  // Handler to sell blue plants specifically
+  const handleSellBlue = (price: number) => {
+    if (selectedPlants.length === 0) return;
+
+    // Filter plants that are blue (both purple and blue homozygous recessive)
+    const plantsToSell = selectedPlants.filter(({ plant }) => {
+      return (
+        plant.genetics.chromosome1[0] &&
+        plant.genetics.chromosome2[0] &&
+        plant.genetics.chromosome1[2] &&
+        plant.genetics.chromosome2[2]
+      );
     });
 
     if (plantsToSell.length === 0) return;
@@ -586,6 +671,14 @@ export default function Home() {
       price: 10,
       canSell: hasPurpleSelected,
       onSell: () => handleSellByType(true, 10),
+    },
+    {
+      id: "blue-cabbage",
+      color: "#3b82f6", // Blue color
+      label: "Blue Cabbage",
+      price: 25,
+      canSell: hasBlueSelected,
+      onSell: () => handleSellBlue(25),
     },
   ];
 
