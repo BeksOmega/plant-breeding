@@ -57,9 +57,9 @@ export default function Home() {
       id: "s1",
       genetics: [
         {
-          chromosome1: [false, false, true],
-          chromosome2: [false, false, true],
-        }, // RR, SS, bb
+          chromosome1: [true, false, true],
+          chromosome2: [true, false, true],
+        }, // rr, SS, bb
         // For testing purposes, you can uncomment this to use the rr, ss, bb genotype
         // { chromosome1: [true, true, true], chromosome2: [true, true, true] }, // rr, ss, bb
         { chromosome1: [false, true, false], chromosome2: [true, true, false] }, // Rr, ss, BB
@@ -308,7 +308,7 @@ export default function Home() {
 
         // If pot has mutagen glow, mutate the genetics
         if (potsWithMutagenGlow.has(potId)) {
-          newGenetics = mutate(newGenetics);
+          newGenetics = mutate(newGenetics, hasReachedTwenty);
           // Glow persists until plant is sold/culled
         }
 

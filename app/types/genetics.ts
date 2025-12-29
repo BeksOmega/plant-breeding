@@ -121,7 +121,12 @@ export function countPurpleCabbages(
 }
 
 // Mutate a plant's genetics by randomly flipping one boolean value
-export function mutate(genetics: PlantGenetics): PlantGenetics {
+// blueCabbageUnlocked: if false, only affects R (color, index 0) and S (speed, index 1) genes
+//                      if true, can affect all genes including B (blue, index 2)
+export function mutate(
+  genetics: PlantGenetics,
+  blueCabbageUnlocked: boolean = false
+): PlantGenetics {
   // Create a deep copy
   const mutated: PlantGenetics = {
     chromosome1: [...genetics.chromosome1],
@@ -130,7 +135,15 @@ export function mutate(genetics: PlantGenetics): PlantGenetics {
 
   // Randomly select which chromosome and which trait to flip
   const chromosomeIndex = Math.random() < 0.5 ? 0 : 1;
-  const traitIndex = Math.floor(Math.random() * 3); // 0, 1, or 2 (color, speed, blue)
+
+  // If blue cabbage is not unlocked, only allow mutations to R (0) and S (1) genes
+  // If blue cabbage is unlocked, allow mutations to all genes (0, 1, 2)
+  let traitIndex: number;
+  if (blueCabbageUnlocked) {
+    traitIndex = Math.floor(Math.random() * 3); // 0, 1, or 2 (color, speed, blue)
+  } else {
+    traitIndex = Math.floor(Math.random() * 2); // 0 or 1 (color, speed only)
+  }
 
   // Flip the selected boolean
   if (chromosomeIndex === 0) {
