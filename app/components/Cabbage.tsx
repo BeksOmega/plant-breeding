@@ -9,6 +9,7 @@ import {
   getGrowingSpeed,
   getPlantTooltip,
 } from "../types/genetics";
+import { CONFIG } from "../config";
 
 interface CabbageProps {
   genetics: PlantGenetics;
@@ -48,7 +49,7 @@ export default function Cabbage({
         setIsFullyGrown(true);
         onFullyGrown?.();
       }
-    }, 100); // Update every 100ms for smooth animation
+    }, CONFIG.animation.growthUpdateInterval);
 
     return () => clearInterval(interval);
   }, [isGrowing, startGrowingAt, onFullyGrown, growthTimeMs]);

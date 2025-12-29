@@ -20,6 +20,7 @@ import {
   getGenotype,
   mutate,
 } from "./types/genetics";
+import { CONFIG } from "./config";
 
 interface CabbageData {
   id: string;
@@ -51,8 +52,6 @@ interface PotData {
   id: string;
   plantId?: string; // ID of the plant growing in this pot, undefined if empty
 }
-
-const TARGET_MONEY = 100;
 
 export default function Home() {
   // Debug mode state
@@ -159,7 +158,7 @@ export default function Home() {
     [fullyGrownCabbagesInPots]
   );
 
-  const hasWon = money >= TARGET_MONEY;
+  const hasWon = money >= CONFIG.targetMoney;
 
   const handleBreed = () => {
     if (selectedPotIds.length !== 2) return;
@@ -680,12 +679,12 @@ export default function Home() {
       id: "item4",
       color: "#8B4513",
       label: "Extra Pot",
-      price: 10,
+      price: CONFIG.prices.extraPot,
       description:
         "Adds a new pot to your collection. More pots allow you to grow more plants simultaneously.",
       onPurchase: () => {
-        if (money < 10) return;
-        setMoney((prev) => prev - 10);
+        if (money < CONFIG.prices.extraPot) return;
+        setMoney((prev) => prev - CONFIG.prices.extraPot);
         setPots((prev) => [...prev, { id: `p${Date.now()}` }]);
       },
       shape: "square",
@@ -694,12 +693,12 @@ export default function Home() {
       id: "mutagen",
       color: "#22c55e",
       label: "Mutagen",
-      price: 1,
+      price: CONFIG.prices.mutagen,
       description:
         "Apply to an empty pot before planting. Seeds planted in mutagen-treated pots will have their genetics randomly mutated, potentially creating new traits.",
       onPurchase: () => {
-        if (money < 1) return;
-        setMoney((prev) => prev - 1);
+        if (money < CONFIG.prices.mutagen) return;
+        setMoney((prev) => prev - CONFIG.prices.mutagen);
         setMutagenStacks((prev) => {
           if (prev.length === 0) {
             return [
@@ -726,12 +725,12 @@ export default function Home() {
       id: "auto-breeder",
       color: "#ef4444",
       label: "Auto breeder",
-      price: 25,
+      price: CONFIG.prices.autoBreeder,
       description:
         "An auto breeder that can be used to automate breeding. Stack them like seeds and mutagen.",
       onPurchase: () => {
-        if (money < 25) return;
-        setMoney((prev) => prev - 25);
+        if (money < CONFIG.prices.autoBreeder) return;
+        setMoney((prev) => prev - CONFIG.prices.autoBreeder);
         setAutoBreederStacks((prev) => {
           if (prev.length === 0) {
             return [
@@ -758,12 +757,12 @@ export default function Home() {
       id: "auto-planter",
       color: "#10b981",
       label: "Auto planter",
-      price: 20,
+      price: CONFIG.prices.autoPlanter,
       description:
         "An auto planter that can wrap a single pot. Stack them like seeds and mutagen.",
       onPurchase: () => {
-        if (money < 20) return;
-        setMoney((prev) => prev - 20);
+        if (money < CONFIG.prices.autoPlanter) return;
+        setMoney((prev) => prev - CONFIG.prices.autoPlanter);
         setAutoPlanterStacks((prev) => {
           if (prev.length === 0) {
             return [
@@ -1007,17 +1006,17 @@ export default function Home() {
       id: "green-cabbage",
       color: "#4ade80", // Green color
       label: "Green Cabbage",
-      price: 2,
+      price: CONFIG.sellPrices.greenCabbage,
       canSell: hasGreenSelected,
-      onSell: () => handleSellByType(false, 2),
+      onSell: () => handleSellByType(false, CONFIG.sellPrices.greenCabbage),
     },
     {
       id: "purple-cabbage",
       color: "#a78bfa", // Purple color
       label: "Purple Cabbage",
-      price: 10,
+      price: CONFIG.sellPrices.purpleCabbage,
       canSell: hasPurpleSelected,
-      onSell: () => handleSellByType(true, 10),
+      onSell: () => handleSellByType(true, CONFIG.sellPrices.purpleCabbage),
     },
   ];
 
@@ -1123,7 +1122,9 @@ export default function Home() {
 
           {/* Breeding Game */}
           <div className="bg-white rounded-lg shadow-lg p-8 mt-12 mb-12">
-            <p className="text-gray-600 mb-6">Goal: Earn ${TARGET_MONEY}.</p>
+            <p className="text-gray-600 mb-6">
+              Goal: Earn ${CONFIG.targetMoney}.
+            </p>
             <p className="text-gray-600 mb-6">
               Plant seeds in pots, wait for them to grow, then select 2 fully
               grown plants in pots and click Breed to get 1 seed.
@@ -1143,7 +1144,7 @@ export default function Home() {
 
             <div className="mb-6">
               <p className="text-lg font-semibold text-gray-700">
-                Money: ${money} / ${TARGET_MONEY}
+                Money: ${money} / ${CONFIG.targetMoney}
               </p>
             </div>
           </div>

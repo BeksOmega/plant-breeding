@@ -4,8 +4,7 @@ import { useState, useEffect, useImperativeHandle, forwardRef } from "react";
 import Pot from "./Pot";
 import Cabbage from "./Cabbage";
 import { PlantGenetics, getGenotype, breed } from "../types/genetics";
-
-const BREEDING_INTERVAL_MS = 10000; // 10 seconds
+import { CONFIG } from "../config";
 
 interface PotData {
   id: string;
@@ -107,11 +106,14 @@ const AutoBreeder = forwardRef<AutoBreederHandle, AutoBreederProps>(
       const interval = setInterval(() => {
         const now = Date.now();
         const elapsed = lastBreedTime ? now - lastBreedTime : 0;
-        const progress = Math.min((elapsed / BREEDING_INTERVAL_MS) * 100, 100);
+        const progress = Math.min(
+          (elapsed / CONFIG.autoBreeder.breedingInterval) * 100,
+          100
+        );
         setBreedingProgress(progress);
 
         // Breed when the interval has passed
-        if (elapsed >= BREEDING_INTERVAL_MS && lastBreedTime) {
+        if (elapsed >= CONFIG.autoBreeder.breedingInterval && lastBreedTime) {
           // Generate exactly 1 seed from breeding
           const newSeed = breed(pot1Plant!.genetics, pot2Plant!.genetics);
           setSeeds((prev) => [...prev, newSeed]);
@@ -121,7 +123,7 @@ const AutoBreeder = forwardRef<AutoBreederHandle, AutoBreederProps>(
           setLastBreedTime(Date.now());
           setBreedingProgress(0);
         }
-      }, 100); // Update every 100ms for smooth animation
+      }, CONFIG.animation.breedingUpdateInterval);
 
       return () => clearInterval(interval);
     }, [

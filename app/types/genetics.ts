@@ -1,3 +1,5 @@
+import { CONFIG } from "../config";
+
 // Plant genetics data structure
 // Each plant has two chromosomes, each containing parallel arrays of traits
 // true = recessive chromosome
@@ -32,16 +34,16 @@ export function getGenotype(genetics: PlantGenetics): string {
 }
 
 // Get growing speed in milliseconds based on speed trait
-// Dominant (S): 10 seconds (10000ms)
-// Recessive (s): 2 seconds (2000ms)
+// Dominant (S): slow growth (from config)
+// Recessive (s): fast growth (from config)
 // Recessive only shows if both chromosomes are true (homozygous recessive)
 export function getGrowingSpeed(genetics: PlantGenetics): number {
-  // If both are true (homozygous recessive), fast growth (2s)
+  // If both are true (homozygous recessive), fast growth
   if (genetics.chromosome1[1] && genetics.chromosome2[1]) {
-    return 2000; // 2 seconds
+    return CONFIG.growthTimings.fast;
   }
-  // Otherwise, slow growth (10s) - dominant trait
-  return 10000; // 10 seconds
+  // Otherwise, slow growth - dominant trait
+  return CONFIG.growthTimings.slow;
 }
 
 // Breed two plants by randomly selecting one chromosome from each parent
