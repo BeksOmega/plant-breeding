@@ -263,14 +263,7 @@ export default function Home() {
       return updated;
     });
 
-    // Remove auto planters from pots that had plants culled
-    setPotsWithAutoPlanter((prev) => {
-      const updated = new Set(prev);
-      potIdsToClearGlow.forEach((potId) => {
-        updated.delete(potId);
-      });
-      return updated;
-    });
+    // Note: Auto planters remain on pots after culling - they're attached to the pot, not the plant
 
     // Remove plants from cabbages list
     setCabbages((prev) => prev.filter((c) => !plantIdsToRemove.includes(c.id)));
@@ -683,16 +676,54 @@ export default function Home() {
     });
   }, [selectedPotIds, pots]);
 
+  // Helper function to count total items (plants + seeds)
+  const countTotalItems = useCallback(() => {
+    // Count all plants
+    const plantCount = cabbages.length;
+
+    // Count all seeds in seed stacks
+    const seedStackCount = seedStacks.reduce(
+      (sum, stack) => sum + stack.genetics.length,
+      0
+    );
+
+    // Count all seeds in auto breeders
+    let autoBreederSeedCount = 0;
+    autoBreederRefs.current.forEach((ref) => {
+      if (ref && ref.getSeedCount) {
+        autoBreederSeedCount += ref.getSeedCount();
+      }
+    });
+
+    return plantCount + seedStackCount + autoBreederSeedCount;
+  }, [cabbages, seedStacks]);
+
   // Check if we can sell (need at least 1 pot with a fully grown plant selected)
+  // AND selling wouldn't leave us with 2 or fewer total items
   const canSell = useMemo(() => {
     if (selectedPotIds.length === 0) return false;
-    return selectedPotIds.some((potId) => {
+
+    const hasFullyGrownSelected = selectedPotIds.some((potId) => {
       const pot = pots.find((p) => p.id === potId);
       if (!pot?.plantId) return false;
       const plant = cabbages.find((c) => c.id === pot.plantId);
       return plant && fullyGrownCabbageIds.has(plant.id);
     });
-  }, [selectedPotIds, pots, cabbages, fullyGrownCabbageIds]);
+
+    if (!hasFullyGrownSelected) return false;
+
+    // Check if selling would leave us with 2 or fewer items
+    const currentTotal = countTotalItems();
+    const selectedPlantCount = selectedPotIds.filter((potId) => {
+      const pot = pots.find((p) => p.id === potId);
+      if (!pot?.plantId) return false;
+      const plant = cabbages.find((c) => c.id === pot.plantId);
+      return plant && fullyGrownCabbageIds.has(plant.id);
+    }).length;
+
+    // If selling would leave us with 2 or fewer items, prevent selling
+    return currentTotal - selectedPlantCount > 2;
+  }, [selectedPotIds, pots, cabbages, fullyGrownCabbageIds, countTotalItems]);
 
   // Shop items data - each item handles its own purchase logic
   const shopItems: ShopItemData[] = [
@@ -853,6 +884,26 @@ export default function Home() {
     );
   }, [selectedPlants]);
 
+  // Check if selling green plants would leave us with more than 2 items
+  const canSellGreenWithoutBreaking = useMemo(() => {
+    const currentTotal = countTotalItems();
+    const greenPlantsToSell = selectedPlants.filter(
+      ({ plant }) =>
+        !plant.genetics.chromosome1[0] || !plant.genetics.chromosome2[0]
+    ).length;
+    return currentTotal - greenPlantsToSell >= 2;
+  }, [selectedPlants, countTotalItems]);
+
+  // Check if selling purple plants would leave us with more than 2 items
+  const canSellPurpleWithoutBreaking = useMemo(() => {
+    const currentTotal = countTotalItems();
+    const purplePlantsToSell = selectedPlants.filter(
+      ({ plant }) =>
+        plant.genetics.chromosome1[0] && plant.genetics.chromosome2[0]
+    ).length;
+    return currentTotal - purplePlantsToSell >= 2;
+  }, [selectedPlants, countTotalItems]);
+
   // Handler to sell plants of a specific type
   const handleSellByType = (isPurple: boolean, price: number) => {
     if (selectedPlants.length === 0) return;
@@ -865,6 +916,13 @@ export default function Home() {
     });
 
     if (plantsToSell.length === 0) return;
+
+    // Check if selling would leave us with 2 or fewer total items
+    const currentTotal = countTotalItems();
+    if (currentTotal - plantsToSell.length < 2) {
+      // Prevent selling - would break the game
+      return;
+    }
 
     // Calculate money earned using the price from catalogItems
     const totalEarned = plantsToSell.length * price;
@@ -911,14 +969,7 @@ export default function Home() {
       return updated;
     });
 
-    // Remove auto planters from pots that had plants sold
-    setPotsWithAutoPlanter((prev) => {
-      const updated = new Set(prev);
-      potIdsToClearGlow.forEach((potId) => {
-        updated.delete(potId);
-      });
-      return updated;
-    });
+    // Note: Auto planters remain on pots after selling - they're attached to the pot, not the plant
 
     // Remove plants from cabbages list
     setCabbages((prev) => prev.filter((c) => !plantIdsToRemove.includes(c.id)));
@@ -1044,7 +1095,7 @@ export default function Home() {
       color: "#4ade80", // Green color
       label: "Green Cabbage",
       price: CONFIG.sellPrices.greenCabbage,
-      canSell: hasGreenSelected,
+      canSell: hasGreenSelected && canSellGreenWithoutBreaking,
       onSell: () => handleSellByType(false, CONFIG.sellPrices.greenCabbage),
     },
     {
@@ -1052,7 +1103,7 @@ export default function Home() {
       color: "#a78bfa", // Purple color
       label: "Purple Cabbage",
       price: CONFIG.sellPrices.purpleCabbage,
-      canSell: hasPurpleSelected,
+      canSell: hasPurpleSelected && canSellPurpleWithoutBreaking,
       onSell: () => handleSellByType(true, CONFIG.sellPrices.purpleCabbage),
     },
   ];
