@@ -39,7 +39,10 @@ export function getGenotype(genetics: PlantGenetics): string {
   const speedChar2 = genetics.chromosome2[1] ? "s" : "S";
   const blueChar1 = genetics.chromosome1[2] ? "b" : "B";
   const blueChar2 = genetics.chromosome2[2] ? "b" : "B";
-  return `${colorChar1}${colorChar2}, ${speedChar1}${speedChar2}, ${blueChar1}${blueChar2}`;
+  return (
+    `${colorChar1}${colorChar2}, ${speedChar1}${speedChar2}, ${blueChar1}${blueChar2} - ` +
+    `${colorChar1}${speedChar1}${blueChar1}, ${colorChar2}${speedChar2}${blueChar2}`
+  );
 }
 
 // Get growing speed in milliseconds based on speed trait
@@ -56,16 +59,50 @@ export function getGrowingSpeed(genetics: PlantGenetics): number {
 }
 
 // Breed two plants by randomly selecting one chromosome from each parent
+// With 50% chance of recombination (crossover) between the parent's chromosomes
 export function breed(
   parent1: PlantGenetics,
   parent2: PlantGenetics
 ): PlantGenetics {
-  // Randomly select one chromosome from parent1
-  const chromosome1 =
-    Math.random() < 0.5 ? parent1.chromosome1 : parent1.chromosome2;
-  // Randomly select one chromosome from parent2
-  const chromosome2 =
-    Math.random() < 0.5 ? parent2.chromosome1 : parent2.chromosome2;
+  // Helper function to potentially recombine chromosomes from a parent
+  const getChromosomeWithRecombination = (
+    chrom1: [boolean, boolean, boolean],
+    chrom2: [boolean, boolean, boolean]
+  ): [boolean, boolean, boolean] => {
+    // 50% chance of recombination
+    if (Math.random() < 0.5) {
+      // Pick a break point (between positions 0-1 or 1-2)
+      const breakPoint = Math.random() < 0.5 ? 1 : 2;
+
+      // Create recombinant chromosome
+      // Take traits before break from chrom1, after break from chrom2
+      const recombinant: [boolean, boolean, boolean] = [
+        chrom1[0],
+        chrom1[1],
+        chrom1[2],
+      ];
+
+      // Swap traits after the break point
+      for (let i = breakPoint; i < 3; i++) {
+        recombinant[i] = chrom2[i];
+      }
+
+      return recombinant;
+    } else {
+      // No recombination, just randomly select one chromosome
+      return Math.random() < 0.5 ? chrom1 : chrom2;
+    }
+  };
+
+  // Get chromosomes from each parent (with potential recombination)
+  const chromosome1 = getChromosomeWithRecombination(
+    parent1.chromosome1,
+    parent1.chromosome2
+  );
+  const chromosome2 = getChromosomeWithRecombination(
+    parent2.chromosome1,
+    parent2.chromosome2
+  );
 
   return {
     chromosome1,

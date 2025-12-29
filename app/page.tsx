@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import PlantCollection from "./components/PlantCollection";
 import Cabbage from "./components/Cabbage";
 import SeedStack from "./components/SeedStack";
@@ -38,7 +38,7 @@ interface PotData {
   plantId?: string; // ID of the plant growing in this pot, undefined if empty
 }
 
-const TARGET_MONEY = 100;
+const TARGET_MONEY = 150;
 
 export default function Home() {
   // Debug mode state
@@ -57,10 +57,10 @@ export default function Home() {
       id: "s1",
       genetics: [
         {
-          chromosome1: [false, false, false],
-          chromosome2: [false, false, false],
-        }, // RR, SS, BB
-        // For testing purposes, you can uncomment this to use the rr, ss genotype
+          chromosome1: [false, false, true],
+          chromosome2: [false, false, true],
+        }, // RR, SS, bb
+        // For testing purposes, you can uncomment this to use the rr, ss, bb genotype
         // { chromosome1: [true, true, true], chromosome2: [true, true, true] }, // rr, ss, bb
         { chromosome1: [false, true, false], chromosome2: [true, true, false] }, // Rr, ss, BB
       ],
@@ -93,6 +93,16 @@ export default function Home() {
 
   // Money state - earned from selling cabbages
   const [money, setMoney] = useState<number>(0);
+
+  // Track if user has ever reached $20 (blue cabbage unlock)
+  const [hasReachedTwenty, setHasReachedTwenty] = useState<boolean>(false);
+
+  // Monitor money to unlock blue cabbage at $20
+  useEffect(() => {
+    if (money >= 20) {
+      setHasReachedTwenty(true);
+    }
+  }, [money]);
 
   // Count purple cabbages (only count fully grown ones in pots)
   const fullyGrownCabbagesInPots = useMemo(() => {
@@ -672,14 +682,19 @@ export default function Home() {
       canSell: hasPurpleSelected,
       onSell: () => handleSellByType(true, 10),
     },
-    {
-      id: "blue-cabbage",
-      color: "#3b82f6", // Blue color
-      label: "Blue Cabbage",
-      price: 25,
-      canSell: hasBlueSelected,
-      onSell: () => handleSellBlue(25),
-    },
+    // Blue cabbage only appears after reaching $20
+    ...(hasReachedTwenty
+      ? [
+          {
+            id: "blue-cabbage",
+            color: "#3b82f6", // Blue color
+            label: "Blue Cabbage",
+            price: 25,
+            canSell: hasBlueSelected,
+            onSell: () => handleSellBlue(25),
+          },
+        ]
+      : []),
   ];
 
   const canPlant =
