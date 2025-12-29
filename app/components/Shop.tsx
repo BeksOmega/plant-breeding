@@ -27,7 +27,7 @@ export default function Shop({ money, items }: ShopProps) {
       <MoneyDisplay amount={money} />
 
       {/* Shop items in rows */}
-      <div className="flex flex-row gap-4 justify-center">
+      <div className="flex flex-row flex-wrap gap-4 justify-center">
         {items.map((item) => (
           <ShopItem
             key={item.id}
