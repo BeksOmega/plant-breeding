@@ -13,6 +13,7 @@ export const CONFIG = {
     mutagen: 1,
     autoBreeder: 25,
     autoPlanter: 20,
+    autoHarvester: 20,
   },
 
   // Catalog prices (sell prices)

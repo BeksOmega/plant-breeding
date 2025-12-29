@@ -9,6 +9,8 @@ import AutoBreederItem from "./components/AutoBreederItem";
 import AutoBreeder, { AutoBreederHandle } from "./components/AutoBreeder";
 import AutoPlanterItem from "./components/AutoPlanterItem";
 import AutoPlanter from "./components/AutoPlanter";
+import AutoHarvesterItem from "./components/AutoHarvesterItem";
+import AutoHarvester from "./components/AutoHarvester";
 import Pot from "./components/Pot";
 import Shop, { ShopItemData } from "./components/Shop";
 import Catalog, { CatalogItemData } from "./components/Catalog";
@@ -44,6 +46,11 @@ interface AutoBreederStackData {
 }
 
 interface AutoPlanterStackData {
+  id: string;
+  count: number;
+}
+
+interface AutoHarvesterStackData {
   id: string;
   count: number;
 }
@@ -99,6 +106,14 @@ export default function Home() {
     string[]
   >([]);
 
+  // Auto harvester stacks state
+  const [autoHarvesterStacks, setAutoHarvesterStacks] = useState<
+    AutoHarvesterStackData[]
+  >([]);
+  const [selectedAutoHarvesterIds, setSelectedAutoHarvesterIds] = useState<
+    string[]
+  >([]);
+
   // Pots with mutagen glow (Set of pot IDs)
   const [potsWithMutagenGlow, setPotsWithMutagenGlow] = useState<Set<string>>(
     new Set()
@@ -113,6 +128,11 @@ export default function Home() {
   const [potsWithAutoPlanter, setPotsWithAutoPlanter] = useState<Set<string>>(
     new Set()
   );
+
+  // Pots with auto harvesters applied (Set of pot IDs)
+  const [potsWithAutoHarvester, setPotsWithAutoHarvester] = useState<
+    Set<string>
+  >(new Set());
 
   // Selected auto breeder seed pairs (Set of pair keys)
   const [selectedAutoBreederSeedPairs, setSelectedAutoBreederSeedPairs] =
@@ -282,6 +302,55 @@ export default function Home() {
   const handleCabbageFullyGrown = (cabbageId: string) => {
     setFullyGrownCabbageIds((prev) => new Set(prev).add(cabbageId));
   };
+
+  // Handler for auto-harvesting (called by AutoHarvester component)
+  const handleAutoHarvest = useCallback((plant: CabbageData, potId: string) => {
+    // Determine if plant is purple or green
+    const isPurple =
+      plant.genetics.chromosome1[0] && plant.genetics.chromosome2[0];
+    const price = isPurple
+      ? CONFIG.sellPrices.purpleCabbage
+      : CONFIG.sellPrices.greenCabbage;
+
+    // Sell the plant
+    setMoney((prev) => prev + price);
+
+    // Remove plant from pot
+    setPots((prev) =>
+      prev.map((p) => (p.id === potId ? { ...p, plantId: undefined } : p))
+    );
+
+    // Remove mutagen glow if present
+    setPotsWithMutagenGlow((prev) => {
+      const updated = new Set(prev);
+      updated.delete(potId);
+      return updated;
+    });
+
+    // Remove auto breeders from pots that had plants sold
+    setPotsWithAutoBreeder((prev) => {
+      const updated = new Set(prev);
+      Array.from(prev).forEach((pairKey) => {
+        const [id1, id2] = pairKey.split("-");
+        if (id1 === potId || id2 === potId) {
+          updated.delete(pairKey);
+        }
+      });
+      return updated;
+    });
+
+    // Note: Auto planters and auto harvesters remain on pots after selling
+
+    // Remove plant from cabbages list
+    setCabbages((prev) => prev.filter((c) => c.id !== plant.id));
+
+    // Remove from fully grown set
+    setFullyGrownCabbageIds((prev) => {
+      const updated = new Set(prev);
+      updated.delete(plant.id);
+      return updated;
+    });
+  }, []);
 
   // Helper function to try planting a seed from a breeder into an associated planter
   const tryPlantSeedFromBreeder = useCallback(
@@ -490,6 +559,58 @@ export default function Home() {
             setSelectedAutoPlanterIds([]);
           }
           // Always deselect the pot after applying auto planter
+          setSelectedPotIds([]);
+          return;
+        }
+      }
+    }
+
+    // If an auto harvester is selected and one pot is selected, apply auto harvester
+    if (potIds.length === 1 && selectedAutoHarvesterIds.length > 0) {
+      const potId = potIds[0];
+      const potIndex = pots.findIndex((p) => p.id === potId);
+
+      if (potIndex !== -1) {
+        const autoHarvesterId = selectedAutoHarvesterIds[0];
+        const autoHarvesterStack = autoHarvesterStacks.find(
+          (ah) => ah.id === autoHarvesterId
+        );
+
+        if (autoHarvesterStack && autoHarvesterStack.count > 0) {
+          // Reorder pots: move the selected pot to the beginning
+          setPots((prevPots) => {
+            const newPots = [...prevPots];
+            const pot = newPots[potIndex];
+
+            // Remove pot from its current position
+            newPots.splice(potIndex, 1);
+
+            // Add it at the beginning
+            return [pot, ...newPots];
+          });
+
+          // Add auto harvester to the pot
+          setPotsWithAutoHarvester((prev) => new Set(prev).add(potId));
+
+          // Check if there will be auto harvesters remaining after consuming one
+          const willHaveRemainingAutoHarvesters = autoHarvesterStack.count > 1;
+
+          // Consume one auto harvester
+          setAutoHarvesterStacks((prev) => {
+            const updated = prev.map((stack) =>
+              stack.id === autoHarvesterId
+                ? { ...stack, count: stack.count - 1 }
+                : stack
+            );
+            // Remove stacks with 0 count
+            return updated.filter((s) => s.count > 0);
+          });
+
+          // If auto harvesters remain, keep the auto harvester selected; otherwise clear it
+          if (!willHaveRemainingAutoHarvesters) {
+            setSelectedAutoHarvesterIds([]);
+          }
+          // Always deselect the pot after applying auto harvester
           setSelectedPotIds([]);
           return;
         }
@@ -837,6 +958,38 @@ export default function Home() {
       },
       shape: "square",
     },
+    {
+      id: "auto-harvester",
+      color: "#f97316",
+      label: "Auto harvester",
+      price: CONFIG.prices.autoHarvester,
+      description:
+        "An auto harvester that automatically sells plants when they grow up. Can be used with auto planter for fully automated pots.",
+      onPurchase: () => {
+        if (money < CONFIG.prices.autoHarvester) return;
+        setMoney((prev) => prev - CONFIG.prices.autoHarvester);
+        setAutoHarvesterStacks((prev) => {
+          if (prev.length === 0) {
+            return [
+              {
+                id: `ah${Date.now()}`,
+                count: 1,
+              },
+            ];
+          }
+          // Add to the first auto harvester stack
+          return prev.map((stack, index) =>
+            index === 0
+              ? {
+                  ...stack,
+                  count: stack.count + 1,
+                }
+              : stack
+          );
+        });
+      },
+      shape: "square",
+    },
   ];
 
   // Get selected plant(s) for catalog
@@ -1088,6 +1241,37 @@ export default function Home() {
     });
   };
 
+  // Handler to remove an auto harvester from a pot
+  const handleRemoveAutoHarvester = (potId: string) => {
+    // Remove from potsWithAutoHarvester
+    setPotsWithAutoHarvester((prev) => {
+      const updated = new Set(prev);
+      updated.delete(potId);
+      return updated;
+    });
+
+    // Add back to auto harvester stack
+    setAutoHarvesterStacks((prev) => {
+      if (prev.length === 0) {
+        return [
+          {
+            id: `ah${Date.now()}`,
+            count: 1,
+          },
+        ];
+      }
+      // Add to the first auto harvester stack
+      return prev.map((stack, index) =>
+        index === 0
+          ? {
+              ...stack,
+              count: stack.count + 1,
+            }
+          : stack
+      );
+    });
+  };
+
   // Catalog items data - each item handles its own sell logic
   const catalogItems: CatalogItemData[] = [
     {
@@ -1162,6 +1346,18 @@ export default function Home() {
   const potIdsInAutoPlanterPairs = useMemo(() => {
     return new Set(potsWithAutoPlanter);
   }, [potsWithAutoPlanter]);
+
+  // Check which pots have auto harvesters applied (for rendering)
+  const potsWithAutoHarvesterIndices = useMemo(() => {
+    const indices: number[] = [];
+    potsWithAutoHarvester.forEach((potId) => {
+      const potIndex = pots.findIndex((p) => p.id === potId);
+      if (potIndex !== -1) {
+        indices.push(potIndex);
+      }
+    });
+    return indices;
+  }, [potsWithAutoHarvester, pots]);
   return (
     <main className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100">
       <div className="container mx-auto px-4 py-16">
@@ -1388,6 +1584,46 @@ export default function Home() {
                   <p className="text-gray-600">Auto Planters</p>
                 </div>
               )}
+              {/* Auto Harvesters */}
+              {autoHarvesterStacks.length > 0 && (
+                <div className="flex flex-col gap-4 items-center">
+                  <div className="flex flex-row gap-4 flex-wrap justify-center">
+                    {autoHarvesterStacks.map((autoHarvesterStack) => {
+                      const isSelected = selectedAutoHarvesterIds.includes(
+                        autoHarvesterStack.id
+                      );
+                      return (
+                        <div
+                          key={autoHarvesterStack.id}
+                          className="flex flex-col items-center"
+                        >
+                          <AutoHarvesterItem
+                            count={autoHarvesterStack.count}
+                            size={100}
+                            isSelected={isSelected}
+                            onSelect={(selected: boolean) => {
+                              if (selected) {
+                                setSelectedAutoHarvesterIds([
+                                  autoHarvesterStack.id,
+                                ]);
+                                // Clear other selections when selecting auto harvester
+                                setSelectedPotIds([]);
+                                setSelectedSeedIds([]);
+                                setSelectedMutagenIds([]);
+                                setSelectedAutoBreederIds([]);
+                                setSelectedAutoPlanterIds([]);
+                              } else {
+                                setSelectedAutoHarvesterIds([]);
+                              }
+                            }}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <p className="text-gray-600">Auto Harvesters</p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -1454,15 +1690,21 @@ export default function Home() {
                     const isInAutoPlanterPair = potIdsInAutoPlanterPairs.has(
                       pot.id
                     );
+                    const hasAutoHarvester = potsWithAutoHarvester.has(pot.id);
                     const isInAnyPair =
                       isInAutoBreederPair || isInAutoPlanterPair;
                     const canSelect =
                       selectedSeedIds.length > 0 ||
                       selectedMutagenIds.length > 0
                         ? isEmpty
-                        : selectedAutoBreederIds.length > 0 ||
-                          selectedAutoPlanterIds.length > 0
+                        : selectedAutoBreederIds.length > 0
                         ? (isEmpty || !!plant) && !isInAnyPair
+                        : selectedAutoPlanterIds.length > 0
+                        ? (isEmpty || !!plant) &&
+                          !isInAnyPair &&
+                          !isInAutoPlanterPair
+                        : selectedAutoHarvesterIds.length > 0
+                        ? (isEmpty || !!plant) && !hasAutoHarvester
                         : isEmpty || !!plant;
                     const hasGlow = potsWithMutagenGlow.has(pot.id);
                     const isSelected = selectedPotIds.includes(pot.id);
@@ -1640,9 +1882,11 @@ export default function Home() {
                       );
                     }
 
-                    // If this pot has an auto planter, wrap it
+                    // Check if this pot has an auto planter or auto harvester
                     const hasAutoPlanter =
                       potsWithAutoPlanterIndices.includes(index);
+                    const potHasAutoHarvester =
+                      potsWithAutoHarvesterIndices.includes(index);
 
                     if (hasAutoPlanter) {
                       const isAutoPlanterSelected = false; // Planters are not selected for association, only breeders are
@@ -1669,7 +1913,7 @@ export default function Home() {
                       };
 
                       return (
-                        <div key={pot.id}>
+                        <div key={pot.id} className="relative">
                           <AutoPlanter
                             pot={pot}
                             potPlant={plant || undefined}
@@ -1700,6 +1944,34 @@ export default function Home() {
                             showDebugGenotypes={showDebugGenotypes}
                             onTryPlantFromBreeder={handleTryPlantFromBreeder}
                           />
+                          {potHasAutoHarvester && (
+                            <div
+                              className="absolute top-1 right-1 w-3 h-3 bg-orange-500 rounded-full border-2 border-white"
+                              title="Also has auto harvester"
+                            />
+                          )}
+                        </div>
+                      );
+                    }
+
+                    if (potHasAutoHarvester) {
+                      return (
+                        <div key={pot.id}>
+                          <AutoHarvester
+                            pot={pot}
+                            potPlant={plant || undefined}
+                            potIsSelected={isSelected}
+                            potCanSelect={canSelect}
+                            potHasMutagenGlow={hasGlow}
+                            onPotSelect={handleSelect}
+                            onCabbageFullyGrown={handleCabbageFullyGrown}
+                            onRemove={() => {
+                              handleRemoveAutoHarvester(pot.id);
+                            }}
+                            showDebugGenotypes={showDebugGenotypes}
+                            onHarvest={handleAutoHarvest}
+                            countTotalItems={countTotalItems}
+                          />
                         </div>
                       );
                     }
@@ -1726,7 +1998,9 @@ export default function Home() {
                     : false;
                   // If seeds are selected, only empty pots can be selected (for planting)
                   // If mutagens are selected, only empty pots can be selected (for applying glow)
-                  // If auto breeder or auto planter is selected, allow selecting pots (but not ones already in a pair)
+                  // If auto breeder is selected, allow selecting pots (but not ones already in a pair)
+                  // If auto planter is selected, allow selecting pots (but not ones already in a pair or with auto planter)
+                  // If auto harvester is selected, allow selecting any pot (can be placed on pots with auto planters)
                   // Otherwise, any pot can be selected (for breeding or culling)
                   const isInAutoBreederPair = potIdsInAutoBreederPairs.has(
                     pot.id
@@ -1734,14 +2008,20 @@ export default function Home() {
                   const isInAutoPlanterPair = potIdsInAutoPlanterPairs.has(
                     pot.id
                   );
+                  const hasAutoHarvester = potsWithAutoHarvester.has(pot.id);
                   const isInAnyPair =
                     isInAutoBreederPair || isInAutoPlanterPair;
                   const canSelect =
                     selectedSeedIds.length > 0 || selectedMutagenIds.length > 0
                       ? isEmpty
-                      : selectedAutoBreederIds.length > 0 ||
-                        selectedAutoPlanterIds.length > 0
+                      : selectedAutoBreederIds.length > 0
                       ? (isEmpty || !!plant) && !isInAnyPair
+                      : selectedAutoPlanterIds.length > 0
+                      ? (isEmpty || !!plant) &&
+                        !isInAnyPair &&
+                        !isInAutoPlanterPair
+                      : selectedAutoHarvesterIds.length > 0
+                      ? (isEmpty || !!plant) && !hasAutoHarvester
                       : isEmpty || !!plant;
 
                   const hasGlow = potsWithMutagenGlow.has(pot.id);
