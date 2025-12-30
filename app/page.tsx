@@ -5,7 +5,16 @@ import PlantCollection from "./components/PlantCollection";
 import Flower from "./components/Flower";
 import SeedStack from "./components/SeedStack";
 import Pot from "./components/Pot";
-import { PlantGenetics, breed, countPurplePlants } from "./types/genetics";
+import Trait from "./components/Trait";
+import {
+  PlantGenetics,
+  breed,
+  countPurplePlants,
+  findPossibleRecessiveTraits,
+  findPossibleDominantTraits,
+  PossibleRecessiveTrait,
+  PossibleDominantTrait,
+} from "./types/genetics";
 
 interface FlowerData {
   id: string;
@@ -54,6 +63,10 @@ export default function Home() {
     { id: "p5" },
   ]);
   const [selectedPotIds, setSelectedPotIds] = useState<string[]>([]);
+  const [traitAnalysis, setTraitAnalysis] = useState<{
+    recessive: PossibleRecessiveTrait[];
+    dominant: PossibleDominantTrait[];
+  } | null>(null);
 
   // Count purple flowers (only count fully grown ones in pots)
   const fullyGrownFlowersInPots = useMemo(() => {
@@ -159,6 +172,36 @@ export default function Home() {
     setSelectedPotIds([]);
   };
 
+  const handleAnalyzeTraits = () => {
+    if (selectedPotIds.length === 0) return;
+
+    // Get all selected pots with plants
+    const selectedPots = selectedPotIds
+      .map((potId) => pots.find((p) => p.id === potId))
+      .filter((pot) => pot && pot.plantId);
+
+    if (selectedPots.length === 0) return;
+
+    // Get all plants from selected pots
+    const selectedPlants = selectedPots
+      .map((pot) => flowers.find((f) => f.id === pot!.plantId!))
+      .filter((plant): plant is FlowerData => plant !== undefined);
+
+    if (selectedPlants.length === 0) return;
+
+    // Extract genetics from plants
+    const genetics = selectedPlants.map((plant) => plant.genetics);
+
+    // Analyze traits
+    const recessiveTraits = findPossibleRecessiveTraits(genetics);
+    const dominantTraits = findPossibleDominantTraits(genetics);
+
+    setTraitAnalysis({
+      recessive: recessiveTraits,
+      dominant: dominantTraits,
+    });
+  };
+
   const handleFlowerFullyGrown = (flowerId: string) => {
     setFullyGrownFlowerIds((prev) => new Set(prev).add(flowerId));
   };
@@ -237,6 +280,16 @@ export default function Home() {
     });
   }, [selectedPotIds, pots]);
 
+  // Check if we can analyze traits (need at least 2 pots with plants selected)
+  const canAnalyzeTraits = useMemo(() => {
+    if (selectedPotIds.length < 2) return false;
+    const selectedPotsWithPlants = selectedPotIds.filter((potId) => {
+      const pot = pots.find((p) => p.id === potId);
+      return pot && pot.plantId;
+    });
+    return selectedPotsWithPlants.length >= 2;
+  }, [selectedPotIds, pots]);
+
   const canPlant =
     selectedSeedIds.length > 0 &&
     selectedPotIds.length > 0 &&
@@ -311,7 +364,7 @@ export default function Home() {
                 ? "Select 2 fully grown plants to breed them, or select plants to cull."
                 : "Select seeds and an empty pot to plant, select 2 fully grown plants to breed, or select plants to cull."}
             </p>
-            <div className="mb-6 flex gap-4 justify-center">
+            <div className="mb-6 flex gap-4 justify-center flex-wrap">
               <button
                 onClick={handleBreed}
                 disabled={!canBreed}
@@ -339,6 +392,20 @@ export default function Home() {
                 `}
               >
                 Cull Selected Plant{selectedPotIds.length !== 1 ? "s" : ""}
+              </button>
+              <button
+                onClick={handleAnalyzeTraits}
+                disabled={!canAnalyzeTraits}
+                className={`
+                  px-6 py-3 rounded-lg font-semibold text-white transition-all
+                  ${
+                    canAnalyzeTraits
+                      ? "bg-blue-600 hover:bg-blue-700 cursor-pointer"
+                      : "bg-gray-400 cursor-not-allowed"
+                  }
+                `}
+              >
+                Analyze Traits
               </button>
             </div>
 
@@ -380,6 +447,58 @@ export default function Home() {
                 );
               }}
             />
+
+            {/* Trait Analysis Results */}
+            {traitAnalysis && (
+              <div className="mt-8 p-6 bg-gray-50 rounded-lg border-2 border-blue-300">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">
+                  Trait Analysis Results
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Recessive Traits */}
+                  <div>
+                    <h4 className="text-lg font-semibold text-purple-700 mb-3">
+                      Possible Recessive Traits
+                    </h4>
+                    {traitAnalysis.recessive.length === 0 ? (
+                      <p className="text-gray-600 italic">
+                        No possible recessive traits found
+                      </p>
+                    ) : (
+                      <div className="flex flex-wrap gap-4">
+                        {traitAnalysis.recessive.map((trait, index) => (
+                          <Trait key={index} trait={trait} size={80} />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Dominant Traits */}
+                  <div>
+                    <h4 className="text-lg font-semibold text-blue-700 mb-3">
+                      Possible Dominant Traits
+                    </h4>
+                    {traitAnalysis.dominant.length === 0 ? (
+                      <p className="text-gray-600 italic">
+                        No possible dominant traits found
+                      </p>
+                    ) : (
+                      <div className="flex flex-wrap gap-4">
+                        {traitAnalysis.dominant.map((trait, index) => (
+                          <Trait key={index} trait={trait} size={80} />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <button
+                  onClick={() => setTraitAnalysis(null)}
+                  className="mt-4 px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-lg transition-all"
+                >
+                  Close
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
