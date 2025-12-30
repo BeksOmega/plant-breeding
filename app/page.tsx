@@ -362,7 +362,7 @@ export default function Home() {
       setTraitSubmissionResult({
         isCorrect: false,
         message:
-          "❌ Incorrect. You need to find the trait for purple petals (AAA) and the trait for black center (TAA).",
+          "❌ Incorrect. Make sure you have the right traits with the correct recessiveness / dominance.",
       });
     }
   };
@@ -478,10 +478,13 @@ export default function Home() {
             </p>
             <p className="text-gray-600 mb-6">
               Plant seeds in pots, wait for them to grow, then select 2 fully
-              grown plants in pots and click Breed to get 1 seed. Plants remain
-              in their pots after breeding. Analyze plants to discover traits,
-              then select 2 traits and submit to check if you found the correct
-              combination.
+              grown plants in pots and click Breed to get 1 seed.
+            </p>
+            <p className="text-gray-600 mb-6">
+              Analyze plants to discover traits, then select 2 traits and submit
+              to check if you found the correct combination for a purple flower
+              with a black center. The traits selected must have the correct
+              recessiveness / dominance.
             </p>
           </div>
 
