@@ -2,12 +2,12 @@
 
 import { useState, useMemo } from "react";
 import PlantCollection from "./components/PlantCollection";
-import Cabbage from "./components/Cabbage";
+import Flower from "./components/Flower";
 import SeedStack from "./components/SeedStack";
 import Pot from "./components/Pot";
-import { PlantGenetics, breed, countPurpleCabbages } from "./types/genetics";
+import { PlantGenetics, breed, countPurplePlants } from "./types/genetics";
 
-interface CabbageData {
+interface FlowerData {
   id: string;
   genetics: PlantGenetics;
   startGrowingAt?: number; // Timestamp when growth started
@@ -26,10 +26,10 @@ interface PotData {
 const TARGET_PURPLE_COUNT = 3;
 
 export default function Home() {
-  // Start with no cabbages - only seeds
-  const [cabbages, setCabbages] = useState<CabbageData[]>([]);
+  // Start with no flowers - only seeds
+  const [flowers, setFlowers] = useState<FlowerData[]>([]);
 
-  const [fullyGrownCabbageIds, setFullyGrownCabbageIds] = useState<Set<string>>(
+  const [fullyGrownFlowerIds, setFullyGrownFlowerIds] = useState<Set<string>>(
     new Set()
   );
 
@@ -55,17 +55,17 @@ export default function Home() {
   ]);
   const [selectedPotIds, setSelectedPotIds] = useState<string[]>([]);
 
-  // Count purple cabbages (only count fully grown ones in pots)
-  const fullyGrownCabbagesInPots = useMemo(() => {
+  // Count purple flowers (only count fully grown ones in pots)
+  const fullyGrownFlowersInPots = useMemo(() => {
     return pots
-      .filter((pot) => pot.plantId && fullyGrownCabbageIds.has(pot.plantId))
-      .map((pot) => cabbages.find((c) => c.id === pot.plantId)!)
+      .filter((pot) => pot.plantId && fullyGrownFlowerIds.has(pot.plantId))
+      .map((pot) => flowers.find((f) => f.id === pot.plantId)!)
       .filter(Boolean);
-  }, [pots, cabbages, fullyGrownCabbageIds]);
+  }, [pots, flowers, fullyGrownFlowerIds]);
 
   const purpleCount = useMemo(
-    () => countPurpleCabbages(fullyGrownCabbagesInPots),
-    [fullyGrownCabbagesInPots]
+    () => countPurplePlants(fullyGrownFlowersInPots),
+    [fullyGrownFlowersInPots]
   );
 
   const hasWon = purpleCount >= TARGET_PURPLE_COUNT;
@@ -78,15 +78,15 @@ export default function Home() {
 
     if (!pot1?.plantId || !pot2?.plantId) return;
 
-    const parent1 = cabbages.find((c) => c.id === pot1.plantId);
-    const parent2 = cabbages.find((c) => c.id === pot2.plantId);
+    const parent1 = flowers.find((f) => f.id === pot1.plantId);
+    const parent2 = flowers.find((f) => f.id === pot2.plantId);
 
     if (!parent1 || !parent2) return;
 
     // Both plants must be fully grown to breed
     if (
-      !fullyGrownCabbageIds.has(parent1.id) ||
-      !fullyGrownCabbageIds.has(parent2.id)
+      !fullyGrownFlowerIds.has(parent1.id) ||
+      !fullyGrownFlowerIds.has(parent2.id)
     ) {
       return;
     }
@@ -145,11 +145,11 @@ export default function Home() {
       )
     );
 
-    // Remove plants from cabbages list
-    setCabbages((prev) => prev.filter((c) => !plantIdsToRemove.includes(c.id)));
+    // Remove plants from flowers list
+    setFlowers((prev) => prev.filter((f) => !plantIdsToRemove.includes(f.id)));
 
     // Remove from fully grown set
-    setFullyGrownCabbageIds((prev) => {
+    setFullyGrownFlowerIds((prev) => {
       const updated = new Set(prev);
       plantIdsToRemove.forEach((id) => updated.delete(id));
       return updated;
@@ -159,8 +159,8 @@ export default function Home() {
     setSelectedPotIds([]);
   };
 
-  const handleCabbageFullyGrown = (cabbageId: string) => {
-    setFullyGrownCabbageIds((prev) => new Set(prev).add(cabbageId));
+  const handleFlowerFullyGrown = (flowerId: string) => {
+    setFullyGrownFlowerIds((prev) => new Set(prev).add(flowerId));
   };
 
   // Handle pot selection - automatically handles planting or breeding based on context
@@ -185,20 +185,20 @@ export default function Home() {
         const newGenetics = seedStack.genetics[0];
 
         const now = Date.now();
-        const newCabbageId = `c${now}`;
-        const newCabbage: CabbageData = {
-          id: newCabbageId,
+        const newFlowerId = `f${now}`;
+        const newFlower: FlowerData = {
+          id: newFlowerId,
           genetics: newGenetics,
           startGrowingAt: now,
         };
 
         // Add the new plant
-        setCabbages((prev) => [...prev, newCabbage]);
+        setFlowers((prev) => [...prev, newFlower]);
 
         // Assign plant to pot
         setPots((prev) =>
           prev.map((p) =>
-            p.id === potId ? { ...p, plantId: newCabbageId } : p
+            p.id === potId ? { ...p, plantId: newFlowerId } : p
           )
         );
 
@@ -225,10 +225,10 @@ export default function Home() {
     const pot2 = pots.find((p) => p.id === selectedPotIds[1]);
     if (!pot1?.plantId || !pot2?.plantId) return false;
     return (
-      fullyGrownCabbageIds.has(pot1.plantId) &&
-      fullyGrownCabbageIds.has(pot2.plantId)
+      fullyGrownFlowerIds.has(pot1.plantId) &&
+      fullyGrownFlowerIds.has(pot2.plantId)
     );
-  }, [selectedPotIds, pots, fullyGrownCabbageIds]);
+  }, [selectedPotIds, pots, fullyGrownFlowerIds]);
 
   // Check if we can cull (need at least 1 pot with a plant selected)
   const canCull = useMemo(() => {
@@ -257,7 +257,7 @@ export default function Home() {
           {/* Breeding Game */}
           <div className="bg-white rounded-lg shadow-lg p-8 mt-12 mb-12">
             <p className="text-gray-600 mb-6">
-              Goal: Breed {TARGET_PURPLE_COUNT} purple cabbages.
+              Goal: Breed {TARGET_PURPLE_COUNT} purple flowers.
             </p>
             <p className="text-gray-600 mb-6">
               Plant seeds in pots, wait for them to grow, then select 2 fully
@@ -268,14 +268,14 @@ export default function Home() {
             {hasWon && (
               <div className="mb-6 p-4 bg-green-100 border-2 border-green-500 rounded-lg">
                 <p className="text-2xl font-bold text-green-800">
-                  🎉 Congratulations! You've bred {purpleCount} purple cabbages!
+                  🎉 Congratulations! You've bred {purpleCount} purple flowers!
                 </p>
               </div>
             )}
 
             <div className="mb-6">
               <p className="text-lg font-semibold text-gray-700">
-                Purple Cabbages: {purpleCount} / {TARGET_PURPLE_COUNT}
+                Purple Flowers: {purpleCount} / {TARGET_PURPLE_COUNT}
               </p>
             </div>
           </div>
@@ -297,7 +297,7 @@ export default function Home() {
                     isSelected={isSelected}
                     onSelect={onSelect}
                   />
-                  <p className="text-gray-600 mb-6">Cabbages</p>
+                  <p className="text-gray-600 mb-6">Flowers</p>
                 </div>
               )}
             />
@@ -352,10 +352,10 @@ export default function Home() {
               renderItem={(pot, isSelected, onSelect) => {
                 const isEmpty = !pot.plantId;
                 const plant = pot.plantId
-                  ? cabbages.find((c) => c.id === pot.plantId)
+                  ? flowers.find((f) => f.id === pot.plantId)
                   : null;
                 const isFullyGrown = plant
-                  ? fullyGrownCabbageIds.has(plant.id)
+                  ? fullyGrownFlowerIds.has(plant.id)
                   : false;
                 // Can select empty pots (for planting) or pots with any plants (for breeding or culling)
                 const canSelect = isEmpty || !!plant;
@@ -369,12 +369,12 @@ export default function Home() {
                     canSelect={canSelect}
                   >
                     {plant && (
-                      <Cabbage
+                      <Flower
                         genetics={plant.genetics}
                         size={80}
                         isSelected={false}
                         startGrowingAt={plant.startGrowingAt}
-                        onFullyGrown={() => handleCabbageFullyGrown(plant.id)}
+                        onFullyGrown={() => handleFlowerFullyGrown(plant.id)}
                         showGenotype={false}
                       />
                     )}

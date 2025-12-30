@@ -36,10 +36,15 @@ export function breed(parent1: PlantGenetics, parent2: PlantGenetics): PlantGene
   return { allele1, allele2 };
 }
 
-// Count purple (recessive) cabbages
-export function countPurpleCabbages(cabbages: { genetics: PlantGenetics }[]): number {
-  return cabbages.filter(
-    (cabbage) => cabbage.genetics.allele1 && cabbage.genetics.allele2
+// Count purple (recessive) plants
+export function countPurplePlants(plants: { genetics: PlantGenetics }[]): number {
+  return plants.filter(
+    (plant) => plant.genetics.allele1 && plant.genetics.allele2
   ).length;
+}
+
+// Count purple (recessive) cabbages (deprecated - use countPurplePlants instead)
+export function countPurpleCabbages(cabbages: { genetics: PlantGenetics }[]): number {
+  return countPurplePlants(cabbages);
 }
 
