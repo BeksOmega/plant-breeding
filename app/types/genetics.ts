@@ -27,6 +27,11 @@ export const DNA_SEQUENCES: Record<number, TraitSequences> = {
     true: "GGC", // recessive (brown)
     false: "TAA", // dominant (black)
   },
+  2: {
+    // petal shape
+    true: "CGT", // recessive (pointy)
+    false: "GCA", // dominant (round)
+  },
 };
 
 // Sequence the genome of a flower
@@ -73,6 +78,21 @@ export function getInnerColor(genetics: PlantGenetics): string {
   }
   // Otherwise, show black (dominant trait)
   return "#000000"; // Black color
+}
+
+// Determine petal shape phenotype based on genotype
+// Pointy (recessive) only shows if both alleles are true (homozygous recessive)
+// Round (dominant) shows if at least one allele is false (has dominant allele)
+export function hasPointyPetals(genetics: PlantGenetics): boolean {
+  // If trait index 2 doesn't exist, default to round (dominant)
+  if (
+    genetics.chromosome1[2] === undefined ||
+    genetics.chromosome2[2] === undefined
+  ) {
+    return false;
+  }
+  // If both are true (homozygous recessive), show pointy petals
+  return genetics.chromosome1[2] === true && genetics.chromosome2[2] === true;
 }
 
 // Get genotype string representation (e.g., "RR", "Rr", "rr")

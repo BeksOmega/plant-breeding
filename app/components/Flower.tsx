@@ -6,6 +6,7 @@ import {
   getPhenotypeColor,
   getInnerColor,
   getGenotype,
+  hasPointyPetals,
 } from "../types/genetics";
 
 interface FlowerProps {
@@ -58,6 +59,7 @@ export default function Flower({
 
   const petalColor = isGrowing ? "#9ca3af" : getPhenotypeColor(genetics);
   const innerColor = isGrowing ? "#9ca3af" : getInnerColor(genetics);
+  const isPointy = !isGrowing && hasPointyPetals(genetics);
   const canSelect = isFullyGrown;
 
   const handleClick = () => {
@@ -97,34 +99,59 @@ export default function Flower({
             style={{ display: "block" }}
           >
             <g fill={petalColor}>
-              <ellipse
-                cx="50"
-                cy="50"
-                rx="12"
-                ry="35"
-                transform="rotate(0 50 50)"
-              />
-              <ellipse
-                cx="50"
-                cy="50"
-                rx="12"
-                ry="35"
-                transform="rotate(45 50 50)"
-              />
-              <ellipse
-                cx="50"
-                cy="50"
-                rx="12"
-                ry="35"
-                transform="rotate(90 50 50)"
-              />
-              <ellipse
-                cx="50"
-                cy="50"
-                rx="12"
-                ry="35"
-                transform="rotate(135 50 50)"
-              />
+              {isPointy ? (
+                // Pointy petals (diamond/pointed shape)
+                <>
+                  <path
+                    d="M 50 15 L 38 50 L 50 85 L 62 50 Z"
+                    transform="rotate(0 50 50)"
+                  />
+                  <path
+                    d="M 50 15 L 38 50 L 50 85 L 62 50 Z"
+                    transform="rotate(45 50 50)"
+                  />
+                  <path
+                    d="M 50 15 L 38 50 L 50 85 L 62 50 Z"
+                    transform="rotate(90 50 50)"
+                  />
+                  <path
+                    d="M 50 15 L 38 50 L 50 85 L 62 50 Z"
+                    transform="rotate(135 50 50)"
+                  />
+                </>
+              ) : (
+                // Round petals (ellipses)
+                <>
+                  <ellipse
+                    cx="50"
+                    cy="50"
+                    rx="12"
+                    ry="35"
+                    transform="rotate(0 50 50)"
+                  />
+                  <ellipse
+                    cx="50"
+                    cy="50"
+                    rx="12"
+                    ry="35"
+                    transform="rotate(45 50 50)"
+                  />
+                  <ellipse
+                    cx="50"
+                    cy="50"
+                    rx="12"
+                    ry="35"
+                    transform="rotate(90 50 50)"
+                  />
+                  <ellipse
+                    cx="50"
+                    cy="50"
+                    rx="12"
+                    ry="35"
+                    transform="rotate(135 50 50)"
+                  />
+                </>
+              )}
             </g>
             <circle cx="50" cy="50" r="18" fill={innerColor} />
           </svg>

@@ -52,8 +52,11 @@ export default function Home() {
     {
       id: "s1",
       genetics: [
-        { chromosome1: [false, false], chromosome2: [false, false] }, // RR, BB
-        { chromosome1: [true, true], chromosome2: [true, true] }, // rr, bb
+        {
+          chromosome1: [false, false, false],
+          chromosome2: [false, false, true],
+        }, // RR, BB, Pp
+        { chromosome1: [true, true, true], chromosome2: [true, true, true] }, // rr, bb, pp
       ],
     },
   ]);
@@ -66,6 +69,11 @@ export default function Home() {
     { id: "p3" },
     { id: "p4" },
     { id: "p5" },
+    { id: "p6" },
+    { id: "p7" },
+    { id: "p8" },
+    { id: "p9" },
+    { id: "p10" },
   ]);
   const [selectedPotIds, setSelectedPotIds] = useState<string[]>([]);
   const [traitAnalysis, setTraitAnalysis] = useState<{
@@ -492,8 +500,8 @@ export default function Home() {
           {/* Breeding Game */}
           <div className="bg-white rounded-lg shadow-lg p-8 mt-12 mb-12">
             <p className="text-gray-600 mb-6">
-              Goal: Find the traits that give you a purple flower with a black
-              center.
+              <b>Goal:</b> Find the traits that give you a <b>purple</b> flower
+              with a <b>black</b> center. Petal shape does not matter.
             </p>
             <p className="text-gray-600 mb-6">
               Plant seeds in pots, wait for them to grow, then select 2 fully
@@ -589,7 +597,6 @@ export default function Home() {
 
             <PlantCollection
               items={pots}
-              maxSelected={2}
               selectedIds={selectedPotIds}
               onSelectionChange={handlePotSelection}
               renderItem={(pot, isSelected, onSelect) => {
