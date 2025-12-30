@@ -126,6 +126,13 @@ export interface PossibleRecessiveTrait {
   dnaSequence: string; // The DNA sequence associated with this value
 }
 
+// Result type for finding possible dominant traits
+export interface PossibleDominantTrait {
+  traitIndex: number;
+  value: boolean; // The value that all plants share in at least one chromosome
+  dnaSequence: string; // The DNA sequence associated with this value
+}
+
 // Find possible recessive traits by checking if all plants have the same value
 // at each trait index across both chromosomes. Ignores the fact that we know
 // recessive is encoded by "true" - it simply looks for uniformity.
@@ -164,6 +171,83 @@ export function findPossibleRecessiveTraits(
           ? DNA_SEQUENCES[traitIndex].true
           : DNA_SEQUENCES[traitIndex].false,
       });
+    }
+  }
+
+  return results;
+}
+
+// Find possible dominant traits by checking if all plants have the same value
+// (either true or false) in at least one of their chromosomes at each trait index.
+// Ignores the fact that we know dominant is encoded by "false" - it simply looks
+// for uniformity in at least one chromosome.
+export function findPossibleDominantTraits(
+  plants: PlantGenetics[]
+): PossibleDominantTrait[] {
+  if (plants.length === 0 || plants.length === 1) {
+    return [];
+  }
+
+  // Determine the maximum trait index by checking chromosome lengths
+  const maxTraitIndex = Math.max(
+    ...plants.map((plant) =>
+      Math.max(plant.chromosome1.length, plant.chromosome2.length)
+    )
+  );
+
+  const results: PossibleDominantTrait[] = [];
+
+  // Check each trait index
+  for (let traitIndex = 0; traitIndex < maxTraitIndex; traitIndex++) {
+    // Check if first plant has a value in at least one chromosome
+    const firstPlantChr1 = plants[0]?.chromosome1[traitIndex];
+    const firstPlantChr2 = plants[0]?.chromosome2[traitIndex];
+
+    // Skip if trait index doesn't exist in first plant
+    if (firstPlantChr1 === undefined && firstPlantChr2 === undefined) {
+      continue;
+    }
+
+    // Check both chromosomes of the first plant in parallel
+    // Check if all plants have the value from chromosome1 in at least one chromosome
+    if (firstPlantChr1 !== undefined) {
+      const allHaveChr1Value = plants.every(
+        (plant) =>
+          plant.chromosome1[traitIndex] === firstPlantChr1 ||
+          plant.chromosome2[traitIndex] === firstPlantChr1
+      );
+
+      if (allHaveChr1Value) {
+        const sequences = DNA_SEQUENCES[traitIndex];
+        if (sequences) {
+          results.push({
+            traitIndex,
+            value: firstPlantChr1,
+            dnaSequence: firstPlantChr1 ? sequences.true : sequences.false,
+          });
+        }
+      }
+    }
+
+    // Check if all plants have the value from chromosome2 in at least one chromosome
+    // Only add if it's different from chromosome1 value to avoid duplicates
+    if (firstPlantChr2 !== undefined && firstPlantChr2 !== firstPlantChr1) {
+      const allHaveChr2Value = plants.every(
+        (plant) =>
+          plant.chromosome1[traitIndex] === firstPlantChr2 ||
+          plant.chromosome2[traitIndex] === firstPlantChr2
+      );
+
+      if (allHaveChr2Value) {
+        const sequences = DNA_SEQUENCES[traitIndex];
+        if (sequences) {
+          results.push({
+            traitIndex,
+            value: firstPlantChr2,
+            dnaSequence: firstPlantChr2 ? sequences.true : sequences.false,
+          });
+        }
+      }
     }
   }
 

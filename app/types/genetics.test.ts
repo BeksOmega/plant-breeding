@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   findPossibleRecessiveTraits,
+  findPossibleDominantTraits,
   PlantGenetics,
   DNA_SEQUENCES,
 } from "./genetics";
@@ -171,5 +172,280 @@ describe("findPossibleRecessiveTraits", () => {
 
     const result = findPossibleRecessiveTraits(plants);
     expect(result[0].dnaSequence).toBe("TCT");
+  });
+});
+
+describe("findPossibleDominantTraits", () => {
+  it("should return empty array for empty input", () => {
+    const result = findPossibleDominantTraits([]);
+    expect(result).toEqual([]);
+  });
+
+  it("should return empty array for single plant", () => {
+    const plants: PlantGenetics[] = [
+      { chromosome1: [true, false], chromosome2: [true, false] },
+    ];
+
+    const result = findPossibleDominantTraits(plants);
+    expect(result).toEqual([]);
+  });
+
+  it("should find trait when all plants have true in at least one chromosome", () => {
+    const plants: PlantGenetics[] = [
+      { chromosome1: [true, false], chromosome2: [false, true] },
+      { chromosome1: [false, true], chromosome2: [true, false] },
+      { chromosome1: [true, false], chromosome2: [false, true] },
+    ];
+
+    const result = findPossibleDominantTraits(plants);
+    // All plants have true at index 0 (from chr1), false at index 0 (from chr2),
+    // false at index 1 (from chr1), and true at index 1 (from chr2) in at least one chromosome
+    expect(result).toEqual([
+      {
+        traitIndex: 0,
+        value: true,
+        dnaSequence: DNA_SEQUENCES[0].true,
+      },
+      {
+        traitIndex: 0,
+        value: false,
+        dnaSequence: DNA_SEQUENCES[0].false,
+      },
+      {
+        traitIndex: 1,
+        value: false,
+        dnaSequence: DNA_SEQUENCES[1].false,
+      },
+      {
+        traitIndex: 1,
+        value: true,
+        dnaSequence: DNA_SEQUENCES[1].true,
+      },
+    ]);
+  });
+
+  it("should find trait when all plants have false in at least one chromosome", () => {
+    const plants: PlantGenetics[] = [
+      { chromosome1: [false, true], chromosome2: [true, false] },
+      { chromosome1: [true, false], chromosome2: [false, true] },
+      { chromosome1: [false, true], chromosome2: [true, false] },
+    ];
+
+    const result = findPossibleDominantTraits(plants);
+    // All plants have false at index 0 (from chr1), true at index 0 (from chr2),
+    // true at index 1 (from chr1), and false at index 1 (from chr2) in at least one chromosome
+    expect(result).toEqual([
+      {
+        traitIndex: 0,
+        value: false,
+        dnaSequence: DNA_SEQUENCES[0].false,
+      },
+      {
+        traitIndex: 0,
+        value: true,
+        dnaSequence: DNA_SEQUENCES[0].true,
+      },
+      {
+        traitIndex: 1,
+        value: true,
+        dnaSequence: DNA_SEQUENCES[1].true,
+      },
+      {
+        traitIndex: 1,
+        value: false,
+        dnaSequence: DNA_SEQUENCES[1].false,
+      },
+    ]);
+  });
+
+  it("should find trait when some plants have value in chromosome1 and others in chromosome2", () => {
+    const plants: PlantGenetics[] = [
+      { chromosome1: [true, false], chromosome2: [false, true] },
+      { chromosome1: [false, true], chromosome2: [true, false] },
+    ];
+
+    const result = findPossibleDominantTraits(plants);
+    // All plants have true at index 0 (from chr1), false at index 0 (from chr2),
+    // false at index 1 (from chr1), and true at index 1 (from chr2) in at least one chromosome
+    expect(result).toEqual([
+      {
+        traitIndex: 0,
+        value: true,
+        dnaSequence: DNA_SEQUENCES[0].true,
+      },
+      {
+        traitIndex: 0,
+        value: false,
+        dnaSequence: DNA_SEQUENCES[0].false,
+      },
+      {
+        traitIndex: 1,
+        value: false,
+        dnaSequence: DNA_SEQUENCES[1].false,
+      },
+      {
+        traitIndex: 1,
+        value: true,
+        dnaSequence: DNA_SEQUENCES[1].true,
+      },
+    ]);
+  });
+
+  it("should not find trait when plants have different values", () => {
+    const plants: PlantGenetics[] = [
+      { chromosome1: [true, false], chromosome2: [false, true] },
+      { chromosome1: [false, false], chromosome2: [false, true] },
+    ];
+
+    const result = findPossibleDominantTraits(plants);
+    // Index 0: first plant has true (chr1) and false (chr2), second has false (both chr) - false matches!
+    // Index 1: first plant has false (chr1) and true (chr2), second has false (chr2) and true (chr2) - both match!
+    expect(result).toEqual([
+      {
+        traitIndex: 0,
+        value: false,
+        dnaSequence: DNA_SEQUENCES[0].false,
+      },
+      {
+        traitIndex: 1,
+        value: false,
+        dnaSequence: DNA_SEQUENCES[1].false,
+      },
+      {
+        traitIndex: 1,
+        value: true,
+        dnaSequence: DNA_SEQUENCES[1].true,
+      },
+    ]);
+  });
+
+  it("should find multiple traits when all plants match at multiple indices", () => {
+    const plants: PlantGenetics[] = [
+      { chromosome1: [true, false], chromosome2: [false, true] },
+      { chromosome1: [false, true], chromosome2: [true, false] },
+      { chromosome1: [true, false], chromosome2: [false, true] },
+    ];
+
+    const result = findPossibleDominantTraits(plants);
+    // Both values match at both indices
+    expect(result).toEqual([
+      {
+        traitIndex: 0,
+        value: true,
+        dnaSequence: DNA_SEQUENCES[0].true,
+      },
+      {
+        traitIndex: 0,
+        value: false,
+        dnaSequence: DNA_SEQUENCES[0].false,
+      },
+      {
+        traitIndex: 1,
+        value: false,
+        dnaSequence: DNA_SEQUENCES[1].false,
+      },
+      {
+        traitIndex: 1,
+        value: true,
+        dnaSequence: DNA_SEQUENCES[1].true,
+      },
+    ]);
+  });
+
+  it("should find trait at index 1 when all plants match", () => {
+    const plants: PlantGenetics[] = [
+      { chromosome1: [true, false], chromosome2: [false, true] },
+      { chromosome1: [false, true], chromosome2: [true, false] },
+    ];
+
+    const result = findPossibleDominantTraits(plants);
+    // All plants have true at index 0 (from chr1), false at index 0 (from chr2),
+    // false at index 1 (from chr1), and true at index 1 (from chr2) in at least one chromosome
+    expect(result).toEqual([
+      {
+        traitIndex: 0,
+        value: true,
+        dnaSequence: DNA_SEQUENCES[0].true,
+      },
+      {
+        traitIndex: 0,
+        value: false,
+        dnaSequence: DNA_SEQUENCES[0].false,
+      },
+      {
+        traitIndex: 1,
+        value: false,
+        dnaSequence: DNA_SEQUENCES[1].false,
+      },
+      {
+        traitIndex: 1,
+        value: true,
+        dnaSequence: DNA_SEQUENCES[1].true,
+      },
+    ]);
+  });
+
+  it("should handle plants with different chromosome lengths", () => {
+    const plants: PlantGenetics[] = [
+      { chromosome1: [true], chromosome2: [false] },
+      { chromosome1: [true, false], chromosome2: [false, true] },
+    ];
+
+    const result = findPossibleDominantTraits(plants);
+    // First plant has true (chr1) and false (chr2) at index 0
+    // Both values match across all plants
+    expect(result).toEqual([
+      {
+        traitIndex: 0,
+        value: true,
+        dnaSequence: DNA_SEQUENCES[0].true,
+      },
+      {
+        traitIndex: 0,
+        value: false,
+        dnaSequence: DNA_SEQUENCES[0].false,
+      },
+    ]);
+  });
+
+  it("should return correct DNA sequence for true value", () => {
+    const plants: PlantGenetics[] = [
+      { chromosome1: [true], chromosome2: [false] },
+      { chromosome1: [false], chromosome2: [true] },
+    ];
+
+    const result = findPossibleDominantTraits(plants);
+    expect(result[0].dnaSequence).toBe("AAA");
+  });
+
+  it("should return correct DNA sequence for false value", () => {
+    const plants: PlantGenetics[] = [
+      { chromosome1: [false], chromosome2: [true] },
+      { chromosome1: [true], chromosome2: [false] },
+    ];
+
+    const result = findPossibleDominantTraits(plants);
+    expect(result[0].dnaSequence).toBe("TCT");
+  });
+
+  it("should work when all plants have value in both chromosomes", () => {
+    const plants: PlantGenetics[] = [
+      { chromosome1: [true, false], chromosome2: [true, false] },
+      { chromosome1: [true, false], chromosome2: [true, false] },
+    ];
+
+    const result = findPossibleDominantTraits(plants);
+    expect(result).toEqual([
+      {
+        traitIndex: 0,
+        value: true,
+        dnaSequence: DNA_SEQUENCES[0].true,
+      },
+      {
+        traitIndex: 1,
+        value: false,
+        dnaSequence: DNA_SEQUENCES[1].false,
+      },
+    ]);
   });
 });
