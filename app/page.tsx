@@ -35,6 +35,7 @@ interface PotData {
 interface TraitData {
   id: string;
   trait: PossibleRecessiveTrait | PossibleDominantTrait;
+  isPossiblyRecessive: boolean; // true if from PossibleRecessiveTrait, false if from PossibleDominantTrait
 }
 
 const TARGET_PURPLE_COUNT = 3;
@@ -224,6 +225,7 @@ export default function Home() {
         newTraits.push({
           id: traitId,
           trait,
+          isPossiblyRecessive: true,
         });
       }
     });
@@ -236,6 +238,7 @@ export default function Home() {
         newTraits.push({
           id: traitId,
           trait,
+          isPossiblyRecessive: false,
         });
       }
     });
@@ -595,7 +598,12 @@ export default function Home() {
                     ) : (
                       <div className="flex flex-wrap gap-4">
                         {traitAnalysis.recessive.map((trait, index) => (
-                          <Trait key={index} trait={trait} size={80} />
+                          <Trait
+                            key={index}
+                            trait={trait}
+                            size={80}
+                            isPossiblyRecessive={true}
+                          />
                         ))}
                       </div>
                     )}
@@ -613,7 +621,12 @@ export default function Home() {
                     ) : (
                       <div className="flex flex-wrap gap-4">
                         {traitAnalysis.dominant.map((trait, index) => (
-                          <Trait key={index} trait={trait} size={80} />
+                          <Trait
+                            key={index}
+                            trait={trait}
+                            size={80}
+                            isPossiblyRecessive={false}
+                          />
                         ))}
                       </div>
                     )}
@@ -660,6 +673,7 @@ export default function Home() {
                       size={80}
                       isSelected={isSelected}
                       onSelect={onSelect}
+                      isPossiblyRecessive={traitData.isPossiblyRecessive}
                     />
                   )}
                 />

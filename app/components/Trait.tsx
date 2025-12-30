@@ -1,12 +1,16 @@
 "use client";
 
-import { PossibleRecessiveTrait, PossibleDominantTrait } from "../types/genetics";
+import {
+  PossibleRecessiveTrait,
+  PossibleDominantTrait,
+} from "../types/genetics";
 
 interface TraitProps {
   trait: PossibleRecessiveTrait | PossibleDominantTrait;
   size?: number;
   isSelected?: boolean;
   onSelect?: (selected: boolean) => void;
+  isPossiblyRecessive?: boolean; // true if possibly recessive, false if possibly dominant
 }
 
 export default function Trait({
@@ -14,9 +18,10 @@ export default function Trait({
   size = 100,
   isSelected = false,
   onSelect,
+  isPossiblyRecessive = false,
 }: TraitProps) {
-  // Purple for recessive (value === true), blue for dominant (value === false)
-  const borderColor = trait.value ? "#a78bfa" : "#60a5fa"; // Purple or blue
+  // Purple for possibly recessive, blue for possibly dominant
+  const borderColor = isPossiblyRecessive ? "#a78bfa" : "#60a5fa"; // Purple or blue
   const borderWidth = 3;
 
   const handleClick = () => {
@@ -53,4 +58,3 @@ export default function Trait({
     </button>
   );
 }
-
