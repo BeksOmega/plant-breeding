@@ -10,14 +10,14 @@ export interface PlantGenetics {
 
 // Determine phenotype color based on genotype
 // Purple (recessive) only shows if both alleles are true (homozygous recessive)
-// Green (dominant) shows if at least one allele is false (has dominant allele)
+// Blue (dominant) shows if at least one allele is false (has dominant allele)
 export function getPhenotypeColor(genetics: PlantGenetics): string {
   // If both are true (homozygous recessive), show purple
   if (genetics.allele1 && genetics.allele2) {
     return '#a78bfa'; // Purple color
   }
-  // Otherwise, show green (dominant trait)
-  return '#4ade80'; // Green color
+  // Otherwise, show blue (dominant trait)
+  return '#60a5fa'; // Blue color (skyblue)
 }
 
 // Get genotype string representation (e.g., "RR", "Rr", "rr")
