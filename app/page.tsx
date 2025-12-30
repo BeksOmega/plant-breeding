@@ -375,6 +375,18 @@ export default function Home() {
   const handlePotSelection = (potIds: string[]) => {
     setSelectedPotIds(potIds);
 
+    // If seeds are selected and a pot with a plant is selected, deselect seeds
+    if (potIds.length > 0 && selectedSeedIds.length > 0) {
+      const potId = potIds[0];
+      const pot = pots.find((p) => p.id === potId);
+
+      // If selecting a pot with a plant, deselect seeds
+      if (pot && pot.plantId) {
+        setSelectedSeedIds([]);
+        return;
+      }
+    }
+
     // If a seed is selected and an empty pot is selected, plant immediately
     if (potIds.length > 0 && selectedSeedIds.length > 0) {
       const potId = potIds[0];
@@ -408,6 +420,9 @@ export default function Home() {
           prev.map((p) => (p.id === potId ? { ...p, plantId: newFlowerId } : p))
         );
 
+        // Check if seed stack will still have seeds left after planting
+        const seedsRemaining = seedStack.genetics.length > 1;
+
         // Remove the first seed from the stack
         setSeedStacks((prev) => {
           const updated = prev.map((s) =>
@@ -417,8 +432,12 @@ export default function Home() {
           return updated.filter((s) => s.genetics.length > 0);
         });
 
-        // Clear selections
-        setSelectedSeedIds([]);
+        // Only clear seed selection if no seeds are left
+        if (!seedsRemaining) {
+          setSelectedSeedIds([]);
+        }
+
+        // Clear pot selection
         setSelectedPotIds([]);
       }
     }
