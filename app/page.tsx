@@ -32,6 +32,11 @@ interface PotData {
   plantId?: string; // ID of the plant growing in this pot, undefined if empty
 }
 
+interface TraitData {
+  id: string;
+  trait: PossibleRecessiveTrait | PossibleDominantTrait;
+}
+
 const TARGET_PURPLE_COUNT = 3;
 
 export default function Home() {
@@ -67,6 +72,10 @@ export default function Home() {
     recessive: PossibleRecessiveTrait[];
     dominant: PossibleDominantTrait[];
   } | null>(null);
+
+  // Traits collection state
+  const [traits, setTraits] = useState<TraitData[]>([]);
+  const [selectedTraitIds, setSelectedTraitIds] = useState<string[]>([]);
 
   // Count purple flowers (only count fully grown ones in pots)
   const fullyGrownFlowersInPots = useMemo(() => {
@@ -200,6 +209,40 @@ export default function Home() {
       recessive: recessiveTraits,
       dominant: dominantTraits,
     });
+  };
+
+  const handleAddTraitsToCollection = () => {
+    if (!traitAnalysis) return;
+
+    const newTraits: TraitData[] = [];
+
+    // Add recessive traits
+    traitAnalysis.recessive.forEach((trait) => {
+      const traitId = `trait-${trait.traitIndex}-${trait.value}-${trait.dnaSequence}`;
+      // Check if trait already exists
+      if (!traits.some((t) => t.id === traitId)) {
+        newTraits.push({
+          id: traitId,
+          trait,
+        });
+      }
+    });
+
+    // Add dominant traits
+    traitAnalysis.dominant.forEach((trait) => {
+      const traitId = `trait-${trait.traitIndex}-${trait.value}-${trait.dnaSequence}`;
+      // Check if trait already exists
+      if (!traits.some((t) => t.id === traitId)) {
+        newTraits.push({
+          id: traitId,
+          trait,
+        });
+      }
+    });
+
+    if (newTraits.length > 0) {
+      setTraits((prev) => [...prev, ...newTraits]);
+    }
   };
 
   const handleFlowerFullyGrown = (flowerId: string) => {
@@ -354,6 +397,32 @@ export default function Home() {
             />
           </div>
 
+          {/* Traits Collection Section */}
+          <div className="bg-white rounded-lg shadow-lg p-8 mt-12 mb-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Traits</h2>
+            <p className="text-gray-600 mb-6">
+              {traits.length === 0
+                ? "No traits collected yet. Analyze plants to discover traits."
+                : "Select traits from your collection"}
+            </p>
+            {traits.length > 0 && (
+              <PlantCollection
+                items={traits}
+                maxSelected={Infinity}
+                selectedIds={selectedTraitIds}
+                onSelectionChange={setSelectedTraitIds}
+                renderItem={(traitData, isSelected, onSelect) => (
+                  <Trait
+                    trait={traitData.trait}
+                    size={80}
+                    isSelected={isSelected}
+                    onSelect={onSelect}
+                  />
+                )}
+              />
+            )}
+          </div>
+
           {/* Pots Section */}
           <div className="bg-white rounded-lg shadow-lg p-8 mt-12 mb-12">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Pots</h2>
@@ -491,12 +560,20 @@ export default function Home() {
                     )}
                   </div>
                 </div>
-                <button
-                  onClick={() => setTraitAnalysis(null)}
-                  className="mt-4 px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-lg transition-all"
-                >
-                  Close
-                </button>
+                <div className="mt-4 flex gap-4">
+                  <button
+                    onClick={handleAddTraitsToCollection}
+                    className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-all"
+                  >
+                    Add to Collection
+                  </button>
+                  <button
+                    onClick={() => setTraitAnalysis(null)}
+                    className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-lg transition-all"
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
             )}
           </div>
