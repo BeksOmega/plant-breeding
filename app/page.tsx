@@ -9,7 +9,6 @@ import Trait from "./components/Trait";
 import {
   PlantGenetics,
   breed,
-  countPurplePlants,
   findPossibleRecessiveTraits,
   findPossibleDominantTraits,
   PossibleRecessiveTrait,
@@ -38,7 +37,7 @@ interface TraitData {
   isPossiblyRecessive: boolean; // true if from PossibleRecessiveTrait, false if from PossibleDominantTrait
 }
 
-const TARGET_PURPLE_COUNT = 3;
+// Goal: Find traits that give purple flower (AAA recessive) with black center (TAA dominant)
 
 export default function Home() {
   // Start with no flowers - only seeds
@@ -77,21 +76,18 @@ export default function Home() {
   // Traits collection state
   const [traits, setTraits] = useState<TraitData[]>([]);
   const [selectedTraitIds, setSelectedTraitIds] = useState<string[]>([]);
+  const [traitSubmissionResult, setTraitSubmissionResult] = useState<{
+    isCorrect: boolean;
+    message: string;
+  } | null>(null);
 
-  // Count purple flowers (only count fully grown ones in pots)
-  const fullyGrownFlowersInPots = useMemo(() => {
-    return pots
-      .filter((pot) => pot.plantId && fullyGrownFlowerIds.has(pot.plantId))
-      .map((pot) => flowers.find((f) => f.id === pot.plantId)!)
-      .filter(Boolean);
-  }, [pots, flowers, fullyGrownFlowerIds]);
-
-  const purpleCount = useMemo(
-    () => countPurplePlants(fullyGrownFlowersInPots),
-    [fullyGrownFlowersInPots]
-  );
-
-  const hasWon = purpleCount >= TARGET_PURPLE_COUNT;
+  // Clear submission result when trait selection changes
+  const handleTraitSelectionChange = (ids: string[]) => {
+    setSelectedTraitIds(ids);
+    if (traitSubmissionResult) {
+      setTraitSubmissionResult(null);
+    }
+  };
 
   const handleBreed = () => {
     if (selectedPotIds.length !== 2) return;
@@ -219,7 +215,7 @@ export default function Home() {
 
     // Add recessive traits
     traitAnalysis.recessive.forEach((trait) => {
-      const traitId = `trait-${trait.traitIndex}-${trait.value}-${trait.dnaSequence}`;
+      const traitId = `trait-${trait.traitIndex}-${trait.value}-${trait.dnaSequence}-recessive`;
       // Check if trait already exists
       if (!traits.some((t) => t.id === traitId)) {
         newTraits.push({
@@ -232,7 +228,7 @@ export default function Home() {
 
     // Add dominant traits
     traitAnalysis.dominant.forEach((trait) => {
-      const traitId = `trait-${trait.traitIndex}-${trait.value}-${trait.dnaSequence}`;
+      const traitId = `trait-${trait.traitIndex}-${trait.value}-${trait.dnaSequence}-dominant`;
       // Check if trait already exists
       if (!traits.some((t) => t.id === traitId)) {
         newTraits.push({
@@ -290,19 +286,19 @@ export default function Home() {
       modifiedGenetics.chromosome2.push(false);
     }
 
-    // If trait is possibly dominant (value === false), put it in either chromosome
-    // If trait is possibly recessive (value === true), put it in both chromosomes
-    if (value === false) {
-      // Dominant: randomly choose one chromosome
+    // If trait is possibly dominant (isPossiblyRecessive === false), put it in either chromosome
+    // If trait is possibly recessive (isPossiblyRecessive === true), put it in both chromosomes
+    if (!selectedTrait.isPossiblyRecessive) {
+      // Possibly dominant: randomly choose one chromosome
       const chromosomeToModify =
         Math.random() < 0.5
           ? modifiedGenetics.chromosome1
           : modifiedGenetics.chromosome2;
-      chromosomeToModify[traitIndex] = false;
+      chromosomeToModify[traitIndex] = value;
     } else {
-      // Recessive: put in both chromosomes
-      modifiedGenetics.chromosome1[traitIndex] = true;
-      modifiedGenetics.chromosome2[traitIndex] = true;
+      // Possibly recessive: put in both chromosomes
+      modifiedGenetics.chromosome1[traitIndex] = value;
+      modifiedGenetics.chromosome2[traitIndex] = value;
     }
 
     // Add the modified seed to the first seed stack (or create a new one if none exist)
@@ -329,6 +325,46 @@ export default function Home() {
     // Clear selections
     setSelectedTraitIds([]);
     setSelectedPotIds([]);
+  };
+
+  const handleSubmitTraits = () => {
+    if (selectedTraitIds.length !== 2) return;
+
+    const selectedTraits = selectedTraitIds
+      .map((id) => traits.find((t) => t.id === id))
+      .filter((t): t is TraitData => t !== undefined);
+
+    if (selectedTraits.length !== 2) return;
+
+    // Check if we have one trait with "AAA" (recessive, trait index 0) and one with "TAA" (dominant, trait index 1)
+    // "AAA" should be recessive (isPossiblyRecessive === true)
+    // "TAA" should be dominant (isPossiblyRecessive === false)
+    const hasAAA = selectedTraits.some(
+      (t) =>
+        t.trait.dnaSequence === "AAA" &&
+        t.trait.traitIndex === 0 &&
+        t.isPossiblyRecessive === true
+    );
+    const hasTAA = selectedTraits.some(
+      (t) =>
+        t.trait.dnaSequence === "TAA" &&
+        t.trait.traitIndex === 1 &&
+        t.isPossiblyRecessive === false
+    );
+
+    if (hasAAA && hasTAA) {
+      setTraitSubmissionResult({
+        isCorrect: true,
+        message:
+          "🎉 Correct! You found the traits for a purple flower with a black center!",
+      });
+    } else {
+      setTraitSubmissionResult({
+        isCorrect: false,
+        message:
+          "❌ Incorrect. You need to find the trait for purple petals (AAA) and the trait for black center (TAA).",
+      });
+    }
   };
 
   const handleFlowerFullyGrown = (flowerId: string) => {
@@ -437,27 +473,16 @@ export default function Home() {
           {/* Breeding Game */}
           <div className="bg-white rounded-lg shadow-lg p-8 mt-12 mb-12">
             <p className="text-gray-600 mb-6">
-              Goal: Breed {TARGET_PURPLE_COUNT} purple flowers.
+              Goal: Find the traits that give you a purple flower with a black
+              center.
             </p>
             <p className="text-gray-600 mb-6">
               Plant seeds in pots, wait for them to grow, then select 2 fully
               grown plants in pots and click Breed to get 1 seed. Plants remain
-              in their pots after breeding.
+              in their pots after breeding. Analyze plants to discover traits,
+              then select 2 traits and submit to check if you found the correct
+              combination.
             </p>
-
-            {hasWon && (
-              <div className="mb-6 p-4 bg-green-100 border-2 border-green-500 rounded-lg">
-                <p className="text-2xl font-bold text-green-800">
-                  🎉 Congratulations! You've bred {purpleCount} purple flowers!
-                </p>
-              </div>
-            )}
-
-            <div className="mb-6">
-              <p className="text-lg font-semibold text-gray-700">
-                Purple Flowers: {purpleCount} / {TARGET_PURPLE_COUNT}
-              </p>
-            </div>
           </div>
 
           {/* Seed Stacks Section */}
@@ -656,17 +681,21 @@ export default function Home() {
             <p className="text-gray-600 mb-6">
               {traits.length === 0
                 ? "No traits collected yet. Analyze plants to discover traits."
+                : selectedTraitIds.length === 2
+                ? "Select 2 traits and click 'Submit traits' to check if you found the correct combination for a purple flower with a black center."
                 : selectedTraitIds.length === 1 && selectedPotIds.length === 1
                 ? "Select a plant in a pot to breed this trait into it."
-                : "Select exactly one trait and one plant to breed the trait into it."}
+                : selectedTraitIds.length === 1
+                ? "Select exactly one trait and one plant to breed the trait into it, or select 2 traits to submit."
+                : "Select exactly one trait and one plant to breed the trait into it, or select 2 traits to submit."}
             </p>
             {traits.length > 0 && (
               <>
                 <PlantCollection
                   items={traits}
-                  maxSelected={1}
+                  maxSelected={2}
                   selectedIds={selectedTraitIds}
-                  onSelectionChange={setSelectedTraitIds}
+                  onSelectionChange={handleTraitSelectionChange}
                   renderItem={(traitData, isSelected, onSelect) => (
                     <Trait
                       trait={traitData.trait}
@@ -677,7 +706,40 @@ export default function Home() {
                     />
                   )}
                 />
-                <div className="mt-6 flex justify-center">
+                <div className="mt-6 flex flex-col items-center gap-4">
+                  <button
+                    onClick={handleSubmitTraits}
+                    disabled={selectedTraitIds.length !== 2}
+                    className={`
+                      px-6 py-3 rounded-lg font-semibold text-white transition-all
+                      ${
+                        selectedTraitIds.length === 2
+                          ? "bg-green-600 hover:bg-green-700 cursor-pointer"
+                          : "bg-gray-400 cursor-not-allowed"
+                      }
+                    `}
+                  >
+                    Submit Traits
+                  </button>
+                  {traitSubmissionResult && (
+                    <div
+                      className={`p-4 rounded-lg border-2 ${
+                        traitSubmissionResult.isCorrect
+                          ? "bg-green-100 border-green-500"
+                          : "bg-red-100 border-red-500"
+                      }`}
+                    >
+                      <p
+                        className={`text-lg font-bold ${
+                          traitSubmissionResult.isCorrect
+                            ? "text-green-800"
+                            : "text-red-800"
+                        }`}
+                      >
+                        {traitSubmissionResult.message}
+                      </p>
+                    </div>
+                  )}
                   <button
                     onClick={handleBreedTrait}
                     disabled={!canBreedTrait}
