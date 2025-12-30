@@ -9,6 +9,48 @@ export interface PlantGenetics {
   chromosome2: boolean[]; // Second chromosome [petal color, inner color, ...]
 }
 
+// DNA sequence mapping for each trait
+// Maps trait index -> allele value (true/false) -> 3-letter DNA sequence
+type TraitSequences = {
+  true: string;
+  false: string;
+};
+
+export const DNA_SEQUENCES: Record<number, TraitSequences> = {
+  0: {
+    // petal color
+    true: "AAA", // recessive (purple)
+    false: "TCT", // dominant (blue)
+  },
+  1: {
+    // inner color
+    true: "GGC", // recessive (brown)
+    false: "TAA", // dominant (black)
+  },
+};
+
+// Sequence the genome of a flower
+// Returns the DNA sequence for each chromosome by concatenating sequences for each trait
+export function sequenceGenome(genetics: PlantGenetics): {
+  chromosome1: string;
+  chromosome2: string;
+} {
+  const sequenceChromosome = (chromosome: boolean[]): string => {
+    return chromosome
+      .map((allele, traitIndex) => {
+        const sequences = DNA_SEQUENCES[traitIndex];
+        if (!sequences) return "";
+        return allele ? sequences.true : sequences.false;
+      })
+      .join("");
+  };
+
+  return {
+    chromosome1: sequenceChromosome(genetics.chromosome1),
+    chromosome2: sequenceChromosome(genetics.chromosome2),
+  };
+}
+
 // Determine phenotype color based on genotype
 // Purple (recessive) only shows if both alleles are true (homozygous recessive)
 // Blue (dominant) shows if at least one allele is false (has dominant allele)
