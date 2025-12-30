@@ -245,6 +245,89 @@ export default function Home() {
     }
   };
 
+  // Check if we can breed a trait into a plant (need exactly 1 trait and 1 plant selected)
+  const canBreedTrait = useMemo(() => {
+    if (selectedTraitIds.length !== 1) return false;
+    if (selectedPotIds.length !== 1) return false;
+
+    const pot = pots.find((p) => p.id === selectedPotIds[0]);
+    if (!pot?.plantId) return false;
+
+    const plant = flowers.find((f) => f.id === pot.plantId);
+    return !!plant;
+  }, [selectedTraitIds, selectedPotIds, pots, flowers]);
+
+  const handleBreedTrait = () => {
+    if (!canBreedTrait) return;
+
+    // Get the selected trait
+    const selectedTrait = traits.find((t) => t.id === selectedTraitIds[0]);
+    if (!selectedTrait) return;
+
+    // Get the selected plant
+    const pot = pots.find((p) => p.id === selectedPotIds[0]);
+    if (!pot?.plantId) return;
+
+    const plant = flowers.find((f) => f.id === pot.plantId);
+    if (!plant) return;
+
+    // Create a copy of the plant's genetics
+    const modifiedGenetics: PlantGenetics = {
+      chromosome1: [...plant.genetics.chromosome1],
+      chromosome2: [...plant.genetics.chromosome2],
+    };
+
+    const { traitIndex, value } = selectedTrait.trait;
+
+    // Ensure chromosomes are long enough
+    while (modifiedGenetics.chromosome1.length <= traitIndex) {
+      modifiedGenetics.chromosome1.push(false);
+    }
+    while (modifiedGenetics.chromosome2.length <= traitIndex) {
+      modifiedGenetics.chromosome2.push(false);
+    }
+
+    // If trait is possibly dominant (value === false), put it in either chromosome
+    // If trait is possibly recessive (value === true), put it in both chromosomes
+    if (value === false) {
+      // Dominant: randomly choose one chromosome
+      const chromosomeToModify =
+        Math.random() < 0.5
+          ? modifiedGenetics.chromosome1
+          : modifiedGenetics.chromosome2;
+      chromosomeToModify[traitIndex] = false;
+    } else {
+      // Recessive: put in both chromosomes
+      modifiedGenetics.chromosome1[traitIndex] = true;
+      modifiedGenetics.chromosome2[traitIndex] = true;
+    }
+
+    // Add the modified seed to the first seed stack (or create a new one if none exist)
+    setSeedStacks((prev) => {
+      if (prev.length === 0) {
+        return [
+          {
+            id: `s${Date.now()}`,
+            genetics: [modifiedGenetics],
+          },
+        ];
+      }
+      // Add to the first seed stack
+      return prev.map((stack, index) =>
+        index === 0
+          ? {
+              ...stack,
+              genetics: [...stack.genetics, modifiedGenetics],
+            }
+          : stack
+      );
+    });
+
+    // Clear selections
+    setSelectedTraitIds([]);
+    setSelectedPotIds([]);
+  };
+
   const handleFlowerFullyGrown = (flowerId: string) => {
     setFullyGrownFlowerIds((prev) => new Set(prev).add(flowerId));
   };
@@ -403,23 +486,43 @@ export default function Home() {
             <p className="text-gray-600 mb-6">
               {traits.length === 0
                 ? "No traits collected yet. Analyze plants to discover traits."
-                : "Select traits from your collection"}
+                : selectedTraitIds.length === 1 && selectedPotIds.length === 1
+                ? "Select a plant in a pot to breed this trait into it."
+                : "Select exactly one trait and one plant to breed the trait into it."}
             </p>
             {traits.length > 0 && (
-              <PlantCollection
-                items={traits}
-                maxSelected={Infinity}
-                selectedIds={selectedTraitIds}
-                onSelectionChange={setSelectedTraitIds}
-                renderItem={(traitData, isSelected, onSelect) => (
-                  <Trait
-                    trait={traitData.trait}
-                    size={80}
-                    isSelected={isSelected}
-                    onSelect={onSelect}
-                  />
-                )}
-              />
+              <>
+                <PlantCollection
+                  items={traits}
+                  maxSelected={1}
+                  selectedIds={selectedTraitIds}
+                  onSelectionChange={setSelectedTraitIds}
+                  renderItem={(traitData, isSelected, onSelect) => (
+                    <Trait
+                      trait={traitData.trait}
+                      size={80}
+                      isSelected={isSelected}
+                      onSelect={onSelect}
+                    />
+                  )}
+                />
+                <div className="mt-6 flex justify-center">
+                  <button
+                    onClick={handleBreedTrait}
+                    disabled={!canBreedTrait}
+                    className={`
+                      px-6 py-3 rounded-lg font-semibold text-white transition-all
+                      ${
+                        canBreedTrait
+                          ? "bg-purple-600 hover:bg-purple-700 cursor-pointer"
+                          : "bg-gray-400 cursor-not-allowed"
+                      }
+                    `}
+                  >
+                    Get Modified Seed
+                  </button>
+                </div>
+              </>
             )}
           </div>
 
@@ -427,7 +530,9 @@ export default function Home() {
           <div className="bg-white rounded-lg shadow-lg p-8 mt-12 mb-12">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Pots</h2>
             <p className="text-gray-600 mb-6">
-              {selectedSeedIds.length > 0
+              {selectedTraitIds.length === 1
+                ? "Select a plant in a pot to breed the selected trait into it."
+                : selectedSeedIds.length > 0
                 ? "Select an empty pot to plant your seeds."
                 : selectedPotIds.length === 2
                 ? "Select 2 fully grown plants to breed them, or select plants to cull."
