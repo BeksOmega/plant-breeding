@@ -118,3 +118,54 @@ export function countPurpleCabbages(
 ): number {
   return countPurplePlants(cabbages);
 }
+
+// Result type for finding possible recessive traits
+export interface PossibleRecessiveTrait {
+  traitIndex: number;
+  value: boolean; // The value that all plants share at this trait index
+  dnaSequence: string; // The DNA sequence associated with this value
+}
+
+// Find possible recessive traits by checking if all plants have the same value
+// at each trait index across both chromosomes. Ignores the fact that we know
+// recessive is encoded by "true" - it simply looks for uniformity.
+export function findPossibleRecessiveTraits(
+  plants: PlantGenetics[]
+): PossibleRecessiveTrait[] {
+  if (plants.length === 0 || plants.length === 1) {
+    return [];
+  }
+
+  // Determine the maximum trait index by checking chromosome lengths
+  const maxTraitIndex = Math.max(
+    ...plants.map((plant) =>
+      Math.max(plant.chromosome1.length, plant.chromosome2.length)
+    )
+  );
+
+  const results: PossibleRecessiveTrait[] = [];
+
+  // Check each trait index
+  for (let traitIndex = 0; traitIndex < maxTraitIndex; traitIndex++) {
+    const val = plants[0]?.chromosome1[traitIndex];
+    if (val === undefined) {
+      continue;
+    }
+    const allMatch = plants.every(
+      (plant) =>
+        plant.chromosome1[traitIndex] === val &&
+        plant.chromosome2[traitIndex] === val
+    );
+    if (allMatch) {
+      results.push({
+        traitIndex,
+        value: val,
+        dnaSequence: val
+          ? DNA_SEQUENCES[traitIndex].true
+          : DNA_SEQUENCES[traitIndex].false,
+      });
+    }
+  }
+
+  return results;
+}
