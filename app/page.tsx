@@ -660,6 +660,16 @@ export default function Home() {
                     )}
                   </div>
                 </div>
+                {traitAnalysis.recessive.length === 0 &&
+                  traitAnalysis.dominant.length === 0 && (
+                    <div className="mt-6 p-4 bg-yellow-50 border-2 border-yellow-300 rounded-lg">
+                      <p className="text-yellow-800 font-medium">
+                        💡 Tip: No traits found. Try analyzing plants that have
+                        features in common (e.g., same flower color or same
+                        center color) to discover shared traits.
+                      </p>
+                    </div>
+                  )}
                 <div className="mt-4 flex gap-4">
                   <button
                     onClick={handleAddTraitsToCollection}
