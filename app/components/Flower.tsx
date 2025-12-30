@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import {
   PlantGenetics,
   getPhenotypeColor,
+  getInnerColor,
   getGenotype,
 } from "../types/genetics";
 
@@ -56,6 +57,7 @@ export default function Flower({
     : 100;
 
   const petalColor = isGrowing ? "#9ca3af" : getPhenotypeColor(genetics);
+  const innerColor = isGrowing ? "#9ca3af" : getInnerColor(genetics);
   const canSelect = isFullyGrown;
 
   const handleClick = () => {
@@ -94,8 +96,6 @@ export default function Flower({
             height={size * 1.5}
             style={{ display: "block" }}
           >
-            <rect x="47" y="50" width="6" height="100" fill="green" />
-
             <g fill={petalColor}>
               <ellipse
                 cx="50"
@@ -126,7 +126,7 @@ export default function Flower({
                 transform="rotate(135 50 50)"
               />
             </g>
-            <circle cx="50" cy="50" r="18" fill="black" />
+            <circle cx="50" cy="50" r="18" fill={innerColor} />
           </svg>
         </button>
         {isGrowing && (
@@ -154,4 +154,3 @@ export default function Flower({
     </div>
   );
 }
-

@@ -1,11 +1,12 @@
 // Plant genetics data structure
-// Each plant has a pair of alleles (booleans)
+// Each plant has two chromosomes, each containing alleles for all traits
 // true = recessive allele
 // false = dominant allele
+// Index 0 = petal color, Index 1 = inner color
 
 export interface PlantGenetics {
-  allele1: boolean; // First allele
-  allele2: boolean; // Second allele
+  chromosome1: boolean[]; // First chromosome [petal color, inner color, ...]
+  chromosome2: boolean[]; // Second chromosome [petal color, inner color, ...]
 }
 
 // Determine phenotype color based on genotype
@@ -13,38 +14,65 @@ export interface PlantGenetics {
 // Blue (dominant) shows if at least one allele is false (has dominant allele)
 export function getPhenotypeColor(genetics: PlantGenetics): string {
   // If both are true (homozygous recessive), show purple
-  if (genetics.allele1 && genetics.allele2) {
-    return '#a78bfa'; // Purple color
+  if (genetics.chromosome1[0] && genetics.chromosome2[0]) {
+    return "#a78bfa"; // Purple color
   }
   // Otherwise, show blue (dominant trait)
-  return '#60a5fa'; // Blue color (skyblue)
+  return "#60a5fa"; // Blue color (skyblue)
+}
+
+// Determine inner color phenotype based on genotype
+// Brown (recessive) only shows if both alleles are true (homozygous recessive)
+// Black (dominant) shows if at least one allele is false (has dominant allele)
+export function getInnerColor(genetics: PlantGenetics): string {
+  // If both are true (homozygous recessive), show brown
+  if (genetics.chromosome1[1] && genetics.chromosome2[1]) {
+    return "#8b4513"; // Brown color
+  }
+  // Otherwise, show black (dominant trait)
+  return "#000000"; // Black color
 }
 
 // Get genotype string representation (e.g., "RR", "Rr", "rr")
 export function getGenotype(genetics: PlantGenetics): string {
-  const allele1Char = genetics.allele1 ? 'r' : 'R';
-  const allele2Char = genetics.allele2 ? 'r' : 'R';
+  const allele1Char = genetics.chromosome1[0] ? "r" : "R";
+  const allele2Char = genetics.chromosome2[0] ? "r" : "R";
   return `${allele1Char}${allele2Char}`;
 }
 
-// Breed two plants by randomly selecting one allele from each parent
-export function breed(parent1: PlantGenetics, parent2: PlantGenetics): PlantGenetics {
-  // Randomly select one allele from parent1
-  const allele1 = Math.random() < 0.5 ? parent1.allele1 : parent1.allele2;
-  // Randomly select one allele from parent2
-  const allele2 = Math.random() < 0.5 ? parent2.allele1 : parent2.allele2;
-  return { allele1, allele2 };
+// Breed two plants by randomly selecting one chromosome from each parent
+// This maintains trait linkage - all traits on the same chromosome are inherited together
+export function breed(
+  parent1: PlantGenetics,
+  parent2: PlantGenetics
+): PlantGenetics {
+  // Randomly select one entire chromosome from parent1
+  const chromosomeFromParent1 =
+    Math.random() < 0.5 ? parent1.chromosome1 : parent1.chromosome2;
+
+  // Randomly select one entire chromosome from parent2
+  const chromosomeFromParent2 =
+    Math.random() < 0.5 ? parent2.chromosome1 : parent2.chromosome2;
+
+  // Create a copy of the chromosomes (to avoid reference issues)
+  return {
+    chromosome1: [...chromosomeFromParent1],
+    chromosome2: [...chromosomeFromParent2],
+  };
 }
 
 // Count purple (recessive) plants
-export function countPurplePlants(plants: { genetics: PlantGenetics }[]): number {
+export function countPurplePlants(
+  plants: { genetics: PlantGenetics }[]
+): number {
   return plants.filter(
-    (plant) => plant.genetics.allele1 && plant.genetics.allele2
+    (plant) => plant.genetics.chromosome1[0] && plant.genetics.chromosome2[0]
   ).length;
 }
 
 // Count purple (recessive) cabbages (deprecated - use countPurplePlants instead)
-export function countPurpleCabbages(cabbages: { genetics: PlantGenetics }[]): number {
+export function countPurpleCabbages(
+  cabbages: { genetics: PlantGenetics }[]
+): number {
   return countPurplePlants(cabbages);
 }
-

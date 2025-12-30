@@ -38,8 +38,8 @@ export default function Home() {
     {
       id: "s1",
       genetics: [
-        { allele1: false, allele2: false }, // RR
-        { allele1: true, allele2: true }, // rr
+        { chromosome1: [false, false], chromosome2: [false, false] }, // RR, BB
+        { chromosome1: [true, true], chromosome2: [true, true] }, // rr, bb
       ],
     },
   ]);
@@ -197,9 +197,7 @@ export default function Home() {
 
         // Assign plant to pot
         setPots((prev) =>
-          prev.map((p) =>
-            p.id === potId ? { ...p, plantId: newFlowerId } : p
-          )
+          prev.map((p) => (p.id === potId ? { ...p, plantId: newFlowerId } : p))
         );
 
         // Remove the first seed from the stack
