@@ -480,52 +480,6 @@ export default function Home() {
             />
           </div>
 
-          {/* Traits Collection Section */}
-          <div className="bg-white rounded-lg shadow-lg p-8 mt-12 mb-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Traits</h2>
-            <p className="text-gray-600 mb-6">
-              {traits.length === 0
-                ? "No traits collected yet. Analyze plants to discover traits."
-                : selectedTraitIds.length === 1 && selectedPotIds.length === 1
-                ? "Select a plant in a pot to breed this trait into it."
-                : "Select exactly one trait and one plant to breed the trait into it."}
-            </p>
-            {traits.length > 0 && (
-              <>
-                <PlantCollection
-                  items={traits}
-                  maxSelected={1}
-                  selectedIds={selectedTraitIds}
-                  onSelectionChange={setSelectedTraitIds}
-                  renderItem={(traitData, isSelected, onSelect) => (
-                    <Trait
-                      trait={traitData.trait}
-                      size={80}
-                      isSelected={isSelected}
-                      onSelect={onSelect}
-                    />
-                  )}
-                />
-                <div className="mt-6 flex justify-center">
-                  <button
-                    onClick={handleBreedTrait}
-                    disabled={!canBreedTrait}
-                    className={`
-                      px-6 py-3 rounded-lg font-semibold text-white transition-all
-                      ${
-                        canBreedTrait
-                          ? "bg-purple-600 hover:bg-purple-700 cursor-pointer"
-                          : "bg-gray-400 cursor-not-allowed"
-                      }
-                    `}
-                  >
-                    Get Modified Seed
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-
           {/* Pots Section */}
           <div className="bg-white rounded-lg shadow-lg p-8 mt-12 mb-12">
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Pots</h2>
@@ -680,6 +634,52 @@ export default function Home() {
                   </button>
                 </div>
               </div>
+            )}
+          </div>
+
+          {/* Traits Collection Section */}
+          <div className="bg-white rounded-lg shadow-lg p-8 mt-12 mb-12">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Traits</h2>
+            <p className="text-gray-600 mb-6">
+              {traits.length === 0
+                ? "No traits collected yet. Analyze plants to discover traits."
+                : selectedTraitIds.length === 1 && selectedPotIds.length === 1
+                ? "Select a plant in a pot to breed this trait into it."
+                : "Select exactly one trait and one plant to breed the trait into it."}
+            </p>
+            {traits.length > 0 && (
+              <>
+                <PlantCollection
+                  items={traits}
+                  maxSelected={1}
+                  selectedIds={selectedTraitIds}
+                  onSelectionChange={setSelectedTraitIds}
+                  renderItem={(traitData, isSelected, onSelect) => (
+                    <Trait
+                      trait={traitData.trait}
+                      size={80}
+                      isSelected={isSelected}
+                      onSelect={onSelect}
+                    />
+                  )}
+                />
+                <div className="mt-6 flex justify-center">
+                  <button
+                    onClick={handleBreedTrait}
+                    disabled={!canBreedTrait}
+                    className={`
+                      px-6 py-3 rounded-lg font-semibold text-white transition-all
+                      ${
+                        canBreedTrait
+                          ? "bg-purple-600 hover:bg-purple-700 cursor-pointer"
+                          : "bg-gray-400 cursor-not-allowed"
+                      }
+                    `}
+                  >
+                    Get Modified Seed
+                  </button>
+                </div>
+              </>
             )}
           </div>
         </div>
