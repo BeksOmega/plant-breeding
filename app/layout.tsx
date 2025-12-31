@@ -13,7 +13,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body className="mars-background before:absolute before:inset-0 before:z-[-1] before:bg-[url('/dust-texture.svg')] before:bg-cover before:bg-center before:bg-no-repeat before:opacity-40 before:mix-blend-multiply before:pointer-events-none">
+        {children}
+      </body>
     </html>
   );
 }

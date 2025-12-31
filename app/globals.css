@@ -8,12 +8,14 @@
   --background-end-rgb: 255, 255, 255;
 }
 
-body {
+body.mars-background {
+  background-image: linear-gradient(
+    to bottom,
+    #c96147 0%,
+    #bd5642 50%,
+    #a2432b 100%
+  );
+  min-height: 100vh;
+  position: relative;
   color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
 }

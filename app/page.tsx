@@ -490,7 +490,7 @@ export default function Home() {
       return pot && !pot.plantId;
     });
   return (
-    <main className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100">
+    <main className="min-h-screen">
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-6xl font-bold text-gray-900 mb-6">
