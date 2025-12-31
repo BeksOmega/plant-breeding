@@ -18,15 +18,23 @@ export default function RootLayout({
         className={clsx(
           "mars-background",
           "before:absolute",
+          "before:bg-bottom",
           "before:inset-0",
-          "before:z-[-1]",
+          "before:z-[-2]",
           "before:bg-[url('/dust-texture.svg')]",
-          "before:bg-cover",
-          "before:bg-center",
-          "before:bg-no-repeat",
-          "before:opacity-40",
+          "before:bg-repeat",
+          "before:opacity-5",
           "before:mix-blend-multiply",
-          "before:pointer-events-none"
+          "before:pointer-events-none",
+          "after:absolute",
+          "after:inset-0",
+          "after:z-[-1]",
+          "after:bg-[url('/dust-texture.svg')]",
+          "after:bg-bottom-[50%]",
+          "after:bg-repeat",
+          "after:opacity-5",
+          "after:mix-blend-multiply",
+          "after:pointer-events-none"
         )}
       >
         {children}
