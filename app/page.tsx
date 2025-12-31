@@ -14,6 +14,7 @@ import {
   PossibleRecessiveTrait,
   PossibleDominantTrait,
 } from "./types/genetics";
+import Heading from "./components/typography/Heading";
 
 interface FlowerData {
   id: string;
@@ -493,9 +494,7 @@ export default function Home() {
     <main className="min-h-screen">
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-6xl font-bold text-gray-900 mb-6">
-            Plant Breeding
-          </h1>
+          <Heading as="h1">Plant Breeding</Heading>
 
           {/* Breeding Game */}
           <div className="bg-white rounded-lg shadow-lg p-8 mt-12 mb-12">

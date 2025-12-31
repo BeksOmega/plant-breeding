@@ -28,11 +28,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={clsx(rajdhani.variable, teko.variable)}>
       <body
         className={clsx(
-          rajdhani.variable,
-          teko.variable,
           "mars-background",
           "before:absolute",
           "before:bg-bottom",
