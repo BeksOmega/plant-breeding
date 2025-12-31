@@ -1,6 +1,21 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import clsx from "clsx";
+import { Rajdhani, Teko } from "next/font/google";
+
+const rajdhani = Rajdhani({
+  weight: ["500", "600"],
+  subsets: ["latin"],
+  variable: "--font-rajdhani",
+});
+
+const teko = Teko({
+  weight: ["300", "400", "500", "600", "700"],
+  subsets: ["latin"],
+  variable: "--font-teko",
+});
+
+// Asimovian is loaded via CSS import in globals.css since it may not be available via next/font/google
 
 export const metadata: Metadata = {
   title: "Plant Breeding",
@@ -16,6 +31,8 @@ export default function RootLayout({
     <html lang="en">
       <body
         className={clsx(
+          rajdhani.variable,
+          teko.variable,
           "mars-background",
           "before:absolute",
           "before:bg-bottom",
