@@ -1,26 +1,26 @@
-import type { Meta, StoryObj } from '@storybook/react';
-import Heading from './Heading';
+import type { Meta, StoryObj } from "@storybook/react";
+import Heading from "./Heading";
 
 const meta = {
-  title: 'Typography/Heading',
+  title: "Typography/Heading",
   component: Heading,
   parameters: {
-    layout: 'padded',
+    layout: "padded",
   },
-  tags: ['autodocs'],
+  tags: ["autodocs"],
   argTypes: {
     children: {
-      control: 'text',
-      description: 'The heading text content',
+      control: "text",
+      description: "The heading text content",
     },
     as: {
-      control: 'select',
-      options: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'],
-      description: 'The heading level element to render as',
+      control: "select",
+      options: ["h1", "h2", "h3", "h4", "h5", "h6"],
+      description: "The heading level element to render as",
     },
     className: {
-      control: 'text',
-      description: 'Additional CSS classes',
+      control: "text",
+      description: "Additional CSS classes",
     },
   },
 } satisfies Meta<typeof Heading>;
@@ -30,58 +30,58 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
-    children: 'Plant Breeding',
-    as: 'h1',
+    children: "Plant Breeding",
+    as: "h1",
   },
 };
 
 export const H1: Story = {
   args: {
-    children: 'Heading 1',
-    as: 'h1',
+    children: "Heading 1",
+    as: "h1",
   },
 };
 
 export const H2: Story = {
   args: {
-    children: 'Heading 2',
-    as: 'h2',
+    children: "Heading 2",
+    as: "h2",
   },
 };
 
 export const H3: Story = {
   args: {
-    children: 'Heading 3',
-    as: 'h3',
+    children: "Heading 3",
+    as: "h3",
   },
 };
 
 export const H4: Story = {
   args: {
-    children: 'Heading 4',
-    as: 'h4',
+    children: "Heading 4",
+    as: "h4",
   },
 };
 
 export const H5: Story = {
   args: {
-    children: 'Heading 5',
-    as: 'h5',
+    children: "Heading 5",
+    as: "h5",
   },
 };
 
 export const H6: Story = {
   args: {
-    children: 'Heading 6',
-    as: 'h6',
+    children: "Heading 6",
+    as: "h6",
   },
 };
 
 export const WithCustomClass: Story = {
   args: {
-    children: 'Custom Styled Heading',
-    as: 'h1',
-    className: 'text-4xl text-green-600 underline',
+    children: "Custom Styled Heading",
+    as: "h1",
+    className: "text-4xl text-green-600 underline",
   },
 };
 
@@ -100,8 +100,8 @@ export const AllLevels: Story = {
 
 export const LongText: Story = {
   args: {
-    children: 'This is a very long heading that demonstrates how the component handles longer text content',
-    as: 'h1',
+    children:
+      "This is a very long heading that demonstrates how the component handles longer text content",
+    as: "h1",
   },
 };
-
