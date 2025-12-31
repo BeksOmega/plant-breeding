@@ -1,8 +1,14 @@
 @import url("https://fonts.googleapis.com/css2?family=Asimovian&family=Rajdhani:wght@500;600&family=Teko:wght@300..700&display=swap");
+@import "tailwindcss";
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --font-family-asimovian: Asimovian, sans-serif;
+  --font-family-rajdhani: var(--font-rajdhani), sans-serif;
+  --font-family-teko: var(--font-teko), sans-serif;
+}
 
 :root {
   --foreground-rgb: 0, 0, 0;

@@ -6,19 +6,5 @@ const config: Config = {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
-  theme: {
-    extend: {
-      colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
-      },
-      fontFamily: {
-        asimovian: ["Asimovian", "sans-serif"],
-        rajdhani: ["var(--font-rajdhani)", "sans-serif"],
-        teko: ["var(--font-teko)", "sans-serif"],
-      },
-    },
-  },
-  plugins: [],
 };
 export default config;
