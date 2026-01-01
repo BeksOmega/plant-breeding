@@ -1,6 +1,7 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactElement } from "react";
+import { Plant } from "./plants/Plant";
 
 interface PotProps {
   /** Whether the pot is currently selected */
@@ -12,7 +13,7 @@ interface PotProps {
   /** Whether the pot can be selected */
   canSelect?: boolean;
   /** Plant growing in the pot */
-  children?: ReactNode;
+  children?: ReactElement<Plant>;
 }
 
 /**
@@ -38,8 +39,7 @@ export default function Pot({
       disabled={!canSelect}
       className={`
         relative
-        w-full h-full
-        flex items-center justify-center
+        w-full aspect-2/3
         bg-transparent
         border-none
         p-0s
@@ -51,20 +51,20 @@ export default function Pot({
       aria-pressed={isSelected}
     >
       <svg
-        viewBox="0 0 105.83 105.83"
-        className="absolute inset-0 w-full h-full"
+        viewBox="0 0 106 105"
+        className="absolute bottom-0 w-full"
         aria-hidden="true"
       >
         <path
           style={{ fill: "var(--color-rust-700)" }}
-          d="M 26.61,50.41 42.1,46.04 H 60.41 L 74.77,50.27 61.25,55.06 38.86,54.92 Z"
+          d="M 26.61,58.67 42.1,54.30 H 60.41 L 74.77,58.53 61.25,63.32 38.86,63.18 Z"
         />
         <path
           style={{ fill: "var(--color-stone-700)" }}
-          d="m 24.5,51.54 13.94,5.49 23.66,0.14 15.63,-6.34 1.97,11.41 L 77.16,78.57 65.34,96.74 37.36,96.71 24.36,78.29 22.25,60.83 Z"
+          d="m 24.5,59.80 13.94,5.49 23.66,0.14 15.63,-6.34 1.97,11.41 L 77.16,86.83 65.34,105 37.36,104.97 24.36,86.55 22.25,69.09 Z"
         />
       </svg>
-      <div className="relative z-10 w-full h-full flex items-center justify-center">
+      <div className="mb-12 relative z-10 w-full aspect-square">
         {isEmpty ? null : children}
       </div>
     </button>
