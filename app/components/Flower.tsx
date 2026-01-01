@@ -8,22 +8,14 @@ import {
   getGenotype,
   hasPointyPetals,
 } from "../types/genetics";
+import { Plant, Selectable } from "./Plant";
 
-interface FlowerProps {
-  genetics: PlantGenetics;
-  size?: number;
-  isSelected?: boolean;
-  onSelect?: (selected: boolean) => void;
-  startGrowingAt?: number; // Timestamp when growth should start
-  onFullyGrown?: () => void; // Callback when growth completes
-  showGenotype?: boolean;
-}
+interface FlowerProps extends Plant, Selectable {}
 
 const GROWTH_TIME_MS = 5000; // 5 seconds
 
 export default function Flower({
   genetics,
-  size = 100,
   isSelected,
   onSelect,
   startGrowingAt,
@@ -75,6 +67,7 @@ export default function Flower({
           onClick={handleClick}
           className={`
             transition-all duration-200 ease-in-out
+            w-24 h-24
             ${
               isSelected && canSelect
                 ? "ring-4 ring-green-500 ring-offset-2 scale-105"
@@ -85,8 +78,6 @@ export default function Flower({
           `}
           disabled={!canSelect}
           style={{
-            width: `${size}px`,
-            height: `${size}px`,
             cursor: canSelect ? "pointer" : "default",
           }}
           aria-label="Flower"
@@ -94,8 +85,7 @@ export default function Flower({
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 100 150"
-            width={size}
-            height={size * 1.5}
+            className="w-full h-full"
             style={{ display: "block" }}
           >
             <g fill={petalColor}>

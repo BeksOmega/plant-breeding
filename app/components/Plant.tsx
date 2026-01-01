@@ -1,50 +1,22 @@
-"use client";
+import { PlantGenetics } from "../types/genetics";
 
-import { useState } from "react";
-
-interface PlantProps {
-  color?: string;
-  size?: number;
+// Selection behavior interface
+export interface Selectable {
   isSelected?: boolean;
   onSelect?: (selected: boolean) => void;
 }
 
-export default function Plant({
-  color = "#4ade80",
-  size = 100,
-  isSelected: controlledSelected,
-  onSelect,
-}: PlantProps) {
-  const [internalSelected, setInternalSelected] = useState(false);
-  const isSelected =
-    controlledSelected !== undefined ? controlledSelected : internalSelected;
-
-  const handleClick = () => {
-    const newSelected = !isSelected;
-    if (controlledSelected === undefined) {
-      setInternalSelected(newSelected);
-    }
-    onSelect?.(newSelected);
-  };
-
-  return (
-    <button
-      onClick={handleClick}
-      className={`
-        transition-all duration-200 ease-in-out
-        ${
-          isSelected
-            ? "ring-4 ring-green-500 ring-offset-2 scale-105"
-            : "hover:scale-105"
-        }
-      `}
-      style={{
-        width: `${size}px`,
-        height: `${size}px`,
-        backgroundColor: color,
-        borderRadius: "8px",
-      }}
-      aria-label="Plant"
-    />
-  );
+// Growth behavior interface
+export interface Growable {
+  startGrowingAt?: number; // Timestamp when growth should start
+  onFullyGrown?: () => void; // Callback when growth completes
 }
+
+// Base plant properties
+export interface BasePlantProps {
+  genetics: PlantGenetics;
+  showGenotype?: boolean;
+}
+
+// Plant interface combining Growable and BasePlantProps
+export interface Plant extends Growable, BasePlantProps {}

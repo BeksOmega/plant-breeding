@@ -1,28 +1,19 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Plant from "./Plant";
 import {
   PlantGenetics,
   getPhenotypeColor,
   getGenotype,
 } from "../types/genetics";
+import { Plant, Selectable } from "./Plant";
 
-interface CabbageProps {
-  genetics: PlantGenetics;
-  size?: number;
-  isSelected?: boolean;
-  onSelect?: (selected: boolean) => void;
-  startGrowingAt?: number; // Timestamp when growth should start
-  onFullyGrown?: () => void; // Callback when growth completes
-  showGenotype?: boolean;
-}
+interface CabbageProps extends Plant, Selectable {}
 
 const GROWTH_TIME_MS = 5000; // 5 seconds
 
 export default function Cabbage({
   genetics,
-  size = 100,
   isSelected,
   onSelect,
   startGrowingAt,
@@ -59,18 +50,39 @@ export default function Cabbage({
   const color = isGrowing ? "#9ca3af" : getPhenotypeColor(genetics);
   const canSelect = isFullyGrown;
 
+  const handleClick = () => {
+    if (canSelect && onSelect) {
+      onSelect(!isSelected);
+    }
+  };
+
   return (
     <div className="flex flex-col items-center">
       <div className="relative">
-        <Plant
-          color={color}
-          size={size}
-          isSelected={isSelected && canSelect}
-          onSelect={canSelect ? onSelect : undefined}
+        <button
+          onClick={handleClick}
+          className={`
+            transition-all duration-200 ease-in-out
+            w-24 h-24
+            ${
+              isSelected && canSelect
+                ? "ring-4 ring-green-500 ring-offset-2 scale-105"
+                : canSelect
+                ? "hover:scale-105"
+                : ""
+            }
+          `}
+          disabled={!canSelect}
+          style={{
+            backgroundColor: color,
+            borderRadius: "8px",
+            cursor: canSelect ? "pointer" : "default",
+          }}
+          aria-label="Cabbage"
         />
         {isGrowing && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="text-xs font-bold text-white drop-shad  ow-lg">
+            <div className="text-xs font-bold text-white drop-shadow-lg">
               {(
                 (GROWTH_TIME_MS - (currentTime - startGrowingAt!)) /
                 1000
