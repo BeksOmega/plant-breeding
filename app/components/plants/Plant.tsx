@@ -1,4 +1,4 @@
-import { PlantGenetics } from "../types/genetics";
+import { PlantGenetics } from "../../types/genetics";
 
 // Selection behavior interface
 export interface Selectable {
