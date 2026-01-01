@@ -51,25 +51,17 @@ export default function Pot({
       aria-pressed={isSelected}
     >
       <svg
-        viewBox="0 0 105.83333 105.83333"
+        viewBox="0 0 105.83 105.83"
         className="absolute inset-0 w-full h-full"
         aria-hidden="true"
       >
         <path
-          style={{
-            opacity: 1,
-            fill: "var(--color-rust-700)",
-            stroke: "none",
-          }}
-          d="M 26.613165,50.41012 42.102307,46.044998 H 60.407655 L 74.770315,50.269309 61.25252,55.056862 38.863666,54.916051 Z"
+          style={{ fill: "var(--color-rust-700)" }}
+          d="M 26.61,50.41 42.1,46.04 H 60.41 L 74.77,50.27 61.25,55.06 38.86,54.92 Z"
         />
         <path
-          style={{
-            opacity: 1,
-            fill: "var(--color-stone-700)",
-            stroke: "none",
-          }}
-          d="m 24.501007,51.536602 13.940228,5.491604 23.656147,0.140812 15.629951,-6.336467 1.971347,11.40564 L 77.164093,78.572198 65.33602,96.736738 37.355921,96.710252 24.360197,78.290575 22.248041,60.830089 Z"
+          style={{ fill: "var(--color-stone-700)" }}
+          d="m 24.5,51.54 13.94,5.49 23.66,0.14 15.63,-6.34 1.97,11.41 L 77.16,78.57 65.34,96.74 37.36,96.71 24.36,78.29 22.25,60.83 Z"
         />
       </svg>
       <div className="relative z-10 w-full h-full flex items-center justify-center">
