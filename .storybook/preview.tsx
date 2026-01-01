@@ -31,7 +31,7 @@ const preview: Preview = {
       options: {
         light: { name: "Light", value: "#ffffff" },
         dark: { name: "Dark", value: "#333333" },
-        "mars-red": { name: "Mars Red", value: "#c96147" },
+        "mars-red": { name: "Mars Red", value: "#da7359" },
       },
     },
   },

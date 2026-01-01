@@ -2,9 +2,6 @@
 @import "tailwindcss";
 
 @theme {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-
   --font-asimovian: Asimovian, sans-serif;
 }
 
@@ -13,20 +10,34 @@
   --font-rajdhani: var(--font-rajdhani);
 }
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+@theme {
+  --color-rust-50: #fdf5f3;
+  --color-rust-100: #fbe9e5;
+  --color-rust-200: #f8d8d0;
+  --color-rust-300: #f1bdb0;
+  --color-rust-400: #e89681;
+  --color-rust-500: #da7359;
+  --color-rust-600: #c96147;
+  --color-rust-700: #a6472f;
+  --color-rust-800: #8a3d2a;
+  --color-rust-900: #733829;
+  --color-rust-950: #3e1a11;
 }
 
 body.mars-background {
-  background-image: linear-gradient(
-    to bottom,
-    #c96147 0%,
-    #bd5642 50%,
-    #a2432b 100%
-  );
+  background-color: var(--color-rust-500);
   min-height: 100vh;
   position: relative;
   color: rgb(var(--foreground-rgb));
+}
+
+.outline-stroke {
+  /* filter: drop-shadow(1px 0 0 blue) drop-shadow(-1px 0 0 blue)
+    drop-shadow(0 1px 0 blue) drop-shadow(0 -1px 0 blue)
+    drop-shadow(1px 1px 0 blue) drop-shadow(-1px -1px 0 blue)
+    drop-shadow(1px -1px 0 blue) drop-shadow(-1px 1px 0 blue); */
+  filter: drop-shadow(1px 1px 0 var(--outline-color))
+    drop-shadow(-1px -1px 0 var(--outline-color))
+    drop-shadow(1px -1px 0 var(--outline-color))
+    drop-shadow(-1px 1px 0 var(--outline-color));
 }

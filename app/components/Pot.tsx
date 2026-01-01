@@ -1,76 +1,80 @@
 "use client";
 
-import { useState, ReactNode } from "react";
+import { ReactNode } from "react";
 
 interface PotProps {
-  size?: number;
+  /** Whether the pot is currently selected */
   isSelected?: boolean;
+  /** Callback when selection state changes */
   onSelect?: (selected: boolean) => void;
-  isEmpty?: boolean;
-  canSelect?: boolean; // Whether the pot can be selected (for breeding mode with fully grown plants)
-  children?: ReactNode; // Plant growing in the pot
+  /** Whether the pot is empty (read-only) */
+  isEmpty: boolean;
+  /** Whether the pot can be selected */
+  canSelect?: boolean;
+  /** Plant growing in the pot */
+  children?: ReactNode;
 }
 
+/**
+ * Pot component - displays a pot that can contain a plant.
+ * Supports controlled selection state via props.
+ */
 export default function Pot({
-  size = 100,
-  isSelected: controlledSelected,
+  isSelected = false,
   onSelect,
-  isEmpty = true,
-  canSelect: canSelectProp,
+  isEmpty,
+  canSelect = true,
   children,
 }: PotProps) {
-  const [internalSelected, setInternalSelected] = useState(false);
-  const isSelected =
-    controlledSelected !== undefined ? controlledSelected : internalSelected;
-
-  // Can select if explicitly allowed (for breeding mode) or if empty (for planting mode)
-  const canSelect = canSelectProp !== undefined ? canSelectProp : isEmpty;
-
   const handleClick = () => {
     if (!canSelect) return;
     const newSelected = !isSelected;
-    if (controlledSelected === undefined) {
-      setInternalSelected(newSelected);
-    }
     onSelect?.(newSelected);
   };
 
   return (
     <button
       onClick={handleClick}
-      className={`
-        transition-all duration-200 ease-in-out
-        relative
-        ${
-          isSelected
-            ? "ring-4 ring-green-500 ring-offset-2 scale-105"
-            : "hover:scale-105"
-        }
-      `}
-      style={{
-        width: `${size}px`,
-        height: `${size}px`,
-        backgroundColor: "#f5f5dc", // Beige/light brown for empty pot
-        border: "2px solid #8B4513", // Brown border
-        borderRadius: "8px",
-      }}
-      aria-label={isEmpty ? "Empty pot" : "Pot with plant"}
       disabled={!canSelect}
+      className={`
+        relative
+        w-full h-full
+        flex items-center justify-center
+        bg-transparent
+        border-none
+        p-0s
+        [--outline-color:theme(colors.rust.300)]
+        ${isSelected ? "outline-stroke" : ""}
+        ${!canSelect ? "cursor-not-allowed opacity-50" : "cursor-pointer"}
+      `}
+      aria-label={isEmpty ? "Empty pot" : "Pot with plant"}
+      aria-pressed={isSelected}
     >
-      {isEmpty ? (
-        <div className="w-full h-full flex items-center justify-center">
-          <div
-            className="text-gray-400 text-xs"
-            style={{ fontSize: `${size * 0.15}px` }}
-          >
-            Pot
-          </div>
-        </div>
-      ) : (
-        <div className="w-full h-full flex items-center justify-center">
-          {children}
-        </div>
-      )}
+      <svg
+        viewBox="0 0 105.83333 105.83333"
+        className="absolute inset-0 w-full h-full"
+        aria-hidden="true"
+      >
+        <path
+          style={{
+            opacity: 1,
+            fill: "var(--color-rust-700)",
+            stroke: "none",
+          }}
+          d="M 26.613165,50.41012 42.102307,46.044998 H 60.407655 L 74.770315,50.269309 61.25252,55.056862 38.863666,54.916051 Z"
+        />
+        <path
+          style={{
+            opacity: 1,
+            fill: "var(--color-stone-700)",
+            stroke: "none",
+          }}
+          d="m 24.501007,51.536602 13.940228,5.491604 23.656147,0.140812 15.629951,-6.336467 1.971347,11.40564 L 77.164093,78.572198 65.33602,96.736738 37.355921,96.710252 24.360197,78.290575 22.248041,60.830089 Z"
+        />
+      </svg>
+      <div className="relative z-10 w-full h-full flex items-center justify-center">
+        {isEmpty ? null : children}
+      </div>
     </button>
   );
 }
