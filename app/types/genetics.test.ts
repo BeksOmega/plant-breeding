@@ -1,10 +1,30 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import {
   findPossibleRecessiveTraits,
   findPossibleDominantTraits,
   PlantGenetics,
   DNA_SEQUENCES,
 } from "./genetics";
+
+// Set up test DNA sequences for testing purposes
+beforeEach(() => {
+  // Clear and set up test sequences
+  Object.keys(DNA_SEQUENCES).forEach((key) => {
+    delete DNA_SEQUENCES[Number(key)];
+  });
+  DNA_SEQUENCES[0] = {
+    true: "AAA",
+    false: "TCT",
+  };
+  DNA_SEQUENCES[1] = {
+    true: "GGC",
+    false: "TAA",
+  };
+  DNA_SEQUENCES[2] = {
+    true: "CGT",
+    false: "GCA",
+  };
+});
 
 describe("findPossibleRecessiveTraits", () => {
   it("should return empty array for empty input", () => {
