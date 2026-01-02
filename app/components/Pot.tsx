@@ -39,7 +39,7 @@ export default function Pot({
       disabled={!canSelect}
       className={`
         relative
-        w-full aspect-2/3
+        w-full aspect-16/23
         bg-transparent
         border-none
         p-0s
@@ -64,7 +64,7 @@ export default function Pot({
           d="m 24.5,59.80 13.94,5.49 23.66,0.14 15.63,-6.34 1.97,11.41 L 77.16,86.83 65.34,105 37.36,104.97 24.36,86.55 22.25,69.09 Z"
         />
       </svg>
-      <div className="mb-12 relative z-10 w-full aspect-square">
+      <div className="absolute top-0 left-0 z-10 w-full aspect-square">
         {isEmpty ? null : children}
       </div>
     </button>
