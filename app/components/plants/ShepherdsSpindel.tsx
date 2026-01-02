@@ -21,7 +21,24 @@ export default function ShepherdsSpindel({
     <div
       className="w-full h-full flex items-center justify-center"
       onClick={() => onSelect?.(!isSelected)}
-      style={{ cursor: onSelect ? "pointer" : "default" }}
+      style={
+        {
+          cursor: onSelect ? "pointer" : "default",
+          "--shepherds-spindel-flower": "#C9F3E8",
+          "--shepherds-spindel-stem": "#26AD89",
+          "--shepherds-spindel-stroke": "var(--shepherds-spindel-stem)",
+          "--shepherds-spindel-stem-highlight":
+            "oklch(from var(--shepherds-spindel-stem) calc(l + 0.1) c h)",
+          "--shepherds-spindel-stem-base": "#26AD89",
+          "--shepherds-spindel-big-flower":
+            "oklch(from var(--shepherds-spindel-flower) calc(l + 0.2) c h)",
+          "--shepherds-spindel-big-flower-accent":
+            "oklch(from var(--shepherds-spindel-flower) calc(l - 0.1) c h)",
+          "--shepherds-spindel-small-flower": "var(--shepherds-spindel-flower)",
+          "--shepherds-spindel-xsmall-flower":
+            "oklch(from var(--shepherds-spindel-flower) calc(l - 0.2) c h)",
+        } as React.CSSProperties
+      }
     >
       <svg
         width="400"
@@ -41,8 +58,8 @@ export default function ShepherdsSpindel({
               style={{
                 fill: "none",
                 fillOpacity: 1,
-                stroke: "#5005ff",
-                strokeWidth: 1.05833,
+                stroke: "var(--shepherds-spindel-stroke)",
+                strokeWidth: 1.5,
                 strokeDasharray: "none",
                 strokeOpacity: 1,
               }}
@@ -53,8 +70,8 @@ export default function ShepherdsSpindel({
                 display: "inline",
                 fill: "none",
                 fillOpacity: 1,
-                stroke: "#5005ff",
-                strokeWidth: 1.05833,
+                stroke: "var(--shepherds-spindel-stroke)",
+                strokeWidth: 1.5,
                 strokeDasharray: "none",
                 strokeOpacity: 1,
               }}
@@ -66,8 +83,8 @@ export default function ShepherdsSpindel({
                 display: "inline",
                 fill: "none",
                 fillOpacity: 1,
-                stroke: "#5005ff",
-                strokeWidth: 1.05833,
+                stroke: "var(--shepherds-spindel-stroke)",
+                strokeWidth: 1.5,
                 strokeDasharray: "none",
                 strokeOpacity: 1,
               }}
@@ -85,8 +102,8 @@ export default function ShepherdsSpindel({
                 style={{
                   fill: "none",
                   fillOpacity: 1,
-                  stroke: "#5005ff",
-                  strokeWidth: 1.05833,
+                  stroke: "var(--shepherds-spindel-stroke)",
+                  strokeWidth: 1.5,
                   strokeDasharray: "none",
                   strokeOpacity: 1,
                 }}
@@ -97,25 +114,22 @@ export default function ShepherdsSpindel({
               <g className="big">
                 <path
                   style={{
-                    fill: "#008080",
+                    fill: "var(--shepherds-spindel-big-flower)",
                     fillOpacity: 1,
-                    strokeWidth: 0.264583,
                   }}
                   d="m 23.65,12.06 9.67,1.83 H 46.67 L 56.12,12.12 48.22,7.45 39.93,6.08 32.54,7.42 Z"
                 />
                 <path
                   style={{
-                    fill: "#ff00ff",
+                    fill: "var(--shepherds-spindel-big-flower-accent)",
                     fillOpacity: 1,
-                    strokeWidth: 0.264583,
                   }}
                   d="M 30.93,8.66 38.12,6.92 35.2,10.94 Z"
                 />
                 <path
                   style={{
-                    fill: "#ff00ff",
+                    fill: "var(--shepherds-spindel-big-flower-accent)",
                     fillOpacity: 1,
-                    strokeWidth: 0.264583,
                   }}
                   d="M 41.03,9.16 43.97,6.7 38.62,6.67 Z"
                 />
@@ -123,129 +137,113 @@ export default function ShepherdsSpindel({
               <g className="small">
                 <path
                   style={{
-                    fill: "#800000",
+                    fill: "var(--shepherds-spindel-small-flower)",
                     fillOpacity: 1,
-                    strokeWidth: 0.264583,
                   }}
                   d="m 26.97,9.99 2.96,4.29 -5.88,0.03 z"
                 />
                 <path
                   style={{
-                    fill: "#800000",
+                    fill: "var(--shepherds-spindel-small-flower)",
                     fillOpacity: 1,
-                    strokeWidth: 0.264583,
                   }}
                   d="M 28.68,7.7 29.06,9.96 26.41,9.66 Z"
                 />
                 <path
                   style={{
-                    fill: "#800000",
+                    fill: "var(--shepherds-spindel-small-flower)",
                     fillOpacity: 1,
-                    strokeWidth: 0.264583,
                   }}
                   d="m 28.12,12.08 2.27,-3.36 2.44,3.31 z"
                 />
                 <path
                   style={{
-                    fill: "#800000",
+                    fill: "var(--shepherds-spindel-small-flower)",
                     fillOpacity: 1,
-                    strokeWidth: 0.264583,
                   }}
                   d="m 30.03,14.86 v 0 l 2.86,-4.16 2.91,4.16 z"
                 />
                 <path
                   style={{
-                    fill: "#800000",
+                    fill: "var(--shepherds-spindel-small-flower)",
                     fillOpacity: 1,
-                    strokeWidth: 0.264583,
                   }}
                   d="m 33,11.49 2.06,-3 2.18,2.94 z"
                 />
                 <path
                   style={{
-                    fill: "#800000",
+                    fill: "var(--shepherds-spindel-small-flower)",
                     fillOpacity: 1,
-                    strokeWidth: 0.264583,
                   }}
                   d="m 34.93,13.19 2.81,-4.19 3.15,4.18 z"
                 />
                 <path
                   style={{
-                    fill: "#800000",
+                    fill: "var(--shepherds-spindel-small-flower)",
                     fillOpacity: 1,
-                    strokeWidth: 0.264583,
                   }}
                   d="m 38.11,14.67 v 0 l 2.89,-4.29 2.91,4.21 z"
                 />
                 <path
                   style={{
-                    fill: "#800000",
+                    fill: "var(--shepherds-spindel-small-flower)",
                     fillOpacity: 1,
-                    strokeWidth: 0.264583,
                   }}
                   d="m 41.69,11.15 2.12,-2.88 2.17,2.89 c 0,0 -8.58,-0.03 -4.29,-0.02 z"
                 />
                 <path
                   style={{
-                    fill: "#800000",
+                    fill: "var(--shepherds-spindel-small-flower)",
                     fillOpacity: 1,
-                    strokeWidth: 0.264583,
                   }}
                   d="m 43.52,15.25 v 0 l 2.88,-4.21 2.96,4.26 c 0,0 -11.66,-0.1 -5.83,-0.05 z"
                 />
                 <path
                   style={{
-                    fill: "#800000",
+                    fill: "var(--shepherds-spindel-small-flower)",
                     fillOpacity: 1,
-                    strokeWidth: 0.264583,
                   }}
                   d="m 47.52,12.29 2.27,-3.23 2.3,3.13 c 0,0 -9.13,0.19 -4.56,0.1 z"
                 />
                 <path
                   style={{
-                    fill: "#800000",
+                    fill: "var(--shepherds-spindel-small-flower)",
                     fillOpacity: 1,
-                    strokeWidth: 0.264583,
                   }}
                   d="M 49.95,13.93 52.86,9.59 55.76,13.82 Z"
                 />
                 <path
                   style={{
-                    fill: "#800000",
+                    fill: "var(--shepherds-spindel-small-flower)",
                     fillOpacity: 1,
-                    strokeWidth: 0.264583,
                   }}
                   d="m 49.51,9.3 v 0 l 0.18,-2.41 2.75,2.78 z"
                 />
                 <path
                   style={{
-                    fill: "#800000",
+                    fill: "var(--shepherds-spindel-small-flower)",
                     fillOpacity: 1,
-                    strokeWidth: 0.264583,
                   }}
                   d="m 45.63,9.62 1.78,-2.35 1.9,2.28 z"
                 />
                 <path
                   style={{
-                    fill: "#800000",
+                    fill: "var(--shepherds-spindel-small-flower)",
                     fillOpacity: 1,
-                    strokeWidth: 0.264583,
                   }}
                   d="m 30.25,7.7 v 0 l 3,1.19 1.69,-2.83 z"
                 />
                 <path
                   style={{
-                    fill: "#800000",
+                    fill: "var(--shepherds-spindel-small-flower)",
                     fillOpacity: 1,
-                    strokeWidth: 0.264583,
                   }}
                   d="m 35.52,5.82 2.18,1.98 2.17,-2.02 z"
                 />
                 <path
                   style={{
-                    fill: "#800000",
+                    fill: "var(--shepherds-spindel-small-flower)",
                     fillOpacity: 1,
-                    strokeWidth: 0.264583,
                   }}
                   d="M 41.9,5.62 42.96,8.26 46.41,6.91 Z"
                 />
@@ -253,70 +251,103 @@ export default function ShepherdsSpindel({
               <g className="xsmall">
                 <path
                   style={{
-                    fill: "#0000ff",
+                    fill: "var(--shepherds-spindel-xsmall-flower)",
                     fillOpacity: 1,
-                    strokeWidth: 0.264583,
                   }}
                   d="m 38.86,9.48 1.32,1.77 -2.72,0.05 z"
                 />
                 <path
                   style={{
-                    fill: "#0000ff",
+                    fill: "var(--shepherds-spindel-xsmall-flower)",
                     fillOpacity: 1,
-                    strokeWidth: 0.264583,
                   }}
                   d="m 38.75,8.35 v 0 l 1.43,1.72 1.45,-1.75 z"
                 />
                 <path
                   style={{
-                    fill: "#0000ff",
+                    fill: "var(--shepherds-spindel-xsmall-flower)",
                     fillOpacity: 1,
-                    strokeWidth: 0.264583,
                   }}
                   d="m 40.98,10.2 1.37,-1.85 1.62,1.74 z"
                 />
               </g>
             </g>
           </g>
-          <g className="stem" style={{ display: "inline", fill: "#ff0000" }}>
+          <g
+            className="stem"
+            style={{
+              display: "inline",
+              fill: "var(--shepherds-spindel-stem-highlight)",
+            }}
+          >
             <path
-              style={{ fill: "#800000", fillOpacity: 1, strokeWidth: 0.264583 }}
+              style={{
+                fill: "var(--shepherds-spindel-stem-base)",
+                fillOpacity: 1,
+              }}
               d="m 77.02,95.44 h 16.33 l 1.16,15.87 h -20.04 z"
             />
             <path
-              style={{ fill: "#800000", fillOpacity: 1, strokeWidth: 0.264583 }}
+              style={{
+                fill: "var(--shepherds-spindel-stem-base)",
+                fillOpacity: 1,
+              }}
               d="M 76.67,93.82 H 94.51 L 91.96,78.64 H 77.83 Z"
             />
             <path
-              style={{ fill: "#800000", fillOpacity: 1, strokeWidth: 0.264583 }}
+              style={{
+                fill: "var(--shepherds-spindel-stem-base)",
+                fillOpacity: 1,
+              }}
               d="M 77.37,77.25 79.57,63.24 90.69,62.78 92.54,77.14 Z"
             />
             <path
-              style={{ fill: "#800000", fillOpacity: 1, strokeWidth: 0.264583 }}
+              style={{
+                fill: "var(--shepherds-spindel-stem-base)",
+                fillOpacity: 1,
+              }}
               d="M 78.76,61.73 91.38,61.97 88.95,50.96 80.5,50.5 Z"
             />
             <path
-              style={{ fill: "#800000", fillOpacity: 1, strokeWidth: 0.264583 }}
+              style={{
+                fill: "var(--shepherds-spindel-stem-base)",
+                fillOpacity: 1,
+              }}
               d="M 79.92,49.92 89.3,49.69 88.14,37.53 81.66,37.87 Z"
             />
             <path
-              style={{ fill: "#ff0000", fillOpacity: 1, strokeWidth: 0.264583 }}
+              style={{
+                fill: "var(--shepherds-spindel-stem-highlight)",
+                fillOpacity: 1,
+              }}
               d="M 94.55,111.53 77.95,99.84 70.3,89.18 l 1.39,12.28 2.78,9.96 z"
             />
             <path
-              style={{ fill: "#ff0000", fillOpacity: 1, strokeWidth: 0.264583 }}
+              style={{
+                fill: "var(--shepherds-spindel-stem-highlight)",
+                fillOpacity: 1,
+              }}
               d="m 76.62,93.87 14.65,-10.94 7.64,-11.23 -0.93,12.74 -3.37,9.35 z"
             />
             <path
-              style={{ fill: "#ff0000", fillOpacity: 1, strokeWidth: 0.264583 }}
+              style={{
+                fill: "var(--shepherds-spindel-stem-highlight)",
+                fillOpacity: 1,
+              }}
               d="m 92.82,77.22 -13.48,-9.35 -6.37,-8.69 1.04,10.31 2.55,7.88 z"
             />
             <path
-              style={{ fill: "#ff0000", fillOpacity: 1, strokeWidth: 0.264583 }}
+              style={{
+                fill: "var(--shepherds-spindel-stem-highlight)",
+                fillOpacity: 1,
+              }}
               d="m 78.73,61.72 10.8,-9.02 4.63,-7.53 -0.23,9.61 -2.17,7.19 z"
             />
             <path
-              style={{ fill: "#ff0000", fillOpacity: 1, strokeWidth: 0.264583 }}
+              style={{
+                fill: "var(--shepherds-spindel-stem-highlight)",
+                fillOpacity: 1,
+              }}
               d="m 89.46,49.69 -8.27,-5.21 -3.24,-4.98 0.35,6.14 1.85,4.52 z"
             />
           </g>
