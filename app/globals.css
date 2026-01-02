@@ -3,6 +3,7 @@
 
 @theme {
   --font-asimovian: Asimovian, sans-serif;
+  --breakpoint-xs: 28rem;
 }
 
 @theme inline {

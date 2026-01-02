@@ -58,7 +58,12 @@ export default function PotGrid({
   );
 
   return (
-    <div className={twMerge("grid grid-cols-3 gap-4", className)}>
+    <div
+      className={twMerge(
+        "grid grid-cols-4 xs:grid-cols-5 sm:grid-cols-6 md:grid-cols-7 lg:grid-cols-8 xl:grid-cols-9 2xl:grid-cols-10",
+        className
+      )}
+    >
       {pots.map((pot) => {
         const isSelected = selectedIds.includes(pot.id);
         return (
