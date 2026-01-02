@@ -11,7 +11,7 @@ const meta = {
   argTypes: {
     variant: {
       control: "select",
-      options: ["primary", "secondary", "outline"],
+      options: ["primary", "secondary"],
       description: "Visual style variant",
     },
     size: {
@@ -62,14 +62,6 @@ export const Secondary: Story = {
   },
 };
 
-export const Outline: Story = {
-  args: {
-    children: "Outline Button",
-    variant: "outline",
-    size: "md",
-  },
-};
-
 export const Small: Story = {
   args: {
     children: "Small Button",
@@ -103,13 +95,13 @@ export const Disabled: Story = {
   },
 };
 
+
 export const AllVariants: Story = {
   render: () => (
     <div className="flex flex-col gap-4">
       <div className="flex gap-4 items-center">
         <Button variant="primary">Primary</Button>
         <Button variant="secondary">Secondary</Button>
-        <Button variant="outline">Outline</Button>
       </div>
       <div className="flex gap-4 items-center">
         <Button variant="primary" size="sm">
@@ -126,11 +118,12 @@ export const AllVariants: Story = {
         <Button variant="primary" disabled>
           Disabled
         </Button>
-        <Button variant="outline" disabled>
-          Disabled Outline
+        <Button variant="secondary" disabled>
+          Disabled Secondary
         </Button>
       </div>
     </div>
   ),
 };
+
 
