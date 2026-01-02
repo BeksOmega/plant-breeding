@@ -23,6 +23,18 @@
   --color-rust-800: #8a3d2a;
   --color-rust-900: #733829;
   --color-rust-950: #3e1a11;
+
+  --color-tangerine-50: #fffbec;
+  --color-tangerine-100: #fff5d3;
+  --color-tangerine-200: #ffe8a5;
+  --color-tangerine-300: #ffd66d;
+  --color-tangerine-400: #ffb832;
+  --color-tangerine-500: #ffa00a;
+  --color-tangerine-600: #ff8800;
+  --color-tangerine-700: #cc6402;
+  --color-tangerine-800: #a14d0b;
+  --color-tangerine-900: #82410c;
+  --color-tangerine-950: #461f04;
 }
 
 body.mars-background {
