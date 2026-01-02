@@ -5,6 +5,24 @@ import { PlantGenetics } from "../../types/genetics";
 
 interface ShepherdsSpindelProps extends Plant, Selectable {}
 
+interface ParsedGenetics {
+  flowerColor: string;
+}
+
+/**
+ * Parses plant genetics and returns the phenotypic values.
+ */
+function parseGenetics(genetics: PlantGenetics): ParsedGenetics {
+  // Check if both chromosomes have true at index 0 (recessive trait)
+  const hasRecessiveFlowerColor =
+    genetics.chromosome1[0] === true && genetics.chromosome2[0] === true;
+  const flowerColor = hasRecessiveFlowerColor ? "#C281E8" : "#C9F3E8";
+
+  return {
+    flowerColor,
+  };
+}
+
 /**
  * ShepherdsSpindel component - displays a shepherd's spindel plant.
  * Implements the Plant interface with inlined optimized SVG.
@@ -17,6 +35,8 @@ export default function ShepherdsSpindel({
   isSelected,
   onSelect,
 }: ShepherdsSpindelProps) {
+  const parsedGenetics = parseGenetics(genetics);
+
   return (
     <div
       className="w-full h-full flex items-center justify-center"
@@ -24,7 +44,7 @@ export default function ShepherdsSpindel({
       style={
         {
           cursor: onSelect ? "pointer" : "default",
-          "--shepherds-spindel-flower": "#C9F3E8",
+          "--shepherds-spindel-flower": parsedGenetics.flowerColor,
           "--shepherds-spindel-stem": "#26AD89",
           "--shepherds-spindel-stroke": "var(--shepherds-spindel-stem)",
           "--shepherds-spindel-stem-highlight":
