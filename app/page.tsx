@@ -21,24 +21,36 @@ export default function Home() {
   const [isShopOpen, setIsShopOpen] = useState<boolean>(false);
   const [hasRocketTicket, setHasRocketTicket] = useState<boolean>(false);
   const balanceToastRef = useRef<HTMLDivElement>(null);
-  const { showToast } = useToast();
+  const { showToast, removeToast } = useToast();
 
   // Show introductory toast on first load
   useEffect(() => {
     // const hasSeenIntro = localStorage.getItem("hasSeenIntroToast");
     const hasSeenIntro = false;
     if (!hasSeenIntro) {
-      showToast(
-        <Text>
-          Welcome to Mars. You work at a plant laboratory now. Breed the plants
-          to grow faster and sell for more. Maybe someday you can buy a ticket
-          off this rock.
-        </Text>,
-        8000
+      const welcomeToastId = showToast(
+        <div className="flex items-start justify-between gap-2">
+          <Text>
+            Welcome to Mars. You work at a plant laboratory now. Breed the
+            plants to grow faster and be more valuable. Maybe someday you can
+            buy a ticket off this rock.
+          </Text>
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              removeToast(welcomeToastId);
+            }}
+            className="flex-shrink-0 text-sm leading-none font-bold opacity-60 hover:opacity-80 transition-opacity cursor-pointer"
+            aria-label="Close"
+          >
+            x
+          </button>
+        </div>,
+        0 // Don't auto-dismiss
       );
       localStorage.setItem("hasSeenIntroToast", "true");
     }
-  }, [showToast]);
+  }, [showToast, removeToast]);
 
   const [pots, setPots] = useState<PotData[]>([
     { id: 1, isEmpty: true },

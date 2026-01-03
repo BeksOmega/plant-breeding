@@ -12,6 +12,8 @@ interface ToastProps {
   className?: string;
   /** Disable animation for the toast */
   disableAnimation?: boolean;
+  /** Callback when toast is clicked to close */
+  onClose?: () => void;
 }
 
 /**
@@ -19,19 +21,26 @@ interface ToastProps {
  * Styled to match the ControlPanel with light tangerine background and border.
  */
 const Toast = forwardRef<HTMLDivElement, ToastProps>(
-  ({ children, className, disableAnimation }, ref) => {
+  ({ children, className, disableAnimation, onClose }, ref) => {
     const baseClassName = clsx(
       getSurfaceClassName(),
       "border-l-0",
       "px-2 py-1",
       "overflow-hidden",
       "max-w-[90%] sm:max-w-md md:max-w-md lg:max-w-md",
+      onClose && "cursor-pointer",
       className
     );
 
+    const handleClick = () => {
+      if (onClose) {
+        onClose();
+      }
+    };
+
     if (disableAnimation) {
       return (
-        <div ref={ref} className={baseClassName}>
+        <div ref={ref} className={baseClassName} onClick={handleClick}>
           {children}
         </div>
       );
@@ -53,6 +62,7 @@ const Toast = forwardRef<HTMLDivElement, ToastProps>(
         }}
         transition={{ duration: 0.25, ease: "easeOut" }}
         className={baseClassName}
+        onClick={handleClick}
       >
         {children}
       </motion.div>

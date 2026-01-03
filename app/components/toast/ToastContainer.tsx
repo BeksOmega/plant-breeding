@@ -131,7 +131,11 @@ export function ToastProvider({ children }: ToastProviderProps) {
         >
           <AnimatePresence mode="popLayout">
             {toasts.map((toast) => (
-              <Toast key={toast.id} disableAnimation={toast.disableAnimation}>
+              <Toast
+                key={toast.id}
+                disableAnimation={toast.disableAnimation}
+                onClose={() => removeToast(toast.id)}
+              >
                 {toast.content}
               </Toast>
             ))}
