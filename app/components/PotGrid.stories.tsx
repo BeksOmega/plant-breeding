@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { useState } from "react";
 import PotGrid, { PotData } from "./PotGrid";
-import ShepherdsSpindel from "./plants/ShepherdsSpindel";
 import { PlantGenetics } from "../types/genetics";
+import { PlantType } from "../types/seed";
 
 // Sample genetics data for stories
 const sampleGenetics: PlantGenetics[] = [
@@ -51,7 +51,12 @@ const createPotData = (
 ): PotData => ({
   id,
   isEmpty,
-  plant: genetics ? <ShepherdsSpindel genetics={genetics} /> : undefined,
+  plant: genetics
+    ? {
+        genetics,
+        plantType: PlantType.ShepherdsSpindel,
+      }
+    : undefined,
 });
 
 export const Default: Story = {

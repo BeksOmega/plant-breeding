@@ -1,4 +1,5 @@
 import { PlantGenetics } from "../../types/genetics";
+import { PlantType } from "../../types/seed";
 
 // Selection behavior interface
 export interface Selectable {
@@ -15,6 +16,7 @@ export interface Growable {
 // Base plant properties
 export interface BasePlantProps {
   genetics: PlantGenetics;
+  plantType: PlantType;
   showGenotype?: boolean;
 }
 

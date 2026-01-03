@@ -1,17 +1,18 @@
 "use client";
 
-import { ReactElement, useCallback } from "react";
+import { useCallback } from "react";
 import { twMerge } from "tailwind-merge";
 import Pot from "./Pot";
 import { Plant } from "./plants/Plant";
+import { renderPlant } from "../utils/plants";
 
 export interface PotData {
   /** Unique identifier for the pot */
   id: string | number;
   /** Whether the pot is empty */
   isEmpty: boolean;
-  /** Plant component to render in the pot (if not empty) */
-  plant?: ReactElement<Plant>;
+  /** Plant props for the plant in this pot (if not empty) */
+  plant?: Plant;
   /** Whether this pot can be selected */
   canSelect?: boolean;
 }
@@ -74,7 +75,7 @@ export default function PotGrid({
               onSelect={(selected) => handlePotSelect(pot.id, selected)}
               canSelect={pot.canSelect ?? true}
             >
-              {pot.plant}
+              {pot.plant ? renderPlant(pot.plant) : undefined}
             </Pot>
           </div>
         );

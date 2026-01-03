@@ -3,8 +3,8 @@
 import { useState, useMemo } from "react";
 import PotGrid, { PotData } from "./components/PotGrid";
 import { Seed, PlantType } from "./types/seed";
-import { getPlantComponent } from "./utils/plants";
 import ControlPanel from "./components/ControlPanel";
+import { breed } from "./types/genetics";
 
 export default function Home() {
   const [selectedIds, setSelectedIds] = useState<(string | number)[]>([]);
@@ -36,11 +36,19 @@ export default function Home() {
   const buttonStates = useMemo(() => {
     const selectedPots = pots.filter((pot) => selectedIds.includes(pot.id));
     const emptyPotsInSelection = selectedPots.filter((pot) => pot.isEmpty);
-    const plantsInSelection = selectedPots.filter((pot) => !pot.isEmpty);
+    const plantsInSelection = selectedPots.filter(
+      (pot) => !pot.isEmpty && pot.plant
+    );
+
+    // Check if we have exactly 2 plants and they're the same type
+    const canBreed =
+      plantsInSelection.length === 2 &&
+      plantsInSelection[0].plant?.plantType ===
+        plantsInSelection[1].plant?.plantType;
 
     return {
       disabledPlant: emptyPotsInSelection.length === 0 || seeds.length === 0,
-      disabledBreed: plantsInSelection.length !== 2,
+      disabledBreed: !canBreed,
       disabledCull: plantsInSelection.length === 0,
     };
   }, [pots, selectedIds, seeds.length]);
@@ -48,12 +56,10 @@ export default function Home() {
   const handlePlant = () => {
     if (selectedIds.length === 0 || seeds.length === 0) return;
 
-    // Get selected empty pots
     const selectedEmptyPots = pots.filter(
       (pot) => selectedIds.includes(pot.id) && pot.isEmpty
     );
 
-    // Plant only up to the number of seeds available
     const potsToPlant = selectedEmptyPots.slice(0, seeds.length);
     const seedsToUse = seeds.slice(0, potsToPlant.length);
 
@@ -65,23 +71,40 @@ export default function Home() {
           return {
             ...pot,
             isEmpty: false,
-            plant: getPlantComponent(seed.plantType, seed.genome),
+            plant: {
+              genetics: seed.genome,
+              plantType: seed.plantType,
+            },
           };
         }
         return pot;
       })
     );
 
-    // Remove used seeds
     setSeeds((prevSeeds) => prevSeeds.slice(seedsToUse.length));
-
-    // Deselect all pots after planting
     setSelectedIds([]);
   };
 
   const handleBreed = () => {
-    // TODO: Implement breeding logic
-    console.log("Breed clicked");
+    const selectedPots = pots.filter(
+      (pot) => selectedIds.includes(pot.id) && !pot.isEmpty && pot.plant
+    );
+    if (selectedPots.length !== 2) return;
+    const [parent1, parent2] = selectedPots;
+    if (!parent1.plant || !parent2.plant) {
+      return;
+    }
+    if (parent1.plant.plantType !== parent2.plant.plantType) {
+      return;
+    }
+
+    const offspringGenetics = breed(
+      parent1.plant.genetics,
+      parent2.plant.genetics
+    );
+
+    const newSeed = new Seed(offspringGenetics, parent1.plant.plantType);
+    setSeeds((prevSeeds) => [...prevSeeds, newSeed]);
     setSelectedIds([]);
   };
 
