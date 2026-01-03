@@ -6,6 +6,7 @@ import Toggle from "./controls/Toggle";
 import Button from "./controls/Button";
 import clsx from "clsx";
 import Heading from "./typography/Heading";
+import Surface from "./Surface";
 
 interface ControlPanelProps {
   /** Additional CSS classes */
@@ -46,14 +47,13 @@ export default function ControlPanel({
   const plantOptions = ["spindel"];
 
   return (
-    <div
+    <Surface
+      shadow="lg"
       className={clsx(
         "fixed bottom-4 right-4",
         "flex flex-col items-center",
         "z-50",
-        "bg-tangerine-50 border-2 border-tangerine-300",
         "p-2",
-        "shadow-lg",
         className
       )}
     >
@@ -111,6 +111,6 @@ export default function ControlPanel({
           </Button>
         </div>
       </div>
-    </div>
+    </Surface>
   );
 }

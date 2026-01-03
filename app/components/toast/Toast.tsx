@@ -3,6 +3,7 @@
 import { ReactNode, forwardRef } from "react";
 import { motion } from "motion/react";
 import clsx from "clsx";
+import Surface, { getSurfaceClassName } from "../Surface";
 
 interface ToastProps {
   /** Content to display in the toast */
@@ -20,9 +21,9 @@ interface ToastProps {
 const Toast = forwardRef<HTMLDivElement, ToastProps>(
   ({ children, className, disableAnimation }, ref) => {
     const baseClassName = clsx(
-      "bg-tangerine-50 border-2 border-l-0 border-tangerine-300",
+      getSurfaceClassName(),
+      "border-l-0",
       "px-2 py-1",
-      "shadow-[var(--shadow-elevation-medium)]",
       "overflow-hidden",
       className
     );
