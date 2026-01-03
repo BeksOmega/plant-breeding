@@ -20,7 +20,7 @@ import { Mutagen } from "./types/mutagen";
 
 export default function Home() {
   const [selectedIds, setSelectedIds] = useState<(string | number)[]>([]);
-  const [balance, setBalance] = useState<number>(1000);
+  const [balance, setBalance] = useState<number>(0);
   const [isShopOpen, setIsShopOpen] = useState<boolean>(false);
   const [hasRocketTicket, setHasRocketTicket] = useState<boolean>(false);
   const [mutagens, setMutagens] = useState<Mutagen[]>([]);

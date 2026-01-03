@@ -1,9 +1,9 @@
 "use client";
 
-import { ReactNode, forwardRef } from "react";
+import { ReactNode, forwardRef, HTMLAttributes } from "react";
 import clsx from "clsx";
 
-interface SurfaceProps {
+interface SurfaceProps extends Omit<HTMLAttributes<HTMLDivElement>, "className"> {
   /** Content to display in the surface */
   children: ReactNode;
   /** Additional CSS classes */
@@ -37,9 +37,9 @@ export function getSurfaceClassName({
  * used across Toast and ControlPanel components.
  */
 const Surface = forwardRef<HTMLDivElement, SurfaceProps>(
-  ({ children, className, shadow = "medium" }, ref) => {
+  ({ children, className, shadow = "medium", ...props }, ref) => {
     return (
-      <div ref={ref} className={getSurfaceClassName({ shadow, className })}>
+      <div ref={ref} className={getSurfaceClassName({ shadow, className })} {...props}>
         {children}
       </div>
     );

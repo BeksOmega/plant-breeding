@@ -3,7 +3,7 @@
 import { ReactNode, forwardRef } from "react";
 import { motion } from "motion/react";
 import clsx from "clsx";
-import Surface, { getSurfaceClassName } from "../Surface";
+import Surface from "../Surface";
 
 interface ToastProps {
   /** Content to display in the toast */
@@ -22,8 +22,13 @@ interface ToastProps {
  */
 const Toast = forwardRef<HTMLDivElement, ToastProps>(
   ({ children, className, disableAnimation, onClose }, ref) => {
-    const baseClassName = clsx(
-      getSurfaceClassName(),
+    const handleClick = () => {
+      if (onClose) {
+        onClose();
+      }
+    };
+
+    const surfaceClassName = clsx(
       "border-l-0",
       "px-2 py-1",
       "overflow-hidden",
@@ -32,17 +37,11 @@ const Toast = forwardRef<HTMLDivElement, ToastProps>(
       className
     );
 
-    const handleClick = () => {
-      if (onClose) {
-        onClose();
-      }
-    };
-
     if (disableAnimation) {
       return (
-        <div ref={ref} className={baseClassName} onClick={handleClick}>
+        <Surface ref={ref} className={surfaceClassName} onClick={handleClick}>
           {children}
-        </div>
+        </Surface>
       );
     }
 
@@ -61,10 +60,9 @@ const Toast = forwardRef<HTMLDivElement, ToastProps>(
           },
         }}
         transition={{ duration: 0.25, ease: "easeOut" }}
-        className={baseClassName}
         onClick={handleClick}
       >
-        {children}
+        <Surface className={surfaceClassName}>{children}</Surface>
       </motion.div>
     );
   }
