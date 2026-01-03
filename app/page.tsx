@@ -4,6 +4,7 @@ import { useState } from "react";
 import PotGrid, { PotData } from "./components/PotGrid";
 import ShepherdsSpindel from "./components/plants/ShepherdsSpindel";
 import { PlantGenetics } from "./types/genetics";
+import ControlPanel from "./components/ControlPanel";
 
 export default function Home() {
   const [selectedIds, setSelectedIds] = useState<(string | number)[]>([]);
@@ -52,6 +53,7 @@ export default function Home() {
         selectedIds={selectedIds}
         onSelectionChange={setSelectedIds}
       />
+      <ControlPanel />
     </main>
   );
 }
