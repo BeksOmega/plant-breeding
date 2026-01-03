@@ -34,6 +34,7 @@ export default function RootLayout({
         className={clsx(
           "mars-background",
           "before:absolute",
+          "before:content-['']",
           "before:bg-bottom",
           "before:inset-0",
           "before:z-[-2]",
@@ -43,6 +44,7 @@ export default function RootLayout({
           "before:mix-blend-multiply",
           "before:pointer-events-none",
           "after:absolute",
+          "after:content-['']",
           "after:inset-0",
           "after:z-[-1]",
           "after:bg-[url('/dust-texture.svg')]",
