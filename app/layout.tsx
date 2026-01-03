@@ -23,6 +23,9 @@ export const metadata: Metadata = {
   description: "A simple Next.js website",
 };
 
+// Get basePath from environment (same logic as next.config.js)
+const basePath = process.env.GITHUB_PAGES === "true" ? "/plant-breeding" : "";
+
 export default function RootLayout({
   children,
 }: {
@@ -30,31 +33,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={clsx(rajdhani.variable, teko.variable)}>
-      <body
-        className={clsx(
-          "mars-background",
-          "before:absolute",
-          "before:content-['']",
-          "before:bg-bottom",
-          "before:inset-0",
-          "before:z-[-2]",
-          "before:bg-[url('/dust-texture.svg')]",
-          "before:bg-repeat",
-          "before:opacity-5",
-          "before:mix-blend-multiply",
-          "before:pointer-events-none",
-          "after:absolute",
-          "after:content-['']",
-          "after:inset-0",
-          "after:z-[-1]",
-          "after:bg-[url('/dust-texture.svg')]",
-          "after:bg-bottom-[50%]",
-          "after:bg-repeat",
-          "after:opacity-5",
-          "after:mix-blend-multiply",
-          "after:pointer-events-none"
-        )}
-      >
+      <head>
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `:root { --dust-texture-url: url("${basePath}/dust-texture.svg"); }`,
+          }}
+        />
+      </head>
+      <body className="mars-background">
         <ToastProvider>{children}</ToastProvider>
       </body>
     </html>

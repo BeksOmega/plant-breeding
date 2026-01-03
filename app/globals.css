@@ -44,6 +44,32 @@ body.mars-background {
   color: rgb(var(--foreground-rgb));
 }
 
+body.mars-background::before {
+  content: "";
+  position: absolute;
+  background-position: bottom;
+  inset: 0;
+  z-index: -2;
+  background-image: var(--dust-texture-url, url("/dust-texture.svg"));
+  background-repeat: repeat;
+  opacity: 0.05;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+body.mars-background::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: var(--dust-texture-url, url("/dust-texture.svg"));
+  background-position: bottom 50%;
+  background-repeat: repeat;
+  opacity: 0.05;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
 .outline-stroke {
   /* filter: drop-shadow(1px 0 0 blue) drop-shadow(-1px 0 0 blue)
     drop-shadow(0 1px 0 blue) drop-shadow(0 -1px 0 blue)
