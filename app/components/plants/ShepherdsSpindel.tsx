@@ -110,7 +110,8 @@ export default function ShepherdsSpindel({
         } as React.CSSProperties
       }
     >
-      <svg
+      {isFullyGrown && (
+        <svg
         width="400"
         height="400"
         viewBox="0 0 105.83333 105.83333"
@@ -448,6 +449,7 @@ export default function ShepherdsSpindel({
           </text>
         )}
       </svg>
+      )}
       {isGrowing && (
         <div className="absolute bottom-2 left-2 right-2 z-20 space-y-1">
           <div className="font-rajdhani text-xs text-center text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">

@@ -14,14 +14,29 @@ import {
   ROCKET_TICKET_PRICE,
   calculatePlantPrice,
 } from "./utils/prices";
+import { calculateGrowthTime } from "./utils/plants";
 
 export default function Home() {
   const [selectedIds, setSelectedIds] = useState<(string | number)[]>([]);
-  const [balance, setBalance] = useState<number>(1000);
+  const [balance, setBalance] = useState<number>(0);
   const [isShopOpen, setIsShopOpen] = useState<boolean>(false);
   const [hasRocketTicket, setHasRocketTicket] = useState<boolean>(false);
   const balanceToastRef = useRef<HTMLDivElement>(null);
   const { showToast, removeToast } = useToast();
+
+  // Helper function to check if a plant is fully grown
+  const isPlantFullyGrown = (pot: PotData): boolean => {
+    if (pot.isEmpty || !pot.plant || !pot.plant.startGrowingAt) {
+      // If no startGrowingAt, consider it fully grown (legacy plants)
+      return !pot.isEmpty && !!pot.plant;
+    }
+    const growthTime = calculateGrowthTime(
+      pot.plant.plantType,
+      pot.plant.genetics
+    );
+    const elapsed = Date.now() - pot.plant.startGrowingAt;
+    return elapsed >= growthTime;
+  };
 
   // Show introductory toast on first load
   useEffect(() => {
@@ -80,28 +95,33 @@ export default function Home() {
   const buttonStates = useMemo(() => {
     const selectedPots = pots.filter((pot) => selectedIds.includes(pot.id));
     const emptyPotsInSelection = selectedPots.filter((pot) => pot.isEmpty);
-    const plantsInSelection = selectedPots.filter(
-      (pot) => !pot.isEmpty && pot.plant
+    // Only consider fully grown plants for breeding and selling
+    const fullyGrownPlantsInSelection = selectedPots.filter(
+      (pot) => !pot.isEmpty && pot.plant && isPlantFullyGrown(pot)
     );
 
-    // Check if we have exactly 2 plants and they're the same type
+    // Check if we have exactly 2 fully grown plants and they're the same type
     const canBreed =
-      plantsInSelection.length === 2 &&
-      plantsInSelection[0].plant?.plantType ===
-        plantsInSelection[1].plant?.plantType;
+      fullyGrownPlantsInSelection.length === 2 &&
+      fullyGrownPlantsInSelection[0].plant?.plantType ===
+        fullyGrownPlantsInSelection[1].plant?.plantType;
 
-    // Count total plants (all pots with plants)
-    const totalPlants = pots.filter((pot) => !pot.isEmpty && pot.plant).length;
+    // Count total fully grown plants (all pots with fully grown plants)
+    const totalFullyGrownPlants = pots.filter(
+      (pot) => !pot.isEmpty && pot.plant && isPlantFullyGrown(pot)
+    ).length;
 
     // Check if selling would leave fewer than 2 plants + seeds
-    const plantsAfterSell = totalPlants - plantsInSelection.length;
+    const plantsAfterSell =
+      totalFullyGrownPlants - fullyGrownPlantsInSelection.length;
     const totalAfterSell = plantsAfterSell + seeds.length;
     const wouldLeaveLessThanTwo = totalAfterSell < 2;
 
     return {
       disabledPlant: emptyPotsInSelection.length === 0 || seeds.length === 0,
       disabledBreed: !canBreed,
-      disabledSell: plantsInSelection.length === 0 || wouldLeaveLessThanTwo,
+      disabledSell:
+        fullyGrownPlantsInSelection.length === 0 || wouldLeaveLessThanTwo,
     };
   }, [pots, selectedIds, seeds.length]);
 
@@ -142,7 +162,11 @@ export default function Home() {
 
   const handleBreed = () => {
     const selectedPots = pots.filter(
-      (pot) => selectedIds.includes(pot.id) && !pot.isEmpty && pot.plant
+      (pot) =>
+        selectedIds.includes(pot.id) &&
+        !pot.isEmpty &&
+        pot.plant &&
+        isPlantFullyGrown(pot)
     );
     if (selectedPots.length !== 2) return;
     const [parent1, parent2] = selectedPots;
@@ -165,7 +189,11 @@ export default function Home() {
 
   const handleSell = () => {
     const selectedPotsWithPlants = pots.filter(
-      (pot) => selectedIds.includes(pot.id) && !pot.isEmpty && pot.plant
+      (pot) =>
+        selectedIds.includes(pot.id) &&
+        !pot.isEmpty &&
+        pot.plant &&
+        isPlantFullyGrown(pot)
     );
 
     if (selectedPotsWithPlants.length === 0) return;
