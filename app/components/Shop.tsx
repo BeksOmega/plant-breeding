@@ -87,7 +87,7 @@ export default function Shop({
         <Heading as="h5">Buy Items</Heading>
         <div className="mt-2 space-y-3">
           <div className="flex items-center justify-between">
-            <div className="flex-1">
+            <div className="flex-1 pr-4">
               <Text className="font-semibold">Specimen pot</Text>
               <Text className="text-sm text-gray-600">{POT_PRICE} credits</Text>
             </div>
@@ -102,7 +102,7 @@ export default function Shop({
             </Button>
           </div>
           <div className="flex items-center justify-between">
-            <div className="flex-1">
+            <div className="flex-1 pr-4">
               <Text className="font-semibold">Mutagen</Text>
               <Text className="text-sm text-gray-600">
                 {MUTAGEN_PRICE} credits
@@ -119,7 +119,7 @@ export default function Shop({
             </Button>
           </div>
           <div className="flex items-center justify-between">
-            <div className="flex-1">
+            <div className="flex-1 pr-4">
               <Text className="font-semibold">Ticket off this rock</Text>
               <Text className="text-sm text-gray-600">
                 {ROCKET_TICKET_PRICE} credits
