@@ -53,7 +53,8 @@ export default function ControlPanel({
     <Surface
       shadow="lg"
       className={clsx(
-        "fixed bottom-4 right-4",
+        "fixed bottom-4 margin-auto",
+        "xs:margin-0 xs:right-4",
         "flex",
         "z-50",
         "p-2",
