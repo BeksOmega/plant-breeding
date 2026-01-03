@@ -2,8 +2,8 @@
 
 import { useState, useMemo } from "react";
 import PotGrid, { PotData } from "./components/PotGrid";
-import ShepherdsSpindel from "./components/plants/ShepherdsSpindel";
-import { PlantGenetics } from "./types/genetics";
+import { Seed, PlantType } from "./types/seed";
+import { getPlantComponent } from "./utils/plants";
 import ControlPanel from "./components/ControlPanel";
 
 export default function Home() {
@@ -15,11 +15,22 @@ export default function Home() {
     { id: 4, isEmpty: true },
     { id: 5, isEmpty: true },
   ]);
-
-  const defaultGenetics: PlantGenetics = {
-    chromosome1: [true, true, true],
-    chromosome2: [true, true, true],
-  };
+  const [seeds, setSeeds] = useState<Seed[]>([
+    new Seed(
+      {
+        chromosome1: [true, true, true],
+        chromosome2: [true, true, true],
+      },
+      PlantType.ShepherdsSpindel
+    ),
+    new Seed(
+      {
+        chromosome1: [false, false, false],
+        chromosome2: [false, false, false],
+      },
+      PlantType.ShepherdsSpindel
+    ),
+  ]);
 
   // Calculate button disabled states based on selection
   const buttonStates = useMemo(() => {
@@ -28,27 +39,43 @@ export default function Home() {
     const plantsInSelection = selectedPots.filter((pot) => !pot.isEmpty);
 
     return {
-      disabledPlant: emptyPotsInSelection.length === 0,
+      disabledPlant: emptyPotsInSelection.length === 0 || seeds.length === 0,
       disabledBreed: plantsInSelection.length !== 2,
       disabledCull: plantsInSelection.length === 0,
     };
-  }, [pots, selectedIds]);
+  }, [pots, selectedIds, seeds.length]);
 
   const handlePlant = () => {
-    if (selectedIds.length === 0) return;
+    if (selectedIds.length === 0 || seeds.length === 0) return;
+
+    // Get selected empty pots
+    const selectedEmptyPots = pots.filter(
+      (pot) => selectedIds.includes(pot.id) && pot.isEmpty
+    );
+
+    // Plant only up to the number of seeds available
+    const potsToPlant = selectedEmptyPots.slice(0, seeds.length);
+    const seedsToUse = seeds.slice(0, potsToPlant.length);
 
     setPots((prevPots) =>
-      prevPots.map((pot) => {
-        if (selectedIds.includes(pot.id) && pot.isEmpty) {
+      prevPots.map((pot): PotData => {
+        const seedIndex = potsToPlant.findIndex((p) => p.id === pot.id);
+        if (seedIndex !== -1) {
+          const seed = seedsToUse[seedIndex];
           return {
             ...pot,
             isEmpty: false,
-            plant: <ShepherdsSpindel genetics={defaultGenetics} />,
+            plant: getPlantComponent(seed.plantType, seed.genome),
           };
         }
         return pot;
       })
     );
+
+    // Remove used seeds
+    setSeeds((prevSeeds) => prevSeeds.slice(seedsToUse.length));
+
+    // Deselect all pots after planting
     setSelectedIds([]);
   };
 
@@ -79,7 +106,7 @@ export default function Home() {
         disabledPlant={buttonStates.disabledPlant}
         disabledBreed={buttonStates.disabledBreed}
         disabledCull={buttonStates.disabledCull}
-        seedCount={0}
+        seedCount={seeds.length}
       />
     </main>
   );
