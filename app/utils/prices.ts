@@ -33,6 +33,9 @@ export const PLANT_PRICES: PlantCatalogItem[] = [
 // Price for a pot
 export const POT_PRICE = 25;
 
+// Price for a rocket ticket
+export const ROCKET_TICKET_PRICE = 1000;
+
 /**
  * Calculates the price of a plant based on its type and genetics.
  * Checks for variant matches (e.g., purple variant for Shepherd's Spindel).
@@ -41,9 +44,7 @@ export function calculatePlantPrice(
   plantType: PlantType,
   genetics: PlantGenetics
 ): number {
-  const catalogItem = PLANT_PRICES.find(
-    (item) => item.plantType === plantType
-  );
+  const catalogItem = PLANT_PRICES.find((item) => item.plantType === plantType);
 
   if (!catalogItem) {
     return 0;
@@ -69,4 +70,3 @@ export function calculatePlantPrice(
   // Return base price if no variant matches
   return catalogItem.basePrice;
 }
-

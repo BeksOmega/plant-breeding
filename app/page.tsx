@@ -9,12 +9,17 @@ import Toast from "./components/toast/Toast";
 import Text from "./components/typography/Text";
 import { useToast } from "./components/toast/ToastContainer";
 import Shop from "./components/Shop";
-import { POT_PRICE, calculatePlantPrice } from "./utils/prices";
+import {
+  POT_PRICE,
+  ROCKET_TICKET_PRICE,
+  calculatePlantPrice,
+} from "./utils/prices";
 
 export default function Home() {
   const [selectedIds, setSelectedIds] = useState<(string | number)[]>([]);
-  const [balance, setBalance] = useState<number>(0);
+  const [balance, setBalance] = useState<number>(1000);
   const [isShopOpen, setIsShopOpen] = useState<boolean>(false);
+  const [hasRocketTicket, setHasRocketTicket] = useState<boolean>(false);
   const balanceToastRef = useRef<HTMLDivElement>(null);
   const { showToast } = useToast();
 
@@ -200,6 +205,13 @@ export default function Home() {
     }
   };
 
+  const handleBuyRocketTicket = () => {
+    if (balance >= ROCKET_TICKET_PRICE && !hasRocketTicket) {
+      setBalance((prevBalance) => prevBalance - ROCKET_TICKET_PRICE);
+      setHasRocketTicket(true);
+    }
+  };
+
   return (
     <>
       <Toast
@@ -207,7 +219,9 @@ export default function Home() {
         className="fixed top-2 left-0 z-50"
         ref={balanceToastRef}
       >
-        <Text className="font-bold">Balance: {balance}</Text>
+        <Text className="font-bold">
+          Balance: {balance} credits {hasRocketTicket && "🚀"}
+        </Text>
       </Toast>
       {isShopOpen && (
         <div
@@ -215,7 +229,12 @@ export default function Home() {
           onClick={() => setIsShopOpen(false)}
         >
           <div onClick={(e) => e.stopPropagation()}>
-            <Shop balance={balance} onBuyPot={handleBuyPot} />
+            <Shop
+              balance={balance}
+              onBuyPot={handleBuyPot}
+              onBuyRocketTicket={handleBuyRocketTicket}
+              hasRocketTicket={hasRocketTicket}
+            />
           </div>
         </div>
       )}
@@ -226,16 +245,18 @@ export default function Home() {
           selectedIds={selectedIds}
           onSelectionChange={setSelectedIds}
         />
-        <ControlPanel
-          onPlant={handlePlant}
-          onBreed={handleBreed}
-          onSell={handleSell}
-          onShop={handleShop}
-          disabledPlant={buttonStates.disabledPlant}
-          disabledBreed={buttonStates.disabledBreed}
-          disabledSell={buttonStates.disabledSell}
-          seedCount={seeds.length}
-        />
+        {!isShopOpen && (
+          <ControlPanel
+            onPlant={handlePlant}
+            onBreed={handleBreed}
+            onSell={handleSell}
+            onShop={handleShop}
+            disabledPlant={buttonStates.disabledPlant}
+            disabledBreed={buttonStates.disabledBreed}
+            disabledSell={buttonStates.disabledSell}
+            seedCount={seeds.length}
+          />
+        )}
       </main>
     </>
   );

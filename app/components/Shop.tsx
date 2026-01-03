@@ -5,7 +5,7 @@ import Button from "./controls/Button";
 import Heading from "./typography/Heading";
 import Text from "./typography/Text";
 import { PlantType } from "../types/seed";
-import { PLANT_PRICES, POT_PRICE } from "../utils/prices";
+import { PLANT_PRICES, POT_PRICE, ROCKET_TICKET_PRICE } from "../utils/prices";
 import clsx from "clsx";
 
 interface ShopProps {
@@ -13,6 +13,10 @@ interface ShopProps {
   balance: number;
   /** Callback when purchasing a pot */
   onBuyPot?: () => void;
+  /** Callback when purchasing a rocket ticket */
+  onBuyRocketTicket?: () => void;
+  /** Whether the player already has a rocket ticket */
+  hasRocketTicket?: boolean;
   /** Additional CSS classes */
   className?: string;
 }
@@ -21,8 +25,15 @@ interface ShopProps {
  * Shop component - displays a shop interface with a plant catalog
  * and a section to buy items (pots).
  */
-export default function Shop({ balance, onBuyPot, className }: ShopProps) {
+export default function Shop({
+  balance,
+  onBuyPot,
+  onBuyRocketTicket,
+  hasRocketTicket = false,
+  className,
+}: ShopProps) {
   const canAffordPot = balance >= POT_PRICE;
+  const canAffordTicket = balance >= ROCKET_TICKET_PRICE && !hasRocketTicket;
 
   return (
     <Surface shadow="lg" className={clsx("p-4 space-y-6", className)}>
@@ -65,7 +76,7 @@ export default function Shop({ balance, onBuyPot, className }: ShopProps) {
       {/* Buy Section */}
       <div>
         <Heading as="h5">Buy Items</Heading>
-        <div className="mt-2">
+        <div className="mt-2 space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex-1">
               <Text className="font-semibold">Specimen pot</Text>
@@ -76,6 +87,23 @@ export default function Shop({ balance, onBuyPot, className }: ShopProps) {
               size="sm"
               onClick={onBuyPot}
               disabled={!canAffordPot}
+              className="px-4"
+            >
+              Buy
+            </Button>
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <Text className="font-semibold">Ticket off this rock</Text>
+              <Text className="text-sm text-gray-600">
+                {ROCKET_TICKET_PRICE} credits
+              </Text>
+            </div>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={onBuyRocketTicket}
+              disabled={!canAffordTicket || hasRocketTicket}
               className="px-4"
             >
               Buy
