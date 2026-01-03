@@ -154,6 +154,9 @@ export const Full: Story = {
 };
 
 export const Animated: Story = {
+  args: {
+    value: 0,
+  },
   render: () => {
     const [value, setValue] = useState(0);
     return (
@@ -179,6 +182,9 @@ export const Animated: Story = {
 };
 
 export const AllVariants: Story = {
+  args: {
+    value: 50,
+  },
   render: () => (
     <div className="w-64 space-y-4">
       <div className="space-y-2">

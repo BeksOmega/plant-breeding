@@ -29,9 +29,9 @@ const meta = {
       control: "boolean",
       description: "Whether the Breed button is disabled",
     },
-    disabledCull: {
+    disabledSell: {
       control: "boolean",
-      description: "Whether the Cull button is disabled",
+      description: "Whether the Sell button is disabled",
     },
   },
 } satisfies Meta<typeof ControlPanel>;

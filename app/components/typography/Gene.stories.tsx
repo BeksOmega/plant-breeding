@@ -70,6 +70,9 @@ export const WithCustomClass: Story = {
 };
 
 export const MultipleGenes: Story = {
+  args: {
+    children: 'ATCG',
+  },
   render: () => (
     <div className="space-y-2">
       <Gene>ATCG</Gene>

@@ -50,6 +50,9 @@ export const WithCustomClass: Story = {
 };
 
 export const MultipleText: Story = {
+  args: {
+    children: 'Text content',
+  },
   render: () => (
     <div>
       <Text>
@@ -76,6 +79,9 @@ export const WithSpecialCharacters: Story = {
 };
 
 export const WithLinks: Story = {
+  args: {
+    children: 'Text content',
+  },
   render: () => (
     <Text>
       This text contains{' '}

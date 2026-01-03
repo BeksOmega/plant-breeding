@@ -84,10 +84,16 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
+  args: {
+    children: null,
+  },
   render: () => <ToastDemo />,
 };
 
 export const WithSimpleToast: Story = {
+  args: {
+    children: null,
+  },
   render: () => {
     function SimpleToastDemo() {
       const { showToast } = useToast();
@@ -107,6 +113,9 @@ export const WithSimpleToast: Story = {
 };
 
 export const WithComplexContent: Story = {
+  args: {
+    children: null,
+  },
   render: () => {
     function ComplexToastDemo() {
       const { showToast } = useToast();
@@ -135,6 +144,9 @@ export const WithComplexContent: Story = {
 };
 
 export const MultipleToasts: Story = {
+  args: {
+    children: null,
+  },
   render: () => {
     function MultipleToastsDemo() {
       const { showToast } = useToast();
@@ -158,6 +170,9 @@ export const MultipleToasts: Story = {
 };
 
 export const WithCustomDuration: Story = {
+  args: {
+    children: null,
+  },
   render: () => {
     function CustomDurationDemo() {
       const { showToast } = useToast();
@@ -187,7 +202,9 @@ export const WithCustomDuration: Story = {
                 Show 10s Toast
               </Button>
               <Button
-                onClick={() => showToast("Permanent toast (no auto-dismiss)", 0)}
+                onClick={() =>
+                  showToast("Permanent toast (no auto-dismiss)", 0)
+                }
                 variant="secondary"
               >
                 Show Permanent Toast
@@ -202,6 +219,9 @@ export const WithCustomDuration: Story = {
 };
 
 export const WithoutAnimation: Story = {
+  args: {
+    children: null,
+  },
   render: () => {
     function NoAnimationDemo() {
       const { showToast } = useToast();
@@ -209,11 +229,14 @@ export const WithoutAnimation: Story = {
         <div className="p-8 space-y-4">
           <div className="flex flex-col gap-2">
             <p className="text-sm text-gray-600">
-              Toasts can be shown without animation by passing disableAnimation as the third parameter
+              Toasts can be shown without animation by passing disableAnimation
+              as the third parameter
             </p>
             <div className="flex flex-wrap gap-2">
               <Button
-                onClick={() => showToast("Toast with animation (default)", 5000, false)}
+                onClick={() =>
+                  showToast("Toast with animation (default)", 5000, false)
+                }
                 variant="primary"
               >
                 Show Animated Toast
@@ -232,4 +255,3 @@ export const WithoutAnimation: Story = {
     return <NoAnimationDemo />;
   },
 };
-

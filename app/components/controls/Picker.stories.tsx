@@ -141,6 +141,10 @@ export const OneOption: Story = {
 };
 
 export const AllVariants: Story = {
+  args: {
+    options: ["Option 1", "Option 2", "Option 3"],
+    value: 0,
+  },
   render: () => {
     const [primaryValue, setPrimaryValue] = useState(0);
     const [secondaryValue, setSecondaryValue] = useState(0);

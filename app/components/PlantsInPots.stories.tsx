@@ -249,7 +249,7 @@ export const GrowingPlant: Story = {
     const startTime = Date.now();
     return (
       <div className="w-32 h-32">
-        <Pot isEmpty={false} startGrowingAt={startTime}>
+        <Pot isEmpty={false}>
           <ShepherdsSpindel
             genetics={sampleGenetics}
             plantType={PlantType.ShepherdsSpindel}
@@ -267,7 +267,7 @@ export const PartiallyGrown: Story = {
     const startTime = Date.now() - 3000;
     return (
       <div className="w-32 h-32">
-        <Pot isEmpty={false} startGrowingAt={startTime}>
+        <Pot isEmpty={false}>
           <ShepherdsSpindel
             genetics={sampleGenetics}
             plantType={PlantType.ShepherdsSpindel}
@@ -285,7 +285,7 @@ export const AlmostGrown: Story = {
     const startTime = Date.now() - 8000;
     return (
       <div className="w-32 h-32">
-        <Pot isEmpty={false} startGrowingAt={startTime}>
+        <Pot isEmpty={false}>
           <ShepherdsSpindel
             genetics={sampleGenetics}
             plantType={PlantType.ShepherdsSpindel}
@@ -303,7 +303,7 @@ export const FullyGrown: Story = {
     const startTime = Date.now() - 15000;
     return (
       <div className="w-32 h-32">
-        <Pot isEmpty={false} startGrowingAt={startTime}>
+        <Pot isEmpty={false}>
           <ShepherdsSpindel
             genetics={sampleGenetics}
             plantType={PlantType.ShepherdsSpindel}
@@ -334,7 +334,7 @@ export const MultipleGrowthStages: Story = {
               <div className="mb-2 text-xs text-center text-gray-600">
                 {stage.label}
               </div>
-              <Pot isEmpty={false} startGrowingAt={stage.startTime}>
+              <Pot isEmpty={false}>
                 <ShepherdsSpindel
                   genetics={sampleGenetics}
                   plantType={PlantType.ShepherdsSpindel}

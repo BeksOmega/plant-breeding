@@ -17,9 +17,13 @@ const meta = {
       action: "buy pot clicked",
       description: "Callback when Buy Pot button is clicked",
     },
-    onSellPlant: {
-      action: "sell plant clicked",
-      description: "Callback when Sell Plant button is clicked",
+    onBuyRocketTicket: {
+      action: "buy rocket ticket clicked",
+      description: "Callback when Buy Rocket Ticket button is clicked",
+    },
+    onBuyMutagen: {
+      action: "buy mutagen clicked",
+      description: "Callback when Buy Mutagen button is clicked",
     },
     className: {
       control: "text",
@@ -53,7 +57,8 @@ export const WithCallbacks: Story = {
   args: {
     balance: 100,
     onBuyPot: () => console.log("Buy pot clicked"),
-    onSellPlant: (plantType) => console.log("Sell plant clicked:", plantType),
+    onBuyRocketTicket: () => console.log("Buy rocket ticket clicked"),
+    onBuyMutagen: () => console.log("Buy mutagen clicked"),
   },
 };
 

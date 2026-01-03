@@ -50,6 +50,9 @@ export const WithCustomClass: Story = {
 };
 
 export const MultipleParagraphs: Story = {
+  args: {
+    children: 'Paragraph text',
+  },
   render: () => (
     <div className="space-y-4">
       <Paragraph>
@@ -76,6 +79,9 @@ export const WithSpecialCharacters: Story = {
 };
 
 export const WithLinks: Story = {
+  args: {
+    children: 'Paragraph text',
+  },
   render: () => (
     <Paragraph>
       This paragraph contains{' '}

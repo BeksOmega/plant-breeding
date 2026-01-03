@@ -70,13 +70,17 @@ export const NotSelectable: Story = {
 };
 
 export const Interactive: Story = {
-  render: () => {
+  args: {
+    isEmpty: true,
+    isSelected: false,
+    canSelect: true,
+  },
+  render: (args) => {
     const [isSelected, setIsSelected] = useState(false);
     return (
       <Pot
-        isEmpty={true}
+        {...args}
         isSelected={isSelected}
-        canSelect={true}
         onSelect={setIsSelected}
       />
     );
@@ -84,13 +88,13 @@ export const Interactive: Story = {
 };
 
 export const WithGrowingPlant: Story = {
+  args: {
+    isEmpty: false,
+  },
   render: () => {
     const startTime = Date.now();
     return (
-      <Pot
-        isEmpty={false}
-        startGrowingAt={startTime}
-      >
+      <Pot isEmpty={false}>
         <ShepherdsSpindel
           genetics={{
             chromosome1: [true, false, true],
@@ -105,13 +109,13 @@ export const WithGrowingPlant: Story = {
 };
 
 export const PartiallyGrown: Story = {
+  args: {
+    isEmpty: false,
+  },
   render: () => {
     const startTime = Date.now() - 5000; // 50% grown
     return (
-      <Pot
-        isEmpty={false}
-        startGrowingAt={startTime}
-      >
+      <Pot isEmpty={false}>
         <ShepherdsSpindel
           genetics={{
             chromosome1: [true, false, true],

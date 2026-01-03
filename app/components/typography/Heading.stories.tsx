@@ -86,6 +86,9 @@ export const WithCustomClass: Story = {
 };
 
 export const AllLevels: Story = {
+  args: {
+    children: 'Heading',
+  },
   render: () => (
     <div className="space-y-4">
       <Heading as="h1">Heading Level 1</Heading>

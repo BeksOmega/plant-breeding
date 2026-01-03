@@ -51,6 +51,9 @@ export const WithComplexContent: Story = {
 };
 
 export const MultipleToasts: Story = {
+  args: {
+    children: "Toast notification",
+  },
   render: () => (
     <div className="fixed top-0 left-0 flex flex-col gap-2">
       <Toast>First toast notification</Toast>

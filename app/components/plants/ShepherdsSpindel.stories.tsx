@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react";
 import { useState } from "react";
 import ShepherdsSpindel from "./ShepherdsSpindel";
 import { PlantGenetics } from "../../types/genetics";
+import { PlantType } from "../../types/seed";
 
 // Sample genetics data for stories
 const sampleGenetics: PlantGenetics = {
@@ -20,6 +21,11 @@ const meta = {
     genetics: {
       control: "object",
       description: "The plant's genetic data",
+    },
+    plantType: {
+      control: "select",
+      options: Object.values(PlantType),
+      description: "The type of plant",
     },
     showGenotype: {
       control: "boolean",
@@ -57,6 +63,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   args: {
     genetics: sampleGenetics,
+    plantType: PlantType.ShepherdsSpindel,
     showGenotype: false,
     isSelected: false,
   },
@@ -65,6 +72,7 @@ export const Default: Story = {
 export const Selected: Story = {
   args: {
     genetics: sampleGenetics,
+    plantType: PlantType.ShepherdsSpindel,
     showGenotype: false,
     isSelected: true,
   },
@@ -73,6 +81,7 @@ export const Selected: Story = {
 export const WithGenotype: Story = {
   args: {
     genetics: sampleGenetics,
+    plantType: PlantType.ShepherdsSpindel,
     showGenotype: true,
     isSelected: false,
   },
@@ -81,17 +90,24 @@ export const WithGenotype: Story = {
 export const SelectedWithGenotype: Story = {
   args: {
     genetics: sampleGenetics,
+    plantType: PlantType.ShepherdsSpindel,
     showGenotype: true,
     isSelected: true,
   },
 };
 
 export const Interactive: Story = {
+  args: {
+    genetics: sampleGenetics,
+    plantType: PlantType.ShepherdsSpindel,
+    showGenotype: false,
+  },
   render: () => {
     const [isSelected, setIsSelected] = useState(false);
     return (
       <ShepherdsSpindel
         genetics={sampleGenetics}
+        plantType={PlantType.ShepherdsSpindel}
         showGenotype={false}
         isSelected={isSelected}
         onSelect={setIsSelected}
@@ -101,6 +117,10 @@ export const Interactive: Story = {
 };
 
 export const DifferentGenetics: Story = {
+  args: {
+    genetics: sampleGenetics,
+    plantType: PlantType.ShepherdsSpindel,
+  },
   render: () => {
     const genetics1: PlantGenetics = {
       chromosome1: [true, true, true],
@@ -118,13 +138,25 @@ export const DifferentGenetics: Story = {
     return (
       <div className="flex gap-4">
         <div className="w-32 h-32">
-          <ShepherdsSpindel genetics={genetics1} showGenotype={true} />
+          <ShepherdsSpindel
+            genetics={genetics1}
+            plantType={PlantType.ShepherdsSpindel}
+            showGenotype={true}
+          />
         </div>
         <div className="w-32 h-32">
-          <ShepherdsSpindel genetics={genetics2} showGenotype={true} />
+          <ShepherdsSpindel
+            genetics={genetics2}
+            plantType={PlantType.ShepherdsSpindel}
+            showGenotype={true}
+          />
         </div>
         <div className="w-32 h-32">
-          <ShepherdsSpindel genetics={genetics3} showGenotype={true} />
+          <ShepherdsSpindel
+            genetics={genetics3}
+            plantType={PlantType.ShepherdsSpindel}
+            showGenotype={true}
+          />
         </div>
       </div>
     );
