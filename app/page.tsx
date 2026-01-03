@@ -109,8 +109,25 @@ export default function Home() {
   };
 
   const handleCull = () => {
-    // TODO: Implement culling logic
-    console.log("Cull clicked");
+    const selectedPotsWithPlants = pots.filter(
+      (pot) => selectedIds.includes(pot.id) && !pot.isEmpty && pot.plant
+    );
+
+    if (selectedPotsWithPlants.length === 0) return;
+
+    setPots((prevPots) =>
+      prevPots.map((pot): PotData => {
+        if (selectedIds.includes(pot.id) && !pot.isEmpty && pot.plant) {
+          return {
+            ...pot,
+            isEmpty: true,
+            plant: undefined,
+          };
+        }
+        return pot;
+      })
+    );
+
     setSelectedIds([]);
   };
 
