@@ -19,25 +19,25 @@ export const PLANT_PRICES: PlantCatalogItem[] = [
   {
     plantType: PlantType.Umbel,
     name: "Umbel",
-    basePrice: 2,
+    basePrice: 10,
     variants: [
       {
         variantId: "purple",
         name: "Purple",
-        price: 10,
+        price: 50,
       },
     ],
   },
 ];
 
 // Price for a pot
-export const POT_PRICE = 25;
+export const POT_PRICE = 100;
 
 // Price for a rocket ticket
 export const ROCKET_TICKET_PRICE = 500;
 
 // Price for a mutagen
-export const MUTAGEN_PRICE = 50;
+export const MUTAGEN_PRICE = 10;
 
 /**
  * Calculates the price of a plant based on its type and genetics.
