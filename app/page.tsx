@@ -1,13 +1,41 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import PotGrid, { PotData } from "./components/PotGrid";
 import { Seed, PlantType } from "./types/seed";
 import ControlPanel from "./components/ControlPanel";
 import { breed } from "./types/genetics";
+import Toast from "./components/toast/Toast";
+import Text from "./components/typography/Text";
+import { useToastOffset } from "./components/toast/ToastContainer";
 
 export default function Home() {
   const [selectedIds, setSelectedIds] = useState<(string | number)[]>([]);
+  const [balance, setBalance] = useState<number>(0);
+  const balanceToastRef = useRef<HTMLDivElement>(null);
+  const { registerOffset, unregisterOffset } = useToastOffset();
+
+  // Register balance toast height with ToastContainer
+  useEffect(() => {
+    if (balanceToastRef.current) {
+      const height = balanceToastRef.current.offsetHeight;
+      registerOffset(height);
+
+      // Update on resize (e.g., if balance text changes significantly)
+      const resizeObserver = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          registerOffset(entry.contentRect.height);
+        }
+      });
+
+      resizeObserver.observe(balanceToastRef.current);
+
+      return () => {
+        resizeObserver.disconnect();
+        unregisterOffset();
+      };
+    }
+  }, [balance, registerOffset, unregisterOffset]);
   const [pots, setPots] = useState<PotData[]>([
     { id: 1, isEmpty: true },
     { id: 2, isEmpty: true },
@@ -135,22 +163,31 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center p-4 gap-4">
-      <PotGrid
-        pots={pots}
-        className="w-full"
-        selectedIds={selectedIds}
-        onSelectionChange={setSelectedIds}
-      />
-      <ControlPanel
-        onPlant={handlePlant}
-        onBreed={handleBreed}
-        onCull={handleCull}
-        disabledPlant={buttonStates.disabledPlant}
-        disabledBreed={buttonStates.disabledBreed}
-        disabledCull={buttonStates.disabledCull}
-        seedCount={seeds.length}
-      />
-    </main>
+    <>
+      <Toast
+        disableAnimation
+        className="fixed top-2 left-0 z-50"
+        ref={balanceToastRef}
+      >
+        <Text className="font-bold">Balance: {balance}</Text>
+      </Toast>
+      <main className="min-h-screen flex flex-col items-center justify-center p-4 gap-4">
+        <PotGrid
+          pots={pots}
+          className="w-full"
+          selectedIds={selectedIds}
+          onSelectionChange={setSelectedIds}
+        />
+        <ControlPanel
+          onPlant={handlePlant}
+          onBreed={handleBreed}
+          onCull={handleCull}
+          disabledPlant={buttonStates.disabledPlant}
+          disabledBreed={buttonStates.disabledBreed}
+          disabledCull={buttonStates.disabledCull}
+          seedCount={seeds.length}
+        />
+      </main>
+    </>
   );
 }

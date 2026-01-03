@@ -30,6 +30,26 @@ interface ToastContextType {
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
+interface ToastOffsetContextType {
+  registerOffset: (height: number) => void;
+  unregisterOffset: () => void;
+}
+
+const ToastOffsetContext = createContext<ToastOffsetContextType | undefined>(
+  undefined
+);
+
+/**
+ * Hook to register/unregister a top offset for the toast container
+ */
+export function useToastOffset() {
+  const context = useContext(ToastOffsetContext);
+  if (!context) {
+    throw new Error("useToastOffset must be used within a ToastProvider");
+  }
+  return context;
+}
+
 /**
  * Hook to access toast functionality
  */
@@ -51,6 +71,7 @@ interface ToastProviderProps {
  */
 export function ToastProvider({ children }: ToastProviderProps) {
   const [toasts, setToasts] = useState<ToastData[]>([]);
+  const [topOffset, setTopOffset] = useState<number>(0);
   const timeoutRefs = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
   const removeToast = useCallback((id: string) => {
@@ -86,6 +107,14 @@ export function ToastProvider({ children }: ToastProviderProps) {
     [removeToast]
   );
 
+  const registerOffset = useCallback((height: number) => {
+    setTopOffset(height);
+  }, []);
+
+  const unregisterOffset = useCallback(() => {
+    setTopOffset(0);
+  }, []);
+
   // Cleanup timeouts on unmount
   useEffect(() => {
     return () => {
@@ -96,18 +125,21 @@ export function ToastProvider({ children }: ToastProviderProps) {
 
   return (
     <ToastContext.Provider value={{ showToast, removeToast }}>
-      {children}
-      <div
-        className={clsx("fixed top-0 left-0", "z-50", "flex flex-col gap-2")}
-      >
-        <AnimatePresence mode="popLayout">
-          {toasts.map((toast) => (
-            <Toast key={toast.id} disableAnimation={toast.disableAnimation}>
-              {toast.content}
-            </Toast>
-          ))}
-        </AnimatePresence>
-      </div>
+      <ToastOffsetContext.Provider value={{ registerOffset, unregisterOffset }}>
+        {children}
+        <div
+          className={clsx("fixed left-0", "z-50", "flex flex-col gap-2")}
+          style={{ top: `${topOffset}px` }}
+        >
+          <AnimatePresence mode="popLayout">
+            {toasts.map((toast) => (
+              <Toast key={toast.id} disableAnimation={toast.disableAnimation}>
+                {toast.content}
+              </Toast>
+            ))}
+          </AnimatePresence>
+        </div>
+      </ToastOffsetContext.Provider>
     </ToastContext.Provider>
   );
 }
