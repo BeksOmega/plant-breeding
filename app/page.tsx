@@ -8,10 +8,13 @@ import { breed } from "./types/genetics";
 import Toast from "./components/toast/Toast";
 import Text from "./components/typography/Text";
 import { useToastOffset } from "./components/toast/ToastContainer";
+import Shop from "./components/Shop";
+import { POT_PRICE } from "./utils/prices";
 
 export default function Home() {
   const [selectedIds, setSelectedIds] = useState<(string | number)[]>([]);
   const [balance, setBalance] = useState<number>(0);
+  const [isShopOpen, setIsShopOpen] = useState<boolean>(false);
   const balanceToastRef = useRef<HTMLDivElement>(null);
   const { registerOffset, unregisterOffset } = useToastOffset();
 
@@ -162,6 +165,21 @@ export default function Home() {
     setSelectedIds([]);
   };
 
+  const handleShop = () => {
+    setIsShopOpen(true);
+  };
+
+  const handleBuyPot = () => {
+    if (balance >= POT_PRICE) {
+      const numericIds = pots
+        .map((p) => p.id)
+        .filter((id): id is number => typeof id === "number");
+      const newPotId = numericIds.length > 0 ? Math.max(...numericIds) + 1 : 1;
+      setPots((prevPots) => [...prevPots, { id: newPotId, isEmpty: true }]);
+      setBalance((prevBalance) => prevBalance - POT_PRICE);
+    }
+  };
+
   return (
     <>
       <Toast
@@ -171,6 +189,16 @@ export default function Home() {
       >
         <Text className="font-bold">Balance: {balance}</Text>
       </Toast>
+      {isShopOpen && (
+        <div
+          className="fixed inset-0 bg-black/25 z-50 flex items-center justify-center p-4"
+          onClick={() => setIsShopOpen(false)}
+        >
+          <div onClick={(e) => e.stopPropagation()}>
+            <Shop balance={balance} onBuyPot={handleBuyPot} />
+          </div>
+        </div>
+      )}
       <main className="min-h-screen flex flex-col items-center justify-center p-4 gap-4">
         <PotGrid
           pots={pots}
@@ -182,6 +210,7 @@ export default function Home() {
           onPlant={handlePlant}
           onBreed={handleBreed}
           onCull={handleCull}
+          onShop={handleShop}
           disabledPlant={buttonStates.disabledPlant}
           disabledBreed={buttonStates.disabledBreed}
           disabledCull={buttonStates.disabledCull}

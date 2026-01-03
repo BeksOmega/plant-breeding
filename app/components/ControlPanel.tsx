@@ -17,6 +17,8 @@ interface ControlPanelProps {
   onBreed?: () => void;
   /** Callback when Cull button is clicked */
   onCull?: () => void;
+  /** Callback when Shop button is clicked */
+  onShop?: () => void;
   /** Whether the Plant button is disabled */
   disabledPlant?: boolean;
   /** Whether the Breed button is disabled */
@@ -36,6 +38,7 @@ export default function ControlPanel({
   onPlant,
   onBreed,
   onCull,
+  onShop,
   disabledPlant = false,
   disabledBreed = false,
   disabledCull = false,
@@ -51,17 +54,18 @@ export default function ControlPanel({
       shadow="lg"
       className={clsx(
         "fixed bottom-4 right-4",
-        "flex flex-col items-center",
+        "flex",
         "z-50",
         "p-2",
         className
       )}
     >
-      <Heading as="h5">Control panel</Heading>
-
       <div className="flex gap-4">
         {/* Left side: Picker and Toggle */}
         <div className="flex flex-col items-center place-content-between">
+          <Heading as="h5" className="mt-1 mb-0 ms-1 self-start">
+            Control panel
+          </Heading>
           <Picker
             options={plantOptions}
             value={selectedPlantIndex}
@@ -81,12 +85,6 @@ export default function ControlPanel({
               {seedCount}
             </div>
           </div>
-          {/* <Toggle
-            offLabel="Off"
-            onLabel="Plant"
-            checked={isPlantMode}
-            onChange={setIsPlantMode}
-          /> */}
         </div>
 
         {/* Right side: Stacked buttons */}
@@ -95,10 +93,9 @@ export default function ControlPanel({
             variant="secondary"
             size="sm"
             className="w-full"
-            onClick={onBreed}
-            disabled={disabledBreed}
+            onClick={onShop}
           >
-            Breed
+            Shop
           </Button>
           <Button
             variant="secondary"
@@ -108,6 +105,15 @@ export default function ControlPanel({
             disabled={disabledCull}
           >
             Cull
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            className="w-full"
+            onClick={onBreed}
+            disabled={disabledBreed}
+          >
+            Breed
           </Button>
         </div>
       </div>
