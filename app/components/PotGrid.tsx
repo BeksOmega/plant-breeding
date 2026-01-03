@@ -76,7 +76,6 @@ export default function PotGrid({
               isSelected={isSelected}
               onSelect={(selected) => handlePotSelect(pot.id, selected)}
               canSelect={pot.canSelect ?? true}
-              startGrowingAt={pot.startGrowingAt}
             >
               {pot.plant ? renderPlant(pot.plant) : undefined}
             </Pot>

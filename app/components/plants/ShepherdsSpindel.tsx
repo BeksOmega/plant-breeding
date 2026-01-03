@@ -3,14 +3,16 @@
 import { useEffect, useState } from "react";
 import { Plant, Selectable } from "./Plant";
 import { PlantGenetics } from "../../types/genetics";
+import { PlantType } from "../../types/seed";
+import { calculateGrowthTime } from "../../utils/plants";
+import ProgressBar from "../controls/ProgressBar";
 
 interface ShepherdsSpindelProps extends Plant, Selectable {}
 
 interface ParsedGenetics {
   flowerColor: string;
+  growthTimeMs: number;
 }
-
-const GROWTH_TIME_MS = 10000; // 10 seconds
 
 /**
  * Parses plant genetics and returns the phenotypic values.
@@ -21,8 +23,15 @@ function parseGenetics(genetics: PlantGenetics): ParsedGenetics {
     genetics.chromosome1[0] === true && genetics.chromosome2[0] === true;
   const flowerColor = hasRecessiveFlowerColor ? "#C281E8" : "#C9F3E8";
 
+  // Calculate growth time based on genetics
+  const growthTimeMs = calculateGrowthTime(
+    PlantType.ShepherdsSpindel,
+    genetics
+  );
+
   return {
     flowerColor,
+    growthTimeMs,
   };
 }
 
@@ -40,31 +49,47 @@ export default function ShepherdsSpindel({
 }: ShepherdsSpindelProps) {
   const parsedGenetics = parseGenetics(genetics);
   const [isFullyGrown, setIsFullyGrown] = useState(!startGrowingAt);
+  const [growthProgress, setGrowthProgress] = useState(0);
+  const [remainingTime, setRemainingTime] = useState(0);
 
+  // Track growth progress and completion
   useEffect(() => {
-    if (!startGrowingAt || isFullyGrown) return;
-
-    const now = Date.now();
-    const elapsed = now - startGrowingAt;
-
-    if (elapsed >= GROWTH_TIME_MS) {
-      setIsFullyGrown(true);
-      onFullyGrown?.();
+    if (!startGrowingAt) {
+      setGrowthProgress(0);
+      setRemainingTime(0);
       return;
     }
 
-    const remaining = GROWTH_TIME_MS - elapsed;
-    const timer = setTimeout(() => {
-      setIsFullyGrown(true);
-      onFullyGrown?.();
-    }, remaining);
+    const updateProgress = () => {
+      const now = Date.now();
+      const elapsed = now - startGrowingAt;
+      const growthTime = parsedGenetics.growthTimeMs;
+      const progress = Math.min(100, (elapsed / growthTime) * 100);
+      const remaining = Math.max(0, (growthTime - elapsed) / 1000);
 
-    return () => clearTimeout(timer);
-  }, [startGrowingAt, onFullyGrown, isFullyGrown]);
+      setGrowthProgress(progress);
+      setRemainingTime(remaining);
+
+      if (elapsed >= growthTime && !isFullyGrown) {
+        setIsFullyGrown(true);
+        onFullyGrown?.();
+      }
+    };
+
+    // Update immediately
+    updateProgress();
+
+    // Update every 100ms for smooth animation
+    const interval = setInterval(updateProgress, 100);
+
+    return () => clearInterval(interval);
+  }, [startGrowingAt, onFullyGrown, isFullyGrown, parsedGenetics.growthTimeMs]);
+
+  const isGrowing = startGrowingAt !== undefined && !isFullyGrown;
 
   return (
     <div
-      className="w-full h-full flex items-center justify-center"
+      className="relative w-full h-full"
       onClick={() => onSelect?.(!isSelected)}
       style={
         {
@@ -91,7 +116,7 @@ export default function ShepherdsSpindel({
         viewBox="0 0 105.83333 105.83333"
         xmlns="http://www.w3.org/2000/svg"
         xmlnsXlink="http://www.w3.org/1999/xlink"
-        className="w-full h-full"
+        className="absolute top-0 w-full h-auto aspect-square"
         aria-label="Shepherd's Spindel plant"
       >
         <g
@@ -423,6 +448,14 @@ export default function ShepherdsSpindel({
           </text>
         )}
       </svg>
+      {isGrowing && (
+        <div className="absolute bottom-2 left-2 right-2 z-20 space-y-1">
+          <div className="font-rajdhani text-xs text-center text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+            {remainingTime.toFixed(1)}s
+          </div>
+          <ProgressBar value={growthProgress} size="sm" />
+        </div>
+      )}
     </div>
   );
 }

@@ -1,11 +1,7 @@
 "use client";
 
-import { ReactElement, useEffect, useState } from "react";
+import { ReactElement } from "react";
 import { Plant } from "./plants/Plant";
-import ProgressBar from "./controls/ProgressBar";
-import Paragraph from "./typography/Paragraph";
-
-const GROWTH_TIME_MS = 10000; // 10 seconds
 
 interface PotProps {
   /** Whether the pot is currently selected */
@@ -18,8 +14,6 @@ interface PotProps {
   canSelect?: boolean;
   /** Plant growing in the pot */
   children?: ReactElement<Plant>;
-  /** Timestamp when plant growth started */
-  startGrowingAt?: number;
 }
 
 /**
@@ -32,37 +26,7 @@ export default function Pot({
   isEmpty,
   canSelect = true,
   children,
-  startGrowingAt,
 }: PotProps) {
-  const [growthProgress, setGrowthProgress] = useState(0);
-  const [remainingTime, setRemainingTime] = useState(0);
-  const isGrowing = startGrowingAt !== undefined && growthProgress < 100;
-  const isFullyGrown = startGrowingAt === undefined || growthProgress >= 100;
-
-  useEffect(() => {
-    if (!startGrowingAt) {
-      setGrowthProgress(0);
-      return;
-    }
-
-    const updateProgress = () => {
-      const now = Date.now();
-      const elapsed = now - startGrowingAt;
-      const progress = Math.min(100, (elapsed / GROWTH_TIME_MS) * 100);
-      const remaining = Math.max(0, (GROWTH_TIME_MS - elapsed) / 1000);
-      setGrowthProgress(progress);
-      setRemainingTime(remaining);
-    };
-
-    // Update immediately
-    updateProgress();
-
-    // Update every 100ms for smooth animation
-    const interval = setInterval(updateProgress, 100);
-
-    return () => clearInterval(interval);
-  }, [startGrowingAt]);
-
   const handleClick = () => {
     if (!canSelect) return;
     const newSelected = !isSelected;
@@ -100,17 +64,9 @@ export default function Pot({
           d="m 24.5,59.80 13.94,5.49 23.66,0.14 15.63,-6.34 1.97,11.41 L 77.16,86.83 65.34,105 37.36,104.97 24.36,86.55 22.25,69.09 Z"
         />
       </svg>
-      <div className="absolute top-0 left-0 z-10 w-full aspect-square">
-        {isEmpty || !isFullyGrown ? null : children}
+      <div className="absolute top-0 left-0 z-10 w-full h-full">
+        {isEmpty ? null : children}
       </div>
-      {isGrowing && (
-        <div className="absolute bottom-2 left-2 right-2 z-20 space-y-1">
-          <div className="font-rajdhani text-xs text-center text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
-            {remainingTime.toFixed(1)}s
-          </div>
-          <ProgressBar value={growthProgress} size="sm" />
-        </div>
-      )}
     </button>
   );
 }

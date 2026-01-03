@@ -49,15 +49,15 @@ export default function Home() {
   const [seeds, setSeeds] = useState<Seed[]>([
     new Seed(
       {
-        chromosome1: [true, true, true],
-        chromosome2: [true, true, true],
+        chromosome1: [false, false],
+        chromosome2: [false, false],
       },
       PlantType.ShepherdsSpindel
     ),
     new Seed(
       {
-        chromosome1: [false, false, false],
-        chromosome2: [false, false, false],
+        chromosome1: [true, true],
+        chromosome2: [false, true],
       },
       PlantType.ShepherdsSpindel
     ),
