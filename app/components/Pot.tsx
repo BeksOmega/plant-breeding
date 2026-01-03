@@ -45,7 +45,7 @@ export default function Pot({
       >
         <path
           id="shadow"
-          style={{ fill: "hsl(var(--shadow-color) / 0.5)" }}
+          style={{ fill: "hsl(var(--shadow-color) / 0.4)" }}
           d="M 65.23,106.72 87.01,94.49 92.84,78.89 74.28,75.72 Z"
         />
       </svg>
