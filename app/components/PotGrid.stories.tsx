@@ -47,7 +47,8 @@ type Story = StoryObj<typeof meta>;
 const createPotData = (
   id: number,
   isEmpty: boolean,
-  genetics?: PlantGenetics
+  genetics?: PlantGenetics,
+  startGrowingAt?: number
 ): PotData => ({
   id,
   isEmpty,
@@ -55,8 +56,10 @@ const createPotData = (
     ? {
         genetics,
         plantType: PlantType.ShepherdsSpindel,
+        startGrowingAt,
       }
     : undefined,
+  startGrowingAt,
 });
 
 export const Default: Story = {
@@ -251,6 +254,61 @@ export const CustomGap: Story = {
           <h3 className="mb-4 text-lg font-semibold">Large gap (gap-20)</h3>
           <PotGrid pots={pots} className="gap-20" />
         </div>
+      </div>
+    );
+  },
+};
+
+export const WithGrowingPlants: Story = {
+  render: () => {
+    const now = Date.now();
+    const pots: PotData[] = [
+      createPotData(0, false, sampleGenetics[0], now), // Just planted
+      createPotData(1, false, sampleGenetics[1], now - 2500), // 25% grown
+      createPotData(2, false, sampleGenetics[2], now - 5000), // 50% grown
+      createPotData(3, false, sampleGenetics[3], now - 7500), // 75% grown
+      createPotData(4, false, sampleGenetics[4], now - 12000), // Fully grown
+      createPotData(5, true), // Empty
+    ];
+
+    return (
+      <div className="w-screen">
+        <div className="mb-4 text-sm text-gray-600">
+          Plants at different growth stages (0%, 25%, 50%, 75%, fully grown)
+        </div>
+        <PotGrid pots={pots} />
+      </div>
+    );
+  },
+};
+
+export const MixedGrowthStages: Story = {
+  render: () => {
+    const [selectedIds, setSelectedIds] = useState<(string | number)[]>([]);
+    const now = Date.now();
+
+    const pots: PotData[] = [
+      createPotData(0, false, sampleGenetics[0], now), // Growing
+      createPotData(1, true), // Empty
+      createPotData(2, false, sampleGenetics[1], now - 3000), // Growing
+      createPotData(3, false, sampleGenetics[2], now - 12000), // Fully grown
+      createPotData(4, true), // Empty
+      createPotData(5, false, sampleGenetics[3], now - 8000), // Growing
+      createPotData(6, false, sampleGenetics[4], now - 12000), // Fully grown
+      createPotData(7, true), // Empty
+    ];
+
+    return (
+      <div className="w-screen">
+        <div className="mb-4 text-sm text-gray-600">
+          Selected: {selectedIds.length > 0 ? selectedIds.join(", ") : "None"}
+        </div>
+        <PotGrid
+          pots={pots}
+          selectedIds={selectedIds}
+          onSelectionChange={setSelectedIds}
+          multiSelect={true}
+        />
       </div>
     );
   },

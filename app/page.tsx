@@ -62,6 +62,7 @@ export default function Home() {
 
     const potsToPlant = selectedEmptyPots.slice(0, seeds.length);
     const seedsToUse = seeds.slice(0, potsToPlant.length);
+    const startTime = Date.now();
 
     setPots((prevPots) =>
       prevPots.map((pot): PotData => {
@@ -74,7 +75,9 @@ export default function Home() {
             plant: {
               genetics: seed.genome,
               plantType: seed.plantType,
+              startGrowingAt: startTime,
             },
+            startGrowingAt: startTime,
           };
         }
         return pot;

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Plant, Selectable } from "./Plant";
 import { PlantGenetics } from "../../types/genetics";
 
@@ -8,6 +9,8 @@ interface ShepherdsSpindelProps extends Plant, Selectable {}
 interface ParsedGenetics {
   flowerColor: string;
 }
+
+const GROWTH_TIME_MS = 10000; // 10 seconds
 
 /**
  * Parses plant genetics and returns the phenotypic values.
@@ -36,6 +39,28 @@ export default function ShepherdsSpindel({
   onSelect,
 }: ShepherdsSpindelProps) {
   const parsedGenetics = parseGenetics(genetics);
+  const [isFullyGrown, setIsFullyGrown] = useState(!startGrowingAt);
+
+  useEffect(() => {
+    if (!startGrowingAt || isFullyGrown) return;
+
+    const now = Date.now();
+    const elapsed = now - startGrowingAt;
+    
+    if (elapsed >= GROWTH_TIME_MS) {
+      setIsFullyGrown(true);
+      onFullyGrown?.();
+      return;
+    }
+
+    const remaining = GROWTH_TIME_MS - elapsed;
+    const timer = setTimeout(() => {
+      setIsFullyGrown(true);
+      onFullyGrown?.();
+    }, remaining);
+
+    return () => clearTimeout(timer);
+  }, [startGrowingAt, onFullyGrown, isFullyGrown]);
 
   return (
     <div

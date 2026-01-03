@@ -3,6 +3,7 @@ import { useState } from "react";
 import Pot from "./Pot";
 import ShepherdsSpindel from "./plants/ShepherdsSpindel";
 import { PlantGenetics } from "../types/genetics";
+import { PlantType } from "../types/seed";
 
 // Sample genetics data for stories
 const sampleGenetics: PlantGenetics = {
@@ -25,7 +26,10 @@ export const SinglePlant: Story = {
   render: () => (
     <div className="w-32 h-32">
       <Pot isEmpty={false}>
-        <ShepherdsSpindel genetics={sampleGenetics} />
+        <ShepherdsSpindel
+          genetics={sampleGenetics}
+          plantType={PlantType.ShepherdsSpindel}
+        />
       </Pot>
     </div>
   ),
@@ -50,17 +54,26 @@ export const MultiplePlants: Story = {
       <div className="flex gap-4">
         <div className="w-32 h-32">
           <Pot isEmpty={false}>
-            <ShepherdsSpindel genetics={genetics1} />
+            <ShepherdsSpindel
+              genetics={genetics1}
+              plantType={PlantType.ShepherdsSpindel}
+            />
           </Pot>
         </div>
         <div className="w-32 h-32">
           <Pot isEmpty={false}>
-            <ShepherdsSpindel genetics={genetics2} />
+            <ShepherdsSpindel
+              genetics={genetics2}
+              plantType={PlantType.ShepherdsSpindel}
+            />
           </Pot>
         </div>
         <div className="w-32 h-32">
           <Pot isEmpty={false}>
-            <ShepherdsSpindel genetics={genetics3} />
+            <ShepherdsSpindel
+              genetics={genetics3}
+              plantType={PlantType.ShepherdsSpindel}
+            />
           </Pot>
         </div>
       </div>
@@ -77,7 +90,10 @@ export const WithEmptyPots: Story = {
         </div>
         <div className="w-32 h-32">
           <Pot isEmpty={false}>
-            <ShepherdsSpindel genetics={sampleGenetics} />
+            <ShepherdsSpindel
+              genetics={sampleGenetics}
+              plantType={PlantType.ShepherdsSpindel}
+            />
           </Pot>
         </div>
         <div className="w-32 h-32">
@@ -92,7 +108,10 @@ export const SelectedPlant: Story = {
   render: () => (
     <div className="w-32 h-32">
       <Pot isEmpty={false} isSelected={true}>
-        <ShepherdsSpindel genetics={sampleGenetics} />
+        <ShepherdsSpindel
+          genetics={sampleGenetics}
+          plantType={PlantType.ShepherdsSpindel}
+        />
       </Pot>
     </div>
   ),
@@ -126,6 +145,7 @@ export const InteractiveSelection: Story = {
           >
             <ShepherdsSpindel
               genetics={genetics1}
+              plantType={PlantType.ShepherdsSpindel}
               isSelected={selectedPlant === 0}
               onSelect={(selected) => setSelectedPlant(selected ? 0 : null)}
             />
@@ -139,6 +159,7 @@ export const InteractiveSelection: Story = {
           >
             <ShepherdsSpindel
               genetics={genetics2}
+              plantType={PlantType.ShepherdsSpindel}
               isSelected={selectedPlant === 1}
               onSelect={(selected) => setSelectedPlant(selected ? 1 : null)}
             />
@@ -152,6 +173,7 @@ export const InteractiveSelection: Story = {
           >
             <ShepherdsSpindel
               genetics={genetics3}
+              plantType={PlantType.ShepherdsSpindel}
               isSelected={selectedPlant === 2}
               onSelect={(selected) => setSelectedPlant(selected ? 2 : null)}
             />
@@ -166,7 +188,11 @@ export const WithGenotype: Story = {
   render: () => (
     <div className="w-32 h-32">
       <Pot isEmpty={false}>
-        <ShepherdsSpindel genetics={sampleGenetics} showGenotype={true} />
+        <ShepherdsSpindel
+          genetics={sampleGenetics}
+          plantType={PlantType.ShepherdsSpindel}
+          showGenotype={true}
+        />
       </Pot>
     </div>
   ),
@@ -206,10 +232,118 @@ export const GridLayout: Story = {
         {genetics.map((gen, index) => (
           <div key={index} className="w-32">
             <Pot isEmpty={false}>
-              <ShepherdsSpindel genetics={gen} />
+              <ShepherdsSpindel
+                genetics={gen}
+                plantType={PlantType.ShepherdsSpindel}
+              />
             </Pot>
           </div>
         ))}
+      </div>
+    );
+  },
+};
+
+export const GrowingPlant: Story = {
+  render: () => {
+    const startTime = Date.now();
+    return (
+      <div className="w-32 h-32">
+        <Pot isEmpty={false} startGrowingAt={startTime}>
+          <ShepherdsSpindel
+            genetics={sampleGenetics}
+            plantType={PlantType.ShepherdsSpindel}
+            startGrowingAt={startTime}
+          />
+        </Pot>
+      </div>
+    );
+  },
+};
+
+export const PartiallyGrown: Story = {
+  render: () => {
+    // Start growth 3 seconds ago (30% complete)
+    const startTime = Date.now() - 3000;
+    return (
+      <div className="w-32 h-32">
+        <Pot isEmpty={false} startGrowingAt={startTime}>
+          <ShepherdsSpindel
+            genetics={sampleGenetics}
+            plantType={PlantType.ShepherdsSpindel}
+            startGrowingAt={startTime}
+          />
+        </Pot>
+      </div>
+    );
+  },
+};
+
+export const AlmostGrown: Story = {
+  render: () => {
+    // Start growth 8 seconds ago (80% complete)
+    const startTime = Date.now() - 8000;
+    return (
+      <div className="w-32 h-32">
+        <Pot isEmpty={false} startGrowingAt={startTime}>
+          <ShepherdsSpindel
+            genetics={sampleGenetics}
+            plantType={PlantType.ShepherdsSpindel}
+            startGrowingAt={startTime}
+          />
+        </Pot>
+      </div>
+    );
+  },
+};
+
+export const FullyGrown: Story = {
+  render: () => {
+    // Plant started growing more than 10 seconds ago (fully grown, no progress bar)
+    const startTime = Date.now() - 15000;
+    return (
+      <div className="w-32 h-32">
+        <Pot isEmpty={false} startGrowingAt={startTime}>
+          <ShepherdsSpindel
+            genetics={sampleGenetics}
+            plantType={PlantType.ShepherdsSpindel}
+            startGrowingAt={startTime}
+          />
+        </Pot>
+      </div>
+    );
+  },
+};
+
+export const MultipleGrowthStages: Story = {
+  render: () => {
+    const now = Date.now();
+    const stages = [
+      { label: "Just planted", startTime: now },
+      { label: "25% grown", startTime: now - 2500 },
+      { label: "50% grown", startTime: now - 5000 },
+      { label: "75% grown", startTime: now - 7500 },
+      { label: "Fully grown", startTime: now - 12000 },
+    ];
+
+    return (
+      <div className="space-y-4">
+        <div className="grid grid-cols-5 gap-4">
+          {stages.map((stage, index) => (
+            <div key={index} className="w-32">
+              <div className="mb-2 text-xs text-center text-gray-600">
+                {stage.label}
+              </div>
+              <Pot isEmpty={false} startGrowingAt={stage.startTime}>
+                <ShepherdsSpindel
+                  genetics={sampleGenetics}
+                  plantType={PlantType.ShepherdsSpindel}
+                  startGrowingAt={stage.startTime}
+                />
+              </Pot>
+            </div>
+          ))}
+        </div>
       </div>
     );
   },

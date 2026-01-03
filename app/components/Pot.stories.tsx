@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { useState } from "react";
 import Pot from "./Pot";
+import ShepherdsSpindel from "./plants/ShepherdsSpindel";
+import { PlantType } from "../types/seed";
 
 const meta = {
   title: "Components/Pot",
@@ -73,6 +75,48 @@ export const Interactive: Story = {
         canSelect={true}
         onSelect={setIsSelected}
       />
+    );
+  },
+};
+
+export const WithGrowingPlant: Story = {
+  render: () => {
+    const startTime = Date.now();
+    return (
+      <Pot
+        isEmpty={false}
+        startGrowingAt={startTime}
+      >
+        <ShepherdsSpindel
+          genetics={{
+            chromosome1: [true, false, true],
+            chromosome2: [false, true, false],
+          }}
+          plantType={PlantType.ShepherdsSpindel}
+          startGrowingAt={startTime}
+        />
+      </Pot>
+    );
+  },
+};
+
+export const PartiallyGrown: Story = {
+  render: () => {
+    const startTime = Date.now() - 5000; // 50% grown
+    return (
+      <Pot
+        isEmpty={false}
+        startGrowingAt={startTime}
+      >
+        <ShepherdsSpindel
+          genetics={{
+            chromosome1: [true, false, true],
+            chromosome2: [false, true, false],
+          }}
+          plantType={PlantType.ShepherdsSpindel}
+          startGrowingAt={startTime}
+        />
+      </Pot>
     );
   },
 };

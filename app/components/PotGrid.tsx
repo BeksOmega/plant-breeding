@@ -15,6 +15,8 @@ export interface PotData {
   plant?: Plant;
   /** Whether this pot can be selected */
   canSelect?: boolean;
+  /** Timestamp when plant growth started */
+  startGrowingAt?: number;
 }
 
 export interface PotGridProps {
@@ -74,6 +76,7 @@ export default function PotGrid({
               isSelected={isSelected}
               onSelect={(selected) => handlePotSelect(pot.id, selected)}
               canSelect={pot.canSelect ?? true}
+              startGrowingAt={pot.startGrowingAt}
             >
               {pot.plant ? renderPlant(pot.plant) : undefined}
             </Pot>
