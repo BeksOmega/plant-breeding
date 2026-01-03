@@ -15,16 +15,16 @@ interface ControlPanelProps {
   onPlant?: () => void;
   /** Callback when Breed button is clicked */
   onBreed?: () => void;
-  /** Callback when Cull button is clicked */
-  onCull?: () => void;
+  /** Callback when Sell button is clicked */
+  onSell?: () => void;
   /** Callback when Shop button is clicked */
   onShop?: () => void;
   /** Whether the Plant button is disabled */
   disabledPlant?: boolean;
   /** Whether the Breed button is disabled */
   disabledBreed?: boolean;
-  /** Whether the Cull button is disabled */
-  disabledCull?: boolean;
+  /** Whether the Sell button is disabled */
+  disabledSell?: boolean;
   /** The current seed count */
   seedCount?: number;
 }
@@ -37,11 +37,11 @@ export default function ControlPanel({
   className,
   onPlant,
   onBreed,
-  onCull,
+  onSell,
   onShop,
   disabledPlant = false,
   disabledBreed = false,
-  disabledCull = false,
+  disabledSell = false,
   seedCount = 0,
 }: ControlPanelProps) {
   const [selectedPlantIndex, setSelectedPlantIndex] = useState(0);
@@ -101,10 +101,10 @@ export default function ControlPanel({
             variant="secondary"
             size="sm"
             className="w-full"
-            onClick={onCull}
-            disabled={disabledCull}
+            onClick={onSell}
+            disabled={disabledSell}
           >
-            Cull
+            Sell
           </Button>
           <Button
             variant="secondary"

@@ -9,7 +9,7 @@ import Toast from "./components/toast/Toast";
 import Text from "./components/typography/Text";
 import { useToastOffset } from "./components/toast/ToastContainer";
 import Shop from "./components/Shop";
-import { POT_PRICE } from "./utils/prices";
+import { POT_PRICE, calculatePlantPrice } from "./utils/prices";
 
 export default function Home() {
   const [selectedIds, setSelectedIds] = useState<(string | number)[]>([]);
@@ -77,10 +77,18 @@ export default function Home() {
       plantsInSelection[0].plant?.plantType ===
         plantsInSelection[1].plant?.plantType;
 
+    // Count total plants (all pots with plants)
+    const totalPlants = pots.filter((pot) => !pot.isEmpty && pot.plant).length;
+
+    // Check if selling would leave fewer than 2 plants + seeds
+    const plantsAfterSell = totalPlants - plantsInSelection.length;
+    const totalAfterSell = plantsAfterSell + seeds.length;
+    const wouldLeaveLessThanTwo = totalAfterSell < 2;
+
     return {
       disabledPlant: emptyPotsInSelection.length === 0 || seeds.length === 0,
       disabledBreed: !canBreed,
-      disabledCull: plantsInSelection.length === 0,
+      disabledSell: plantsInSelection.length === 0 || wouldLeaveLessThanTwo,
     };
   }, [pots, selectedIds, seeds.length]);
 
@@ -142,13 +150,29 @@ export default function Home() {
     setSelectedIds([]);
   };
 
-  const handleCull = () => {
+  const handleSell = () => {
     const selectedPotsWithPlants = pots.filter(
       (pot) => selectedIds.includes(pot.id) && !pot.isEmpty && pot.plant
     );
 
     if (selectedPotsWithPlants.length === 0) return;
 
+    // Calculate total price for all selected plants
+    let totalPrice = 0;
+    selectedPotsWithPlants.forEach((pot) => {
+      if (pot.plant) {
+        const price = calculatePlantPrice(
+          pot.plant.plantType,
+          pot.plant.genetics
+        );
+        totalPrice += price;
+      }
+    });
+
+    // Add price to balance
+    setBalance((prevBalance) => prevBalance + totalPrice);
+
+    // Remove the plants (same as cull)
     setPots((prevPots) =>
       prevPots.map((pot): PotData => {
         if (selectedIds.includes(pot.id) && !pot.isEmpty && pot.plant) {
@@ -209,11 +233,11 @@ export default function Home() {
         <ControlPanel
           onPlant={handlePlant}
           onBreed={handleBreed}
-          onCull={handleCull}
+          onSell={handleSell}
           onShop={handleShop}
           disabledPlant={buttonStates.disabledPlant}
           disabledBreed={buttonStates.disabledBreed}
-          disabledCull={buttonStates.disabledCull}
+          disabledSell={buttonStates.disabledSell}
           seedCount={seeds.length}
         />
       </main>
