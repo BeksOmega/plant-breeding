@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { useState } from "react";
 import Pot from "./Pot";
-import ShepherdsSpindel from "./plants/ShepherdsSpindel";
+import Umbel from "./plants/Umbel";
 import { PlantType } from "../types/seed";
 
 const meta = {
@@ -95,12 +95,12 @@ export const WithGrowingPlant: Story = {
     const startTime = Date.now();
     return (
       <Pot isEmpty={false}>
-        <ShepherdsSpindel
+        <Umbel
           genetics={{
             chromosome1: [true, false, true],
             chromosome2: [false, true, false],
           }}
-          plantType={PlantType.ShepherdsSpindel}
+          plantType={PlantType.Umbel}
           startGrowingAt={startTime}
         />
       </Pot>
@@ -116,12 +116,12 @@ export const PartiallyGrown: Story = {
     const startTime = Date.now() - 5000; // 50% grown
     return (
       <Pot isEmpty={false}>
-        <ShepherdsSpindel
+        <Umbel
           genetics={{
             chromosome1: [true, false, true],
             chromosome2: [false, true, false],
           }}
-          plantType={PlantType.ShepherdsSpindel}
+          plantType={PlantType.Umbel}
           startGrowingAt={startTime}
         />
       </Pot>

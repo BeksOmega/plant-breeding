@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { useState } from "react";
-import ShepherdsSpindel from "./ShepherdsSpindel";
+import Umbel from "./Umbel";
 import { PlantGenetics } from "../../types/genetics";
 import { PlantType } from "../../types/seed";
 
@@ -11,8 +11,8 @@ const sampleGenetics: PlantGenetics = {
 };
 
 const meta = {
-  title: "Components/Plants/ShepherdsSpindel",
-  component: ShepherdsSpindel,
+  title: "Components/Plants/Umbel",
+  component: Umbel,
   parameters: {
     layout: "centered",
   },
@@ -55,7 +55,7 @@ const meta = {
       </div>
     ),
   ],
-} satisfies Meta<typeof ShepherdsSpindel>;
+} satisfies Meta<typeof Umbel>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -63,7 +63,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   args: {
     genetics: sampleGenetics,
-    plantType: PlantType.ShepherdsSpindel,
+    plantType: PlantType.Umbel,
     showGenotype: false,
     isSelected: false,
   },
@@ -72,7 +72,7 @@ export const Default: Story = {
 export const Selected: Story = {
   args: {
     genetics: sampleGenetics,
-    plantType: PlantType.ShepherdsSpindel,
+    plantType: PlantType.Umbel,
     showGenotype: false,
     isSelected: true,
   },
@@ -81,7 +81,7 @@ export const Selected: Story = {
 export const WithGenotype: Story = {
   args: {
     genetics: sampleGenetics,
-    plantType: PlantType.ShepherdsSpindel,
+    plantType: PlantType.Umbel,
     showGenotype: true,
     isSelected: false,
   },
@@ -90,7 +90,7 @@ export const WithGenotype: Story = {
 export const SelectedWithGenotype: Story = {
   args: {
     genetics: sampleGenetics,
-    plantType: PlantType.ShepherdsSpindel,
+    plantType: PlantType.Umbel,
     showGenotype: true,
     isSelected: true,
   },
@@ -99,15 +99,15 @@ export const SelectedWithGenotype: Story = {
 export const Interactive: Story = {
   args: {
     genetics: sampleGenetics,
-    plantType: PlantType.ShepherdsSpindel,
+    plantType: PlantType.Umbel,
     showGenotype: false,
   },
   render: () => {
     const [isSelected, setIsSelected] = useState(false);
     return (
-      <ShepherdsSpindel
+      <Umbel
         genetics={sampleGenetics}
-        plantType={PlantType.ShepherdsSpindel}
+        plantType={PlantType.Umbel}
         showGenotype={false}
         isSelected={isSelected}
         onSelect={setIsSelected}
@@ -119,7 +119,7 @@ export const Interactive: Story = {
 export const DifferentGenetics: Story = {
   args: {
     genetics: sampleGenetics,
-    plantType: PlantType.ShepherdsSpindel,
+    plantType: PlantType.Umbel,
   },
   render: () => {
     const genetics1: PlantGenetics = {
@@ -138,23 +138,23 @@ export const DifferentGenetics: Story = {
     return (
       <div className="flex gap-4">
         <div className="w-32 h-32">
-          <ShepherdsSpindel
+          <Umbel
             genetics={genetics1}
-            plantType={PlantType.ShepherdsSpindel}
+            plantType={PlantType.Umbel}
             showGenotype={true}
           />
         </div>
         <div className="w-32 h-32">
-          <ShepherdsSpindel
+          <Umbel
             genetics={genetics2}
-            plantType={PlantType.ShepherdsSpindel}
+            plantType={PlantType.Umbel}
             showGenotype={true}
           />
         </div>
         <div className="w-32 h-32">
-          <ShepherdsSpindel
+          <Umbel
             genetics={genetics3}
-            plantType={PlantType.ShepherdsSpindel}
+            plantType={PlantType.Umbel}
             showGenotype={true}
           />
         </div>

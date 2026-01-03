@@ -4,7 +4,7 @@ import { ReactElement } from "react";
 import { Plant } from "../components/plants/Plant";
 import { PlantGenetics } from "../types/genetics";
 import { PlantType } from "../types/seed";
-import ShepherdsSpindel from "../components/plants/ShepherdsSpindel";
+import Umbel from "../components/plants/Umbel";
 
 const DEFAULT_GROWTH_TIME_MS = 10000; // 10 seconds
 const FAST_GROWTH_TIME_MS = 2000; // 2 seconds
@@ -17,7 +17,7 @@ export function calculateGrowthTime(
   genetics: PlantGenetics
 ): number {
   switch (plantType) {
-    case PlantType.ShepherdsSpindel:
+    case PlantType.Umbel:
       // Check if both chromosomes have true at index 1 (recessive trait for growth speed)
       const hasFastGrowth =
         genetics.chromosome1[1] === true && genetics.chromosome2[1] === true;
@@ -32,8 +32,8 @@ export function calculateGrowthTime(
  */
 export function renderPlant(plantProps: Plant): ReactElement<Plant> {
   switch (plantProps.plantType) {
-    case "ShepherdsSpindel":
-      return <ShepherdsSpindel {...plantProps} />;
+    case "Umbel":
+      return <Umbel {...plantProps} />;
     default:
       throw new Error(`Unknown plant type: ${plantProps.plantType}`);
   }

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { useState } from "react";
 import Pot from "./Pot";
-import ShepherdsSpindel from "./plants/ShepherdsSpindel";
+import Umbel from "./plants/Umbel";
 import { PlantGenetics } from "../types/genetics";
 import { PlantType } from "../types/seed";
 
@@ -26,10 +26,7 @@ export const SinglePlant: Story = {
   render: () => (
     <div className="w-32 h-32">
       <Pot isEmpty={false}>
-        <ShepherdsSpindel
-          genetics={sampleGenetics}
-          plantType={PlantType.ShepherdsSpindel}
-        />
+        <Umbel genetics={sampleGenetics} plantType={PlantType.Umbel} />
       </Pot>
     </div>
   ),
@@ -54,26 +51,17 @@ export const MultiplePlants: Story = {
       <div className="flex gap-4">
         <div className="w-32 h-32">
           <Pot isEmpty={false}>
-            <ShepherdsSpindel
-              genetics={genetics1}
-              plantType={PlantType.ShepherdsSpindel}
-            />
+            <Umbel genetics={genetics1} plantType={PlantType.Umbel} />
           </Pot>
         </div>
         <div className="w-32 h-32">
           <Pot isEmpty={false}>
-            <ShepherdsSpindel
-              genetics={genetics2}
-              plantType={PlantType.ShepherdsSpindel}
-            />
+            <Umbel genetics={genetics2} plantType={PlantType.Umbel} />
           </Pot>
         </div>
         <div className="w-32 h-32">
           <Pot isEmpty={false}>
-            <ShepherdsSpindel
-              genetics={genetics3}
-              plantType={PlantType.ShepherdsSpindel}
-            />
+            <Umbel genetics={genetics3} plantType={PlantType.Umbel} />
           </Pot>
         </div>
       </div>
@@ -90,10 +78,7 @@ export const WithEmptyPots: Story = {
         </div>
         <div className="w-32 h-32">
           <Pot isEmpty={false}>
-            <ShepherdsSpindel
-              genetics={sampleGenetics}
-              plantType={PlantType.ShepherdsSpindel}
-            />
+            <Umbel genetics={sampleGenetics} plantType={PlantType.Umbel} />
           </Pot>
         </div>
         <div className="w-32 h-32">
@@ -108,10 +93,7 @@ export const SelectedPlant: Story = {
   render: () => (
     <div className="w-32 h-32">
       <Pot isEmpty={false} isSelected={true}>
-        <ShepherdsSpindel
-          genetics={sampleGenetics}
-          plantType={PlantType.ShepherdsSpindel}
-        />
+        <Umbel genetics={sampleGenetics} plantType={PlantType.Umbel} />
       </Pot>
     </div>
   ),
@@ -143,9 +125,9 @@ export const InteractiveSelection: Story = {
             isSelected={selectedPot === 0}
             onSelect={(selected) => setSelectedPot(selected ? 0 : null)}
           >
-            <ShepherdsSpindel
+            <Umbel
               genetics={genetics1}
-              plantType={PlantType.ShepherdsSpindel}
+              plantType={PlantType.Umbel}
               isSelected={selectedPlant === 0}
               onSelect={(selected) => setSelectedPlant(selected ? 0 : null)}
             />
@@ -157,9 +139,9 @@ export const InteractiveSelection: Story = {
             isSelected={selectedPot === 1}
             onSelect={(selected) => setSelectedPot(selected ? 1 : null)}
           >
-            <ShepherdsSpindel
+            <Umbel
               genetics={genetics2}
-              plantType={PlantType.ShepherdsSpindel}
+              plantType={PlantType.Umbel}
               isSelected={selectedPlant === 1}
               onSelect={(selected) => setSelectedPlant(selected ? 1 : null)}
             />
@@ -171,9 +153,9 @@ export const InteractiveSelection: Story = {
             isSelected={selectedPot === 2}
             onSelect={(selected) => setSelectedPot(selected ? 2 : null)}
           >
-            <ShepherdsSpindel
+            <Umbel
               genetics={genetics3}
-              plantType={PlantType.ShepherdsSpindel}
+              plantType={PlantType.Umbel}
               isSelected={selectedPlant === 2}
               onSelect={(selected) => setSelectedPlant(selected ? 2 : null)}
             />
@@ -188,9 +170,9 @@ export const WithGenotype: Story = {
   render: () => (
     <div className="w-32 h-32">
       <Pot isEmpty={false}>
-        <ShepherdsSpindel
+        <Umbel
           genetics={sampleGenetics}
-          plantType={PlantType.ShepherdsSpindel}
+          plantType={PlantType.Umbel}
           showGenotype={true}
         />
       </Pot>
@@ -232,10 +214,7 @@ export const GridLayout: Story = {
         {genetics.map((gen, index) => (
           <div key={index} className="w-32">
             <Pot isEmpty={false}>
-              <ShepherdsSpindel
-                genetics={gen}
-                plantType={PlantType.ShepherdsSpindel}
-              />
+              <Umbel genetics={gen} plantType={PlantType.Umbel} />
             </Pot>
           </div>
         ))}
@@ -250,9 +229,9 @@ export const GrowingPlant: Story = {
     return (
       <div className="w-32 h-32">
         <Pot isEmpty={false}>
-          <ShepherdsSpindel
+          <Umbel
             genetics={sampleGenetics}
-            plantType={PlantType.ShepherdsSpindel}
+            plantType={PlantType.Umbel}
             startGrowingAt={startTime}
           />
         </Pot>
@@ -268,9 +247,9 @@ export const PartiallyGrown: Story = {
     return (
       <div className="w-32 h-32">
         <Pot isEmpty={false}>
-          <ShepherdsSpindel
+          <Umbel
             genetics={sampleGenetics}
-            plantType={PlantType.ShepherdsSpindel}
+            plantType={PlantType.Umbel}
             startGrowingAt={startTime}
           />
         </Pot>
@@ -286,9 +265,9 @@ export const AlmostGrown: Story = {
     return (
       <div className="w-32 h-32">
         <Pot isEmpty={false}>
-          <ShepherdsSpindel
+          <Umbel
             genetics={sampleGenetics}
-            plantType={PlantType.ShepherdsSpindel}
+            plantType={PlantType.Umbel}
             startGrowingAt={startTime}
           />
         </Pot>
@@ -304,9 +283,9 @@ export const FullyGrown: Story = {
     return (
       <div className="w-32 h-32">
         <Pot isEmpty={false}>
-          <ShepherdsSpindel
+          <Umbel
             genetics={sampleGenetics}
-            plantType={PlantType.ShepherdsSpindel}
+            plantType={PlantType.Umbel}
             startGrowingAt={startTime}
           />
         </Pot>
@@ -335,9 +314,9 @@ export const MultipleGrowthStages: Story = {
                 {stage.label}
               </div>
               <Pot isEmpty={false}>
-                <ShepherdsSpindel
+                <Umbel
                   genetics={sampleGenetics}
-                  plantType={PlantType.ShepherdsSpindel}
+                  plantType={PlantType.Umbel}
                   startGrowingAt={stage.startTime}
                 />
               </Pot>

@@ -84,14 +84,14 @@ export default function Home() {
         chromosome1: [false, false],
         chromosome2: [false, false],
       },
-      PlantType.ShepherdsSpindel
+      PlantType.Umbel
     ),
     new Seed(
       {
         chromosome1: [true, true],
         chromosome2: [false, true],
       },
-      PlantType.ShepherdsSpindel
+      PlantType.Umbel
     ),
   ]);
 

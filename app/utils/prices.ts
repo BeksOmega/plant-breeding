@@ -17,8 +17,8 @@ export interface PlantCatalogItem {
 // Base prices for different plant types with variants
 export const PLANT_PRICES: PlantCatalogItem[] = [
   {
-    plantType: PlantType.ShepherdsSpindel,
-    name: "Shepherd's Spindel",
+    plantType: PlantType.Umbel,
+    name: "Umbel",
     basePrice: 2,
     variants: [
       {
@@ -41,7 +41,7 @@ export const MUTAGEN_PRICE = 50;
 
 /**
  * Calculates the price of a plant based on its type and genetics.
- * Checks for variant matches (e.g., purple variant for Shepherd's Spindel).
+ * Checks for variant matches (e.g., purple variant for Umbel).
  */
 export function calculatePlantPrice(
   plantType: PlantType,
@@ -55,8 +55,8 @@ export function calculatePlantPrice(
 
   // Check for variant matches
   if (catalogItem.variants) {
-    // For Shepherd's Spindel, purple variant is determined by both chromosomes having true at index 0
-    if (plantType === PlantType.ShepherdsSpindel) {
+    // For Umbel, purple variant is determined by both chromosomes having true at index 0
+    if (plantType === PlantType.Umbel) {
       const isPurple =
         genetics.chromosome1[0] === true && genetics.chromosome2[0] === true;
       if (isPurple) {

@@ -55,7 +55,7 @@ const createPotData = (
   plant: genetics
     ? {
         genetics,
-        plantType: PlantType.ShepherdsSpindel,
+        plantType: PlantType.Umbel,
         startGrowingAt,
       }
     : undefined,

@@ -53,7 +53,7 @@ export default function ControlPanel({
   const [internalSelectedIndex, setInternalSelectedIndex] = useState(0);
   const [isPlantMode, setIsPlantMode] = useState(false);
 
-  const plantOptions = ["spindel", "mutagen"];
+  const plantOptions = ["umbel", "mutagen"];
 
   // Use controlled value if provided, otherwise use internal state
   const selectedPlantIndex =

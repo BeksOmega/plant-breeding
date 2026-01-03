@@ -4,7 +4,7 @@ import { PlantGenetics } from "./genetics";
  * Enum representing the different types of plants that can be grown from seeds.
  */
 export enum PlantType {
-  ShepherdsSpindel = "ShepherdsSpindel",
+  Umbel = "Umbel",
 }
 
 /**
