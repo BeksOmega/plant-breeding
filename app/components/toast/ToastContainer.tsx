@@ -71,7 +71,6 @@ interface ToastProviderProps {
  */
 export function ToastProvider({ children }: ToastProviderProps) {
   const [toasts, setToasts] = useState<ToastData[]>([]);
-  const [topOffset, setTopOffset] = useState<number>(0);
   const timeoutRefs = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
   const removeToast = useCallback((id: string) => {
@@ -108,11 +107,11 @@ export function ToastProvider({ children }: ToastProviderProps) {
   );
 
   const registerOffset = useCallback((height: number) => {
-    setTopOffset(height);
+    // No-op: offset system is deprecated, using fixed padding instead
   }, []);
 
   const unregisterOffset = useCallback(() => {
-    setTopOffset(0);
+    // No-op: offset system is deprecated, using fixed padding instead
   }, []);
 
   // Cleanup timeouts on unmount
@@ -128,8 +127,7 @@ export function ToastProvider({ children }: ToastProviderProps) {
       <ToastOffsetContext.Provider value={{ registerOffset, unregisterOffset }}>
         {children}
         <div
-          className={clsx("fixed left-0", "z-50", "flex flex-col gap-2")}
-          style={{ top: `${topOffset}px` }}
+          className={clsx("fixed top-12 left-0", "z-50", "flex flex-col gap-2")}
         >
           <AnimatePresence mode="popLayout">
             {toasts.map((toast) => (

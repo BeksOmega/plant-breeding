@@ -25,6 +25,7 @@ const Toast = forwardRef<HTMLDivElement, ToastProps>(
       "border-l-0",
       "px-2 py-1",
       "overflow-hidden",
+      "max-w-[90%] sm:max-w-md md:max-w-md lg:max-w-md",
       className
     );
 

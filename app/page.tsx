@@ -7,7 +7,7 @@ import ControlPanel from "./components/ControlPanel";
 import { breed } from "./types/genetics";
 import Toast from "./components/toast/Toast";
 import Text from "./components/typography/Text";
-import { useToastOffset } from "./components/toast/ToastContainer";
+import { useToast } from "./components/toast/ToastContainer";
 import Shop from "./components/Shop";
 import { POT_PRICE, calculatePlantPrice } from "./utils/prices";
 
@@ -16,29 +16,25 @@ export default function Home() {
   const [balance, setBalance] = useState<number>(0);
   const [isShopOpen, setIsShopOpen] = useState<boolean>(false);
   const balanceToastRef = useRef<HTMLDivElement>(null);
-  const { registerOffset, unregisterOffset } = useToastOffset();
+  const { showToast } = useToast();
 
-  // Register balance toast height with ToastContainer
+  // Show introductory toast on first load
   useEffect(() => {
-    if (balanceToastRef.current) {
-      const height = balanceToastRef.current.offsetHeight;
-      registerOffset(height);
-
-      // Update on resize (e.g., if balance text changes significantly)
-      const resizeObserver = new ResizeObserver((entries) => {
-        for (const entry of entries) {
-          registerOffset(entry.contentRect.height);
-        }
-      });
-
-      resizeObserver.observe(balanceToastRef.current);
-
-      return () => {
-        resizeObserver.disconnect();
-        unregisterOffset();
-      };
+    // const hasSeenIntro = localStorage.getItem("hasSeenIntroToast");
+    const hasSeenIntro = false;
+    if (!hasSeenIntro) {
+      showToast(
+        <Text>
+          Welcome to Mars. You work at a plant laboratory now. Breed the plants
+          to grow faster and sell for more. Maybe someday you can buy a ticket
+          off this rock.
+        </Text>,
+        8000
+      );
+      localStorage.setItem("hasSeenIntroToast", "true");
     }
-  }, [balance, registerOffset, unregisterOffset]);
+  }, [showToast]);
+
   const [pots, setPots] = useState<PotData[]>([
     { id: 1, isEmpty: true },
     { id: 2, isEmpty: true },
