@@ -46,7 +46,7 @@ export default function ShepherdsSpindel({
 
     const now = Date.now();
     const elapsed = now - startGrowingAt;
-    
+
     if (elapsed >= GROWTH_TIME_MS) {
       setIsFullyGrown(true);
       onFullyGrown?.();

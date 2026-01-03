@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import clsx from "clsx";
 import { Rajdhani, Teko } from "next/font/google";
+import { ToastProvider } from "./components/toast/ToastContainer";
 
 const rajdhani = Rajdhani({
   weight: ["500", "600"],
@@ -52,7 +53,7 @@ export default function RootLayout({
           "after:pointer-events-none"
         )}
       >
-        {children}
+        <ToastProvider>{children}</ToastProvider>
       </body>
     </html>
   );
