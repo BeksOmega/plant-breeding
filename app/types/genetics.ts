@@ -60,6 +60,54 @@ export function breed(
   };
 }
 
+// Mutate a plant's genetics by flipping ~1/4 of the alleles
+// Randomly selects alleles from both chromosomes and flips their boolean values
+export function mutate(genetics: PlantGenetics): PlantGenetics {
+  // Create copies of the chromosomes
+  const mutatedChromosome1 = [...genetics.chromosome1];
+  const mutatedChromosome2 = [...genetics.chromosome2];
+
+  // Calculate total number of alleles
+  const totalAlleles = mutatedChromosome1.length + mutatedChromosome2.length;
+
+  if (totalAlleles === 0) {
+    return {
+      chromosome1: mutatedChromosome1,
+      chromosome2: mutatedChromosome2,
+    };
+  }
+
+  // Calculate how many alleles to flip (~1/4)
+  const allelesToFlip = Math.max(1, Math.round(totalAlleles / 4));
+
+  // Create a list of all allele positions (chromosome index, allele index)
+  const allPositions: Array<{ chromosome: 1 | 2; index: number }> = [];
+  for (let i = 0; i < mutatedChromosome1.length; i++) {
+    allPositions.push({ chromosome: 1, index: i });
+  }
+  for (let i = 0; i < mutatedChromosome2.length; i++) {
+    allPositions.push({ chromosome: 2, index: i });
+  }
+
+  // Randomly shuffle and select positions to flip
+  const shuffled = [...allPositions].sort(() => Math.random() - 0.5);
+  const positionsToFlip = shuffled.slice(0, allelesToFlip);
+
+  // Flip the selected alleles
+  for (const pos of positionsToFlip) {
+    if (pos.chromosome === 1) {
+      mutatedChromosome1[pos.index] = !mutatedChromosome1[pos.index];
+    } else {
+      mutatedChromosome2[pos.index] = !mutatedChromosome2[pos.index];
+    }
+  }
+
+  return {
+    chromosome1: mutatedChromosome1,
+    chromosome2: mutatedChromosome2,
+  };
+}
+
 // Result type for finding possible recessive traits
 export interface PossibleRecessiveTrait {
   traitIndex: number;
