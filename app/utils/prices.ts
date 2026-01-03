@@ -19,12 +19,12 @@ export const PLANT_PRICES: PlantCatalogItem[] = [
   {
     plantType: PlantType.ShepherdsSpindel,
     name: "Shepherd's Spindel",
-    basePrice: 50,
+    basePrice: 2,
     variants: [
       {
         variantId: "purple",
         name: "Purple",
-        price: 75,
+        price: 10,
       },
     ],
   },
@@ -34,7 +34,7 @@ export const PLANT_PRICES: PlantCatalogItem[] = [
 export const POT_PRICE = 25;
 
 // Price for a rocket ticket
-export const ROCKET_TICKET_PRICE = 1000;
+export const ROCKET_TICKET_PRICE = 500;
 
 /**
  * Calculates the price of a plant based on its type and genetics.
