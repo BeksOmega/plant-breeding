@@ -24,6 +24,10 @@ const meta = {
       control: "boolean",
       description: "Whether the pot can be selected",
     },
+    hasMutagen: {
+      control: "boolean",
+      description: "Whether this pot has mutagen applied",
+    },
     onSelect: {
       action: "selected",
       description: "Callback when selection state changes",
@@ -118,5 +122,14 @@ export const PartiallyGrown: Story = {
         />
       </Pot>
     );
+  },
+};
+
+export const WithMutagen: Story = {
+  args: {
+    isEmpty: true,
+    isSelected: false,
+    canSelect: true,
+    hasMutagen: true,
   },
 };

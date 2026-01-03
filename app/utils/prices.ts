@@ -36,6 +36,9 @@ export const POT_PRICE = 25;
 // Price for a rocket ticket
 export const ROCKET_TICKET_PRICE = 500;
 
+// Price for a mutagen
+export const MUTAGEN_PRICE = 50;
+
 /**
  * Calculates the price of a plant based on its type and genetics.
  * Checks for variant matches (e.g., purple variant for Shepherd's Spindel).

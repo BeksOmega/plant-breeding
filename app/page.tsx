@@ -12,15 +12,19 @@ import Shop from "./components/Shop";
 import {
   POT_PRICE,
   ROCKET_TICKET_PRICE,
+  MUTAGEN_PRICE,
   calculatePlantPrice,
 } from "./utils/prices";
 import { calculateGrowthTime } from "./utils/plants";
+import { Mutagen } from "./types/mutagen";
 
 export default function Home() {
   const [selectedIds, setSelectedIds] = useState<(string | number)[]>([]);
-  const [balance, setBalance] = useState<number>(0);
+  const [balance, setBalance] = useState<number>(1000);
   const [isShopOpen, setIsShopOpen] = useState<boolean>(false);
   const [hasRocketTicket, setHasRocketTicket] = useState<boolean>(false);
+  const [mutagens, setMutagens] = useState<Mutagen[]>([]);
+  const [selectedOptionIndex, setSelectedOptionIndex] = useState<number>(0);
   const balanceToastRef = useRef<HTMLDivElement>(null);
   const { showToast, removeToast } = useToast();
 
@@ -91,6 +95,9 @@ export default function Home() {
     ),
   ]);
 
+  // Determine if mutagen is selected
+  const isMutagenSelected = selectedOptionIndex === 1; // "mutagen" is at index 1
+
   // Calculate button disabled states based on selection
   const buttonStates = useMemo(() => {
     const selectedPots = pots.filter((pot) => selectedIds.includes(pot.id));
@@ -118,46 +125,80 @@ export default function Home() {
     const wouldLeaveLessThanTwo = totalAfterSell < 2;
 
     return {
-      disabledPlant: emptyPotsInSelection.length === 0 || seeds.length === 0,
+      disabledPlant: isMutagenSelected
+        ? emptyPotsInSelection.length === 0 || mutagens.length === 0
+        : emptyPotsInSelection.length === 0 || seeds.length === 0,
       disabledBreed: !canBreed,
       disabledSell:
         fullyGrownPlantsInSelection.length === 0 || wouldLeaveLessThanTwo,
     };
-  }, [pots, selectedIds, seeds.length]);
+  }, [pots, selectedIds, seeds.length, mutagens.length, isMutagenSelected]);
 
   const handlePlant = () => {
-    if (selectedIds.length === 0 || seeds.length === 0) return;
+    if (selectedIds.length === 0) return;
 
-    const selectedEmptyPots = pots.filter(
-      (pot) => selectedIds.includes(pot.id) && pot.isEmpty
-    );
+    if (isMutagenSelected) {
+      // Handle placing mutagen
+      if (mutagens.length === 0) return;
 
-    const potsToPlant = selectedEmptyPots.slice(0, seeds.length);
-    const seedsToUse = seeds.slice(0, potsToPlant.length);
-    const startTime = Date.now();
+      const selectedEmptyPots = pots.filter(
+        (pot) => selectedIds.includes(pot.id) && pot.isEmpty
+      );
 
-    setPots((prevPots) =>
-      prevPots.map((pot): PotData => {
-        const seedIndex = potsToPlant.findIndex((p) => p.id === pot.id);
-        if (seedIndex !== -1) {
-          const seed = seedsToUse[seedIndex];
-          return {
-            ...pot,
-            isEmpty: false,
-            plant: {
-              genetics: seed.genome,
-              plantType: seed.plantType,
+      const potsToPlace = selectedEmptyPots.slice(0, mutagens.length);
+      const mutagensToUse = mutagens.slice(0, potsToPlace.length);
+
+      setPots((prevPots) =>
+        prevPots.map((pot): PotData => {
+          const mutagenIndex = potsToPlace.findIndex((p) => p.id === pot.id);
+          if (mutagenIndex !== -1) {
+            const mutagen = mutagensToUse[mutagenIndex];
+            return {
+              ...pot,
+              mutagen: mutagen.clone(),
+            };
+          }
+          return pot;
+        })
+      );
+
+      setMutagens((prevMutagens) => prevMutagens.slice(mutagensToUse.length));
+      setSelectedIds([]);
+    } else {
+      // Handle planting seeds
+      if (seeds.length === 0) return;
+
+      const selectedEmptyPots = pots.filter(
+        (pot) => selectedIds.includes(pot.id) && pot.isEmpty
+      );
+
+      const potsToPlant = selectedEmptyPots.slice(0, seeds.length);
+      const seedsToUse = seeds.slice(0, potsToPlant.length);
+      const startTime = Date.now();
+
+      setPots((prevPots) =>
+        prevPots.map((pot): PotData => {
+          const seedIndex = potsToPlant.findIndex((p) => p.id === pot.id);
+          if (seedIndex !== -1) {
+            const seed = seedsToUse[seedIndex];
+            return {
+              ...pot,
+              isEmpty: false,
+              plant: {
+                genetics: seed.genome,
+                plantType: seed.plantType,
+                startGrowingAt: startTime,
+              },
               startGrowingAt: startTime,
-            },
-            startGrowingAt: startTime,
-          };
-        }
-        return pot;
-      })
-    );
+            };
+          }
+          return pot;
+        })
+      );
 
-    setSeeds((prevSeeds) => prevSeeds.slice(seedsToUse.length));
-    setSelectedIds([]);
+      setSeeds((prevSeeds) => prevSeeds.slice(seedsToUse.length));
+      setSelectedIds([]);
+    }
   };
 
   const handleBreed = () => {
@@ -252,6 +293,13 @@ export default function Home() {
     }
   };
 
+  const handleBuyMutagen = () => {
+    if (balance >= MUTAGEN_PRICE) {
+      setMutagens((prevMutagens) => [...prevMutagens, new Mutagen()]);
+      setBalance((prevBalance) => prevBalance - MUTAGEN_PRICE);
+    }
+  };
+
   return (
     <>
       <Toast
@@ -274,6 +322,7 @@ export default function Home() {
               onBuyPot={handleBuyPot}
               onBuyRocketTicket={handleBuyRocketTicket}
               hasRocketTicket={hasRocketTicket}
+              onBuyMutagen={handleBuyMutagen}
             />
           </div>
         </div>
@@ -294,7 +343,8 @@ export default function Home() {
             disabledPlant={buttonStates.disabledPlant}
             disabledBreed={buttonStates.disabledBreed}
             disabledSell={buttonStates.disabledSell}
-            seedCount={seeds.length}
+            seedCount={isMutagenSelected ? mutagens.length : seeds.length}
+            onSelectionChange={setSelectedOptionIndex}
           />
         )}
       </main>

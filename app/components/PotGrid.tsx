@@ -5,6 +5,7 @@ import { twMerge } from "tailwind-merge";
 import Pot from "./Pot";
 import { Plant } from "./plants/Plant";
 import { renderPlant } from "../utils/plants";
+import { Mutagen } from "../types/mutagen";
 
 export interface PotData {
   /** Unique identifier for the pot */
@@ -17,6 +18,8 @@ export interface PotData {
   canSelect?: boolean;
   /** Timestamp when plant growth started */
   startGrowingAt?: number;
+  /** Mutagen applied to this pot */
+  mutagen?: Mutagen;
 }
 
 export interface PotGridProps {
@@ -76,6 +79,7 @@ export default function PotGrid({
               isSelected={isSelected}
               onSelect={(selected) => handlePotSelect(pot.id, selected)}
               canSelect={pot.canSelect ?? true}
+              hasMutagen={pot.mutagen !== undefined}
             >
               {pot.plant ? renderPlant(pot.plant) : undefined}
             </Pot>

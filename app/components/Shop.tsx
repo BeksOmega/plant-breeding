@@ -5,7 +5,12 @@ import Button from "./controls/Button";
 import Heading from "./typography/Heading";
 import Text from "./typography/Text";
 import { PlantType } from "../types/seed";
-import { PLANT_PRICES, POT_PRICE, ROCKET_TICKET_PRICE } from "../utils/prices";
+import {
+  PLANT_PRICES,
+  POT_PRICE,
+  ROCKET_TICKET_PRICE,
+  MUTAGEN_PRICE,
+} from "../utils/prices";
 import clsx from "clsx";
 
 interface ShopProps {
@@ -17,6 +22,8 @@ interface ShopProps {
   onBuyRocketTicket?: () => void;
   /** Whether the player already has a rocket ticket */
   hasRocketTicket?: boolean;
+  /** Callback when purchasing a mutagen */
+  onBuyMutagen?: () => void;
   /** Additional CSS classes */
   className?: string;
 }
@@ -30,10 +37,12 @@ export default function Shop({
   onBuyPot,
   onBuyRocketTicket,
   hasRocketTicket = false,
+  onBuyMutagen,
   className,
 }: ShopProps) {
   const canAffordPot = balance >= POT_PRICE;
   const canAffordTicket = balance >= ROCKET_TICKET_PRICE && !hasRocketTicket;
+  const canAffordMutagen = balance >= MUTAGEN_PRICE;
 
   return (
     <Surface shadow="lg" className={clsx("p-4 space-y-6", className)}>
@@ -87,6 +96,23 @@ export default function Shop({
               size="sm"
               onClick={onBuyPot}
               disabled={!canAffordPot}
+              className="px-4"
+            >
+              Buy
+            </Button>
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <Text className="font-semibold">Mutagen</Text>
+              <Text className="text-sm text-gray-600">
+                {MUTAGEN_PRICE} credits
+              </Text>
+            </div>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={onBuyMutagen}
+              disabled={!canAffordMutagen}
               className="px-4"
             >
               Buy

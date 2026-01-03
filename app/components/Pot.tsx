@@ -14,6 +14,8 @@ interface PotProps {
   canSelect?: boolean;
   /** Plant growing in the pot */
   children?: ReactElement<Plant>;
+  /** Whether this pot has mutagen applied */
+  hasMutagen?: boolean;
 }
 
 /**
@@ -26,6 +28,7 @@ export default function Pot({
   isEmpty,
   canSelect = true,
   children,
+  hasMutagen = false,
 }: PotProps) {
   const handleClick = () => {
     if (!canSelect) return;
@@ -56,7 +59,9 @@ export default function Pot({
         aria-hidden="true"
       >
         <path
-          style={{ fill: "var(--color-rust-700)" }}
+          style={{
+            fill: hasMutagen ? "#927629" : "var(--color-rust-700)",
+          }}
           d="M 26.61,58.67 42.1,54.30 H 60.41 L 74.77,58.53 61.25,63.32 38.86,63.18 Z"
         />
         <path

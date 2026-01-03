@@ -27,6 +27,8 @@ interface ControlPanelProps {
   disabledSell?: boolean;
   /** The current seed count */
   seedCount?: number;
+  /** Callback when selected option changes */
+  onSelectionChange?: (selectedIndex: number) => void;
 }
 
 /**
@@ -43,11 +45,19 @@ export default function ControlPanel({
   disabledBreed = false,
   disabledSell = false,
   seedCount = 0,
+  onSelectionChange,
 }: ControlPanelProps) {
   const [selectedPlantIndex, setSelectedPlantIndex] = useState(0);
   const [isPlantMode, setIsPlantMode] = useState(false);
 
-  const plantOptions = ["spindel"];
+  const plantOptions = ["spindel", "mutagen"];
+
+  const handleSelectionChange = (index: number) => {
+    setSelectedPlantIndex(index);
+    onSelectionChange?.(index);
+  };
+
+  const isMutagenSelected = plantOptions[selectedPlantIndex] === "mutagen";
 
   return (
     <Surface
@@ -70,7 +80,7 @@ export default function ControlPanel({
           <Picker
             options={plantOptions}
             value={selectedPlantIndex}
-            onChange={setSelectedPlantIndex}
+            onChange={handleSelectionChange}
           />
           <div className="flex items-center gap-2">
             <Button
@@ -80,7 +90,7 @@ export default function ControlPanel({
               onClick={onPlant}
               disabled={disabledPlant}
             >
-              Plant
+              {isMutagenSelected ? "Place" : "Plant"}
             </Button>
             <div className="w-16 text-center font-rajdhani text-sm border-2 border-gray-300 px-3 py-1.5">
               {seedCount}
