@@ -201,3 +201,35 @@ export const WithCustomDuration: Story = {
   },
 };
 
+export const WithoutAnimation: Story = {
+  render: () => {
+    function NoAnimationDemo() {
+      const { showToast } = useToast();
+      return (
+        <div className="p-8 space-y-4">
+          <div className="flex flex-col gap-2">
+            <p className="text-sm text-gray-600">
+              Toasts can be shown without animation by passing disableAnimation as the third parameter
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                onClick={() => showToast("Toast with animation (default)", 5000, false)}
+                variant="primary"
+              >
+                Show Animated Toast
+              </Button>
+              <Button
+                onClick={() => showToast("Toast without animation", 5000, true)}
+                variant="secondary"
+              >
+                Show Non-Animated Toast
+              </Button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return <NoAnimationDemo />;
+  },
+};
+

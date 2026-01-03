@@ -16,10 +16,15 @@ import clsx from "clsx";
 export interface ToastData {
   id: string;
   content: ReactNode;
+  disableAnimation?: boolean;
 }
 
 interface ToastContextType {
-  showToast: (content: ReactNode, duration?: number) => string;
+  showToast: (
+    content: ReactNode,
+    duration?: number,
+    disableAnimation?: boolean
+  ) => string;
   removeToast: (id: string) => void;
 }
 
@@ -59,9 +64,13 @@ export function ToastProvider({ children }: ToastProviderProps) {
   }, []);
 
   const showToast = useCallback(
-    (content: ReactNode, duration: number = 5000): string => {
+    (
+      content: ReactNode,
+      duration: number = 5000,
+      disableAnimation?: boolean
+    ): string => {
       const id = Math.random().toString(36).substring(2, 9);
-      setToasts((prev) => [...prev, { id, content }]);
+      setToasts((prev) => [...prev, { id, content, disableAnimation }]);
 
       // Set up auto-dismiss timeout (skip if duration is 0 or less)
       if (duration > 0) {
@@ -93,7 +102,9 @@ export function ToastProvider({ children }: ToastProviderProps) {
       >
         <AnimatePresence mode="popLayout">
           {toasts.map((toast) => (
-            <Toast key={toast.id}>{toast.content}</Toast>
+            <Toast key={toast.id} disableAnimation={toast.disableAnimation}>
+              {toast.content}
+            </Toast>
           ))}
         </AnimatePresence>
       </div>

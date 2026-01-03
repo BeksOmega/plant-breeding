@@ -17,6 +17,10 @@ const meta = {
       control: "text",
       description: "Additional CSS classes",
     },
+    disableAnimation: {
+      control: "boolean",
+      description: "Disable animation for the toast",
+    },
   },
 } satisfies Meta<typeof Toast>;
 
@@ -54,5 +58,12 @@ export const MultipleToasts: Story = {
       <Toast>Third toast notification</Toast>
     </div>
   ),
+};
+
+export const WithoutAnimation: Story = {
+  args: {
+    children: "This toast has no animation",
+    disableAnimation: true,
+  },
 };
 
