@@ -4,7 +4,7 @@ import { useState, useMemo, useRef, useEffect } from "react";
 import PotGrid, { PotData } from "./components/PotGrid";
 import { Seed, PlantType } from "./types/seed";
 import ControlPanel from "./components/ControlPanel";
-import { breed } from "./types/genetics";
+import { breed, mutate } from "./types/genetics";
 import Toast from "./components/toast/Toast";
 import Text from "./components/typography/Text";
 import { useToast } from "./components/toast/ToastContainer";
@@ -181,15 +181,19 @@ export default function Home() {
           const seedIndex = potsToPlant.findIndex((p) => p.id === pot.id);
           if (seedIndex !== -1) {
             const seed = seedsToUse[seedIndex];
+            // If pot has mutagen, mutate the genome before planting
+            const genetics = pot.mutagen ? mutate(seed.genome) : seed.genome;
             return {
               ...pot,
               isEmpty: false,
               plant: {
-                genetics: seed.genome,
+                genetics,
                 plantType: seed.plantType,
                 startGrowingAt: startTime,
               },
               startGrowingAt: startTime,
+              // Remove mutagen after using it
+              mutagen: undefined,
             };
           }
           return pot;
@@ -295,7 +299,13 @@ export default function Home() {
 
   const handleBuyMutagen = () => {
     if (balance >= MUTAGEN_PRICE) {
-      setMutagens((prevMutagens) => [...prevMutagens, new Mutagen()]);
+      setMutagens((prevMutagens) => {
+        // If this is the first mutagen being bought, select mutagen in control panel
+        if (prevMutagens.length === 0) {
+          setSelectedOptionIndex(1); // mutagen is at index 1
+        }
+        return [...prevMutagens, new Mutagen()];
+      });
       setBalance((prevBalance) => prevBalance - MUTAGEN_PRICE);
     }
   };
@@ -330,7 +340,7 @@ export default function Home() {
       <main className="min-h-screen flex flex-col items-center justify-center p-4 gap-4">
         <PotGrid
           pots={pots}
-          className="w-full"
+          className="w-full mt-8 mb-36"
           selectedIds={selectedIds}
           onSelectionChange={setSelectedIds}
         />
@@ -345,6 +355,7 @@ export default function Home() {
             disabledSell={buttonStates.disabledSell}
             seedCount={isMutagenSelected ? mutagens.length : seeds.length}
             onSelectionChange={setSelectedOptionIndex}
+            selectedIndex={selectedOptionIndex}
           />
         )}
       </main>

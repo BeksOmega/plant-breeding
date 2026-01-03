@@ -21,10 +21,6 @@ const meta = {
       action: "breed clicked",
       description: "Callback when Breed button is clicked",
     },
-    onCull: {
-      action: "cull clicked",
-      description: "Callback when Cull button is clicked",
-    },
     disabledPlant: {
       control: "boolean",
       description: "Whether the Plant button is disabled",
@@ -57,7 +53,6 @@ export const WithCallbacks: Story = {
   args: {
     onPlant: () => console.log("Plant button clicked"),
     onBreed: () => console.log("Breed button clicked"),
-    onCull: () => console.log("Cull button clicked"),
   },
 };
 
@@ -65,6 +60,5 @@ export const WithDisabledButtons: Story = {
   args: {
     disabledPlant: true,
     disabledBreed: false,
-    disabledCull: true,
   },
 };

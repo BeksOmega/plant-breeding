@@ -29,6 +29,8 @@ interface ControlPanelProps {
   seedCount?: number;
   /** Callback when selected option changes */
   onSelectionChange?: (selectedIndex: number) => void;
+  /** Controlled selected index */
+  selectedIndex?: number;
 }
 
 /**
@@ -46,14 +48,22 @@ export default function ControlPanel({
   disabledSell = false,
   seedCount = 0,
   onSelectionChange,
+  selectedIndex,
 }: ControlPanelProps) {
-  const [selectedPlantIndex, setSelectedPlantIndex] = useState(0);
+  const [internalSelectedIndex, setInternalSelectedIndex] = useState(0);
   const [isPlantMode, setIsPlantMode] = useState(false);
 
   const plantOptions = ["spindel", "mutagen"];
 
+  // Use controlled value if provided, otherwise use internal state
+  const selectedPlantIndex =
+    selectedIndex !== undefined ? selectedIndex : internalSelectedIndex;
+
   const handleSelectionChange = (index: number) => {
-    setSelectedPlantIndex(index);
+    if (selectedIndex === undefined) {
+      // Only update internal state if not controlled
+      setInternalSelectedIndex(index);
+    }
     onSelectionChange?.(index);
   };
 
