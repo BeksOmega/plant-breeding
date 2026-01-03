@@ -22,6 +22,8 @@ interface ControlPanelProps {
   disabledBreed?: boolean;
   /** Whether the Cull button is disabled */
   disabledCull?: boolean;
+  /** The current seed count */
+  seedCount?: number;
 }
 
 /**
@@ -36,6 +38,7 @@ export default function ControlPanel({
   disabledPlant = false,
   disabledBreed = false,
   disabledCull = false,
+  seedCount = 0,
 }: ControlPanelProps) {
   const [selectedPlantIndex, setSelectedPlantIndex] = useState(0);
   const [isPlantMode, setIsPlantMode] = useState(false);
@@ -58,21 +61,26 @@ export default function ControlPanel({
 
       <div className="flex gap-4">
         {/* Left side: Picker and Toggle */}
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col items-center place-content-between">
           <Picker
             options={plantOptions}
             value={selectedPlantIndex}
             onChange={setSelectedPlantIndex}
           />
-          <Button
-            variant="primary"
-            size="sm"
-            className="px-8"
-            onClick={onPlant}
-            disabled={disabledPlant}
-          >
-            Plant
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="primary"
+              size="sm"
+              className="px-8"
+              onClick={onPlant}
+              disabled={disabledPlant}
+            >
+              Plant
+            </Button>
+            <div className="w-16 text-center font-rajdhani text-sm border-2 border-gray-300 px-3 py-1.5">
+              {seedCount}
+            </div>
+          </div>
           {/* <Toggle
             offLabel="Off"
             onLabel="Plant"

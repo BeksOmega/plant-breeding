@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import ControlPanel from "./controls/ControlPanel";
+import ControlPanel from "./ControlPanel";
 
 const meta = {
   title: "Components/ControlPanel",
@@ -68,4 +68,3 @@ export const WithDisabledButtons: Story = {
     disabledCull: true,
   },
 };
-

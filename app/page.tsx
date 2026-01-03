@@ -79,6 +79,7 @@ export default function Home() {
         disabledPlant={buttonStates.disabledPlant}
         disabledBreed={buttonStates.disabledBreed}
         disabledCull={buttonStates.disabledCull}
+        seedCount={0}
       />
     </main>
   );
